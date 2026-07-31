@@ -196,7 +196,12 @@ export const getEvents = (): PartyEvent[] => {
       localStorage.setItem(EVENTS_KEY, JSON.stringify(INITIAL_SAMPLE_EVENTS));
       return INITIAL_SAMPLE_EVENTS;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      localStorage.setItem(EVENTS_KEY, JSON.stringify(INITIAL_SAMPLE_EVENTS));
+      return INITIAL_SAMPLE_EVENTS;
+    }
+    return parsed;
   } catch (err) {
     return INITIAL_SAMPLE_EVENTS;
   }
@@ -204,7 +209,17 @@ export const getEvents = (): PartyEvent[] => {
 
 export const getEventById = (id: string): PartyEvent | null => {
   const events = getEvents();
-  return events.find(e => e.id === id) || null;
+  const found = events.find(e => e.id === id);
+  if (found) return found;
+
+  // Fallback to sample events if ID matches
+  const sampleFallback = INITIAL_SAMPLE_EVENTS.find(e => e.id === id);
+  if (sampleFallback) {
+    saveEvent(sampleFallback);
+    return sampleFallback;
+  }
+
+  return null;
 };
 
 export const saveEvent = (event: PartyEvent): void => {
