@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { 
   PartyPopper, Plus, Calendar, Users, Target, ArrowRight, 
   Sparkles, CheckCircle2, Copy, ExternalLink, Clock, MapPin, 
-  Trash2, DollarSign, Bookmark
+  Trash2, DollarSign, Bookmark, BookOpen
 } from 'lucide-react';
 import { PartyEvent, Guest } from '@/lib/types';
 import { STARTER_TEMPLATES } from '@/lib/templates';
@@ -61,22 +61,23 @@ export default function DashboardPage() {
   return (
     <div className="space-y-10 animate-fade-in">
       {/* Hero Welcome Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900/60 via-slate-900/80 to-purple-900/40 p-8 sm:p-10 border border-indigo-500/20 shadow-2xl">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900/60 via-slate-900/80 to-purple-900/40 p-8 sm:p-10 border border-indigo-500/20 shadow-2xl space-y-8">
         <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none animate-pulse-glow" />
         <div className="absolute bottom-0 left-1/3 -mb-10 w-80 h-80 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 max-w-3xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
             <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Purpose-First Gathering Engine</span>
+            <span>Purpose-First Party Planner</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
-            Craft events people actually <span className="gradient-text">want to attend.</span>
+            Stop planning parties. <br className="hidden sm:inline" />
+            <span className="gradient-text">Start designing gatherings that matter.</span>
           </h1>
 
           <p className="text-base sm:text-lg text-slate-300 font-light leading-relaxed">
-            Move from vague ideas to memorable gatherings. Define your disputable purpose, lock in basics, and manage 1-click guest RSVPs effortlessly.
+            The party planner that starts with why — purpose first, logistics second. Transform vague ideas into unforgettable reasons to connect.
           </p>
 
           <div className="pt-2 flex flex-wrap items-center gap-4">
@@ -85,7 +86,7 @@ export default function DashboardPage() {
               className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl font-bold text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all transform hover:-translate-y-0.5"
             >
               <Plus className="w-5 h-5" />
-              <span>Plan a New Event</span>
+              <span>Plan a Purposeful Event</span>
             </Link>
 
             <button
@@ -96,8 +97,46 @@ export default function DashboardPage() {
               className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl font-semibold text-slate-300 hover:text-white bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 transition-all"
             >
               <Bookmark className="w-4.5 h-4.5 text-amber-400" />
-              <span>Explore Templates</span>
+              <span>Explore Formats</span>
             </button>
+          </div>
+
+          <div className="pt-2 flex items-center gap-2 text-xs text-slate-400 font-medium">
+            <BookOpen className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span>Inspired by <strong>The Art of Gathering</strong> & <strong>The 2-Hour Cocktail Party</strong></span>
+          </div>
+        </div>
+
+        {/* 3-Step "How It Works" Strip */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-slate-800/80">
+          <div className="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-1.5">
+            <div className="flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-extrabold flex items-center justify-center border border-indigo-500/30">1</span>
+              <h3 className="font-bold text-xs text-white uppercase tracking-wider">Define the Purpose</h3>
+            </div>
+            <p className="text-xs text-slate-300">
+              Use Gemini AI to turn vague ideas into a clear, disputable reason for gathering.
+            </p>
+          </div>
+
+          <div className="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-1.5">
+            <div className="flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-violet-500/20 text-violet-300 text-xs font-extrabold flex items-center justify-center border border-violet-500/30">2</span>
+              <h3 className="font-bold text-xs text-white uppercase tracking-wider">Lock Basics & Invite</h3>
+            </div>
+            <p className="text-xs text-slate-300">
+              Set hard end times, capacity limits, and share 1-click magic link RSVPs.
+            </p>
+          </div>
+
+          <div className="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-1.5">
+            <div className="flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-pink-500/20 text-pink-300 text-xs font-extrabold flex items-center justify-center border border-pink-500/30">3</span>
+              <h3 className="font-bold text-xs text-white uppercase tracking-wider">Run the Night</h3>
+            </div>
+            <p className="text-xs text-slate-300">
+              Execute with Day-of Live Mode copilot, check-in ticker, and aftermath thank-yous.
+            </p>
           </div>
         </div>
 
