@@ -14,6 +14,8 @@ import {
   toggleGuestCheckIn, saveTimelineItem, closeEvent 
 } from '@/lib/storage';
 
+import SkeletonLoader from '@/components/SkeletonLoader';
+
 export default function LiveModePage() {
   const params = useParams();
   const router = useRouter();
@@ -100,7 +102,7 @@ export default function LiveModePage() {
     }
   };
 
-  if (!event) return <div className="text-center py-12 text-slate-400">Loading Live Mode...</div>;
+  if (!event) return <SkeletonLoader label="Loading Live Mode Copilot..." />;
 
   const filteredGuests = guests.filter(g => g.name.toLowerCase().includes(guestSearch.toLowerCase()));
 

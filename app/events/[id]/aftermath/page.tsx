@@ -13,6 +13,8 @@ import {
   generateThankYouMessage, saveEvent 
 } from '@/lib/storage';
 
+import SkeletonLoader from '@/components/SkeletonLoader';
+
 export default function AftermathPage() {
   const params = useParams();
   const router = useRouter();
@@ -96,7 +98,7 @@ export default function AftermathPage() {
     loadAftermathData();
   };
 
-  if (!event) return <div className="text-center py-12 text-slate-400">Loading Aftermath...</div>;
+  if (!event) return <SkeletonLoader label="Loading post-event aftermath..." />;
 
   const confirmedGuests = guests.filter(g => g.rsvpStatus === 'yes');
 
@@ -113,7 +115,7 @@ export default function AftermathPage() {
         </button>
 
         <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-          Stage 8 — Aftermath & Closeout
+          Post-Event Recap & Gratitude
         </span>
       </div>
 

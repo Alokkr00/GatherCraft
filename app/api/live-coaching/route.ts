@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-    const prompt = `You are a world-class party copilot and host coach inspired by Priya Parker's "The Art of Gathering" and Nick Gray's "2-Hour Cocktail Party".
+    const prompt = `You are a world-class party copilot and host coach specializing in purpose-driven event design.
 
 Give the host ONE concise, highly actionable 2-sentence tip for the current moment in their party.
 

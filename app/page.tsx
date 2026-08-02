@@ -12,12 +12,17 @@ import { PartyEvent, Guest } from '@/lib/types';
 import { STARTER_TEMPLATES } from '@/lib/templates';
 import { getEvents, getGuests, deleteEvent, saveEvent } from '@/lib/storage';
 
+import ConfirmModal from '@/components/ConfirmModal';
+
 export default function DashboardPage() {
   const router = useRouter();
   const [events, setEvents] = useState<PartyEvent[]>([]);
   const [guests, setGuests] = useState<Guest[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Modal deletion state
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -30,13 +35,18 @@ export default function DashboardPage() {
     setGuests(gsts);
   };
 
+  const confirmDelete = () => {
+    if (deleteId) {
+      deleteEvent(deleteId);
+      setDeleteId(null);
+      loadData();
+    }
+  };
+
   const handleDelete = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (confirm('Are you sure you want to delete this event?')) {
-      deleteEvent(id);
-      loadData();
-    }
+    setDeleteId(id);
   };
 
   const handleCopyInviteLink = (eventId: string, e: React.MouseEvent) => {
@@ -102,8 +112,8 @@ export default function DashboardPage() {
           </div>
 
           <div className="pt-2 flex items-center gap-2 text-xs text-slate-400 font-medium">
-            <BookOpen className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-            <span>Inspired by <strong>The Art of Gathering</strong> & <strong>The 2-Hour Cocktail Party</strong></span>
+            <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span>Built on <strong>Purpose-First Event Architecture</strong></span>
           </div>
         </div>
 
@@ -396,6 +406,16 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={Boolean(deleteId)}
+        title="Delete Gathering Event"
+        message="Are you sure you want to delete this event? This will remove all associated RSVPs, timeline steps, tasks, budget items, and shopping lists."
+        confirmText="Delete Event"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   );
 }

@@ -190,7 +190,7 @@ function EventCreateWizard() {
           <div className="text-center space-y-2 max-w-xl mx-auto">
             <h1 className="text-3xl font-black text-white tracking-tight">Choose your event blueprint</h1>
             <p className="text-sm text-slate-400">
-              Start with a structured gathering format inspired by <em>The 2-Hour Cocktail Party</em> or start blank.
+              Start with a structured gathering format or create a custom event blueprint.
             </p>
           </div>
 
@@ -254,7 +254,7 @@ function EventCreateWizard() {
             </div>
             <h1 className="text-3xl font-black text-white">Define your gathering's purpose</h1>
             <p className="text-sm text-slate-400">
-              According to <em>The Art of Gathering</em>, a great party has a clear, specific, and disputable purpose statement.
+              A great party starts with a clear, specific, and purpose-driven vision statement.
             </p>
           </div>
 
@@ -502,6 +502,11 @@ function EventCreateWizard() {
                 />
               </div>
             </div>
+            {startTime && endTime && startTime >= endTime && (
+              <p className="text-xs text-rose-400 font-semibold pt-1">
+                ⚠️ Note: End time should be after start time.
+              </p>
+            )}
 
             {/* Location Section */}
             <div className="space-y-3 pt-4 border-t border-slate-800">

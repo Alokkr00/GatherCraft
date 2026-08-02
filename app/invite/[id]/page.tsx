@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { PartyEvent, Guest, RSVPStatus } from '@/lib/types';
 import { getEventById, getGuests, updateGuestRSVP } from '@/lib/storage';
+import SkeletonLoader from '@/components/SkeletonLoader';
 
 function InviteContent() {
   const params = useParams();
@@ -100,14 +101,7 @@ function InviteContent() {
   };
 
   if (!isLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-slate-400 p-4">
-        <div className="text-center space-y-3">
-          <PartyPopper className="w-10 h-10 text-indigo-500 mx-auto animate-bounce" />
-          <p className="text-sm font-semibold">Loading invitation...</p>
-        </div>
-      </div>
-    );
+    return <SkeletonLoader label="Loading invitation details..." />;
   }
 
   if (!event) {

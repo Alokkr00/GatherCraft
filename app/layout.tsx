@@ -21,11 +21,11 @@ export default function RootLayout({
         </main>
         <footer className="border-t border-slate-800/80 py-8 text-center text-xs text-slate-500 bg-slate-950/60">
           <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p>© 2026 GatherCraft. Built with purpose based on <em>The Art of Gathering</em>.</p>
+            <p>© 2026 GatherCraft. Purpose-First Event Architecture.</p>
             <div className="flex items-center gap-4 text-slate-400">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                v0.1 Engine Active
+                v0.3 Engine Active
               </span>
             </div>
           </div>

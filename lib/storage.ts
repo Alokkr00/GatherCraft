@@ -23,21 +23,21 @@ export const INITIAL_SAMPLE_EVENTS: PartyEvent[] = [
     templateId: 'cocktail-party',
     status: 'planning',
     purpose: {
-      rawInput: 'Host a fun 2-hour cocktail party to introduce friends from different circles.',
+      rawInput: 'Host a fun cocktail gathering to introduce friends from different circles.',
       selectedStatement: 'To bring together 15 friends from tech, design, and music for high-energy conversations, introducing people who should know each other.',
       suggestions: {
         warm: 'To create a cozy evening where old and new friends naturally connect over artisan drinks.',
-        bold: 'To host a fast-paced, high-impact 2-hour mixer designed to spark new friendships and collaborations.',
+        bold: 'To host a fast-paced, high-impact mixer designed to spark new friendships and collaborations.',
         minimal: 'To gather good people for great drinks and meaningful introductions.'
       },
       successCriteria: [
         'Guests meet at least 3 people they did not know before',
-        'Enforce 2-hour hard end time so everyone leaves energized',
+        'Enforce hard end time so everyone leaves energized',
         'Serve signature house cocktail + non-alcoholic alternative'
       ],
       isPrivate: false
     },
-    date: '2026-08-14',
+    date: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
     startTime: '18:30',
     endTime: '20:30',
     timezone: 'America/Los_Angeles',
@@ -54,6 +54,53 @@ export const INITIAL_SAMPLE_EVENTS: PartyEvent[] = [
     themeColor: STARTER_TEMPLATES[0].themeColor,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'sample-birthday-dinner',
+    title: "Maya's 30th Milestone Birthday Dinner",
+    ownerId: 'host-1',
+    templateId: 'birthday-dinner',
+    status: 'completed',
+    purpose: {
+      rawInput: 'Celebrate Maya turning 30 with intimate storytelling and great food.',
+      selectedStatement: "To honor Maya's 30th birthday with 10 close friends sharing personal stories, gratitude, and a gourmet 3-course dinner.",
+      suggestions: {
+        warm: "To gather Maya's inner circle for a memorable feast filled with heartfelt toasts.",
+        bold: "To mark Maya's 30th milestone with an unforgettable dinner party and surprise guest tributes.",
+        minimal: "To celebrate Maya turning 30 with good food and great stories."
+      },
+      successCriteria: [
+        'Every guest shares one favorite memory or tribute during dessert',
+        '3-course meal served family style',
+        'Capture high-quality group photo before departure'
+      ],
+      isPrivate: false
+    },
+    date: new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0],
+    startTime: '19:00',
+    endTime: '22:00',
+    timezone: 'America/Los_Angeles',
+    location: {
+      address: '1288 Mission St, San Francisco, CA',
+      name: 'Private Dining Room - Osteria Bella',
+      notes: 'Reservation under Maya Lin.',
+      isTBD: false
+    },
+    capacity: 12,
+    totalBudget: 450,
+    currency: 'USD',
+    coverAssetUrl: STARTER_TEMPLATES[1].coverImage,
+    themeColor: STARTER_TEMPLATES[1].themeColor,
+    isClosed: true,
+    retrospective: {
+      rating: 5,
+      whatWorked: 'The toast round during dessert was incredible — everyone shared heartfelt memories. Food was served right on time.',
+      whatToImprove: 'Set up background music playlist earlier before guests arrive.',
+      completedAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+      savedAsTemplate: true
+    },
+    createdAt: new Date(Date.now() - 10 * 86400000).toISOString(),
+    updatedAt: new Date(Date.now() - 3 * 86400000).toISOString()
   }
 ];
 

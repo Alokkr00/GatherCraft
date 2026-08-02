@@ -17,6 +17,9 @@ import {
 } from '@/lib/storage';
 import { subscribeToGuests, subscribeToEvent } from '@/lib/db';
 
+import SkeletonLoader from '@/components/SkeletonLoader';
+import ConfirmModal from '@/components/ConfirmModal';
+
 // v0.2 Components
 import TimelineEditor from '@/components/TimelineEditor';
 import TaskManager from '@/components/TaskManager';
@@ -28,23 +31,25 @@ export default function EventDetailPage() {
   const router = useRouter();
   const eventId = params.id as string;
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'tasks' | 'budget' | 'shopping'>('overview');
-
   const [event, setEvent] = useState<PartyEvent | null>(null);
   const [guests, setGuests] = useState<Guest[]>([]);
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCoHost, setCopiedCoHost] = useState(false);
-  const [rsvpFilter, setRsvpFilter] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'tasks' | 'budget' | 'shopping'>('overview');
+  const [rsvpFilter, setRsvpFilter] = useState<'all' | RSVPStatus>('all');
 
-  // Modal / Form States
+  // Modal States
   const [showAddGuest, setShowAddGuest] = useState(false);
   const [showCsvImport, setShowCsvImport] = useState(false);
+  const [csvRawText, setCsvRawText] = useState('');
+  const [deleteGuestId, setDeleteGuestId] = useState<string | null>(null);
+
+  // New Guest Form
   const [guestName, setGuestName] = useState('');
   const [guestEmail, setGuestEmail] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
   const [guestRole, setGuestRole] = useState<GuestRole>('guest');
-  const [plusOnesAllowed, setPlusOnesAllowed] = useState(1);
-  const [csvRawText, setCsvRawText] = useState('');
+  const [plusOnesAllowed, setPlusOnesAllowed] = useState(0);
 
   useEffect(() => {
     loadEventData();
@@ -118,14 +123,16 @@ export default function EventDetailPage() {
     loadEventData();
   };
 
-  const handleCsvImportSubmit = () => {
+  const handleCsvImportSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     if (!csvRawText.trim()) return;
+
     const lines = csvRawText.split('\n');
     const parsedGuests: Guest[] = [];
 
-    lines.forEach(line => {
-      const parts = line.split(',').map(p => p.trim());
-      if (parts[0] && parts[0].length > 0) {
+    lines.forEach((line) => {
+      const parts = line.split(',').map(s => s.trim());
+      if (parts.length >= 1 && parts[0]) {
         parsedGuests.push({
           id: 'guest_' + Math.random().toString(36).substring(2, 9),
           eventId,
@@ -134,7 +141,7 @@ export default function EventDetailPage() {
           phone: parts[2] || undefined,
           role: (parts[3] as GuestRole) || 'guest',
           rsvpStatus: 'pending',
-          plusOnesAllowed: 1,
+          plusOnesAllowed: 0,
           plusOnesActual: 0,
           updatedAt: new Date().toISOString()
         });
@@ -149,11 +156,16 @@ export default function EventDetailPage() {
     }
   };
 
-  const handleDeleteGuest = (id: string) => {
-    if (confirm('Remove guest from guest list?')) {
-      deleteGuest(id);
+  const confirmDeleteGuest = () => {
+    if (deleteGuestId) {
+      deleteGuest(deleteGuestId);
+      setDeleteGuestId(null);
       loadEventData();
     }
+  };
+
+  const handleDeleteGuest = (id: string) => {
+    setDeleteGuestId(id);
   };
 
   const handleToggleRSVP = (guest: Guest, newStatus: RSVPStatus) => {
@@ -165,7 +177,7 @@ export default function EventDetailPage() {
     loadEventData();
   };
 
-  if (!event) return <div className="text-center py-12 text-slate-400">Loading gathering data...</div>;
+  if (!event) return <SkeletonLoader label="Loading gathering workspace..." />;
 
   // Metrics
   const confirmedGuests = guests.filter(g => g.rsvpStatus === 'yes');
@@ -434,7 +446,7 @@ export default function EventDetailPage() {
                 ].map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setRsvpFilter(tab.id)}
+                    onClick={() => setRsvpFilter(tab.id as any)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
                       rsvpFilter === tab.id
                         ? 'bg-indigo-600 text-white shadow-md'
@@ -753,6 +765,16 @@ export default function EventDetailPage() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={Boolean(deleteGuestId)}
+        title="Remove Guest"
+        message="Are you sure you want to remove this guest from your guest list?"
+        confirmText="Remove Guest"
+        variant="danger"
+        onConfirm={confirmDeleteGuest}
+        onCancel={() => setDeleteGuestId(null)}
+      />
     </div>
   );
 }

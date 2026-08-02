@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-    const prompt = `You are an expert event host & author of "The Art of Gathering".
+    const prompt = `You are a world-class event strategist and expert host.
     Refine the following event purpose into 3 distinct, actionable, and disputable purpose statements, along with 3 clear success criteria.
 
     Event Context:

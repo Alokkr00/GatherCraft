@@ -3,7 +3,7 @@ import { StarterTemplate } from './types';
 export const STARTER_TEMPLATES: StarterTemplate[] = [
   {
     id: 'cocktail-party',
-    title: '2-Hour Cocktail Party',
+    title: 'Classic Mixer & Cocktails',
     subtitle: 'High energy, structured networking & connection',
     category: 'Cocktail & Social',
     defaultPurpose: 'To bring together friends and new acquaintances for light bites, high-energy conversation, and introducing people who should know each other.',

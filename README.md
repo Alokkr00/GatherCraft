@@ -8,7 +8,7 @@
 [![Gemini AI](https://img.shields.io/badge/Google_Gemini-1.5_Flash-8e44ad?logo=google)](https://ai.google.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-GatherCraft is a modern web application built on principles from **Priya Parker’s *The Art of Gathering*** and **Nick Gray’s *The 2-Hour Cocktail Party***.  
+GatherCraft is a modern web application designed for purpose-first event planning, transforming generic gatherings into meaningful, intentional experiences.  
 
 Unlike generic party planners that focus only on logistics, GatherCraft treats **Purpose** as a first-class entity that drives every decision — from planning to day-of execution to post-event gratitude.
 
