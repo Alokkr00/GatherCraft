@@ -6,12 +6,12 @@ export type RSVPStatus = 'yes' | 'no' | 'maybe' | 'pending' | 'waitlist';
 export interface PurposeStatement {
   rawInput: string;
   selectedStatement: string;
-  suggestions: {
-    warm: string;
-    bold: string;
-    minimal: string;
+  suggestions?: {
+    warm?: string;
+    bold?: string;
+    minimal?: string;
   };
-  successCriteria: string[];
+  successCriteria?: string[];
   isPrivate: boolean;
 }
 

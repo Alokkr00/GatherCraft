@@ -13,7 +13,7 @@ export default function Navbar() {
           </div>
           <div>
             <span className="font-extrabold text-xl tracking-tight text-white flex items-center gap-1.5">
-              GatherCraft <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">v0.1 MVP</span>
+              GatherCraft <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">v0.3 Live</span>
             </span>
             <p className="text-[10px] text-slate-400 font-medium">Purpose-First Party Planner</p>
           </div>
@@ -32,7 +32,7 @@ export default function Navbar() {
             href="/events/create"
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 shadow-md shadow-indigo-500/20 hover:shadow-indigo-500/35 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
           >
-            <PlusCircle className="w-4.5 h-4.5" />
+            <PlusCircle className="w-4 h-4" />
             <span>Plan Event</span>
           </Link>
         </nav>

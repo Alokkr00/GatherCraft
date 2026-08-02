@@ -237,20 +237,20 @@ export const deleteEvent = (id: string): void => {
   const events = getEvents().filter(e => e.id !== id);
   localStorage.setItem(EVENTS_KEY, JSON.stringify(events));
 
-  // Cascade cleanup child entities
+  // Cascade cleanup child entities safely
   const guests = getGuests().filter(g => g.eventId !== id);
   localStorage.setItem(GUESTS_KEY, JSON.stringify(guests));
 
-  const timeline = getTimelineItems(id).filter(t => t.eventId !== id);
+  const timeline = getTimelineItems().filter(t => t.eventId !== id);
   localStorage.setItem(TIMELINE_KEY, JSON.stringify(timeline));
 
-  const tasks = getTasks(id).filter(t => t.eventId !== id);
+  const tasks = getTasks().filter(t => t.eventId !== id);
   localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
 
-  const budget = getBudgetItems(id).filter(b => b.eventId !== id);
+  const budget = getBudgetItems().filter(b => b.eventId !== id);
   localStorage.setItem(BUDGET_KEY, JSON.stringify(budget));
 
-  const shopping = getShoppingItems(id).filter(s => s.eventId !== id);
+  const shopping = getShoppingItems().filter(s => s.eventId !== id);
   localStorage.setItem(SHOPPING_KEY, JSON.stringify(shopping));
 };
 
@@ -411,13 +411,14 @@ export const calculateDietarySummary = (guests: Guest[]): DietarySummary => {
 };
 
 // --- TIMELINE CRUD ---
-export const getTimelineItems = (eventId: string): TimelineItem[] => {
-  if (!isClient) return INITIAL_SAMPLE_TIMELINE.filter(t => t.eventId === eventId);
+export const getTimelineItems = (eventId?: string): TimelineItem[] => {
+  if (!isClient) return eventId ? INITIAL_SAMPLE_TIMELINE.filter(t => t.eventId === eventId) : INITIAL_SAMPLE_TIMELINE;
   try {
     const raw = localStorage.getItem(TIMELINE_KEY);
     let all: TimelineItem[] = !raw ? INITIAL_SAMPLE_TIMELINE : JSON.parse(raw);
     if (!raw) localStorage.setItem(TIMELINE_KEY, JSON.stringify(INITIAL_SAMPLE_TIMELINE));
-    return all.filter(t => t.eventId === eventId).sort((a, b) => a.offsetMinutes - b.offsetMinutes);
+    const list = eventId ? all.filter(t => t.eventId === eventId) : all;
+    return list.sort((a, b) => a.offsetMinutes - b.offsetMinutes);
   } catch (err) {
     return [];
   }
@@ -442,13 +443,13 @@ export const deleteTimelineItem = (id: string): void => {
 };
 
 // --- TASKS CRUD ---
-export const getTasks = (eventId: string): TaskItem[] => {
-  if (!isClient) return INITIAL_SAMPLE_TASKS.filter(t => t.eventId === eventId);
+export const getTasks = (eventId?: string): TaskItem[] => {
+  if (!isClient) return eventId ? INITIAL_SAMPLE_TASKS.filter(t => t.eventId === eventId) : INITIAL_SAMPLE_TASKS;
   try {
     const raw = localStorage.getItem(TASKS_KEY);
     let all: TaskItem[] = !raw ? INITIAL_SAMPLE_TASKS : JSON.parse(raw);
     if (!raw) localStorage.setItem(TASKS_KEY, JSON.stringify(INITIAL_SAMPLE_TASKS));
-    return all.filter(t => t.eventId === eventId);
+    return eventId ? all.filter(t => t.eventId === eventId) : all;
   } catch (err) {
     return [];
   }
@@ -485,13 +486,13 @@ export const generateDefaultTasks = (eventId: string, eventTitle: string): TaskI
 };
 
 // --- BUDGET CRUD ---
-export const getBudgetItems = (eventId: string): BudgetItem[] => {
-  if (!isClient) return INITIAL_SAMPLE_BUDGET.filter(b => b.eventId === eventId);
+export const getBudgetItems = (eventId?: string): BudgetItem[] => {
+  if (!isClient) return eventId ? INITIAL_SAMPLE_BUDGET.filter(b => b.eventId === eventId) : INITIAL_SAMPLE_BUDGET;
   try {
     const raw = localStorage.getItem(BUDGET_KEY);
     let all: BudgetItem[] = !raw ? INITIAL_SAMPLE_BUDGET : JSON.parse(raw);
     if (!raw) localStorage.setItem(BUDGET_KEY, JSON.stringify(INITIAL_SAMPLE_BUDGET));
-    return all.filter(b => b.eventId === eventId);
+    return eventId ? all.filter(b => b.eventId === eventId) : all;
   } catch (err) {
     return [];
   }
@@ -516,13 +517,13 @@ export const deleteBudgetItem = (id: string): void => {
 };
 
 // --- SHOPPING CRUD ---
-export const getShoppingItems = (eventId: string): ShoppingItem[] => {
-  if (!isClient) return INITIAL_SAMPLE_SHOPPING.filter(s => s.eventId === eventId);
+export const getShoppingItems = (eventId?: string): ShoppingItem[] => {
+  if (!isClient) return eventId ? INITIAL_SAMPLE_SHOPPING.filter(s => s.eventId === eventId) : INITIAL_SAMPLE_SHOPPING;
   try {
     const raw = localStorage.getItem(SHOPPING_KEY);
     let all: ShoppingItem[] = !raw ? INITIAL_SAMPLE_SHOPPING : JSON.parse(raw);
     if (!raw) localStorage.setItem(SHOPPING_KEY, JSON.stringify(INITIAL_SAMPLE_SHOPPING));
-    return all.filter(s => s.eventId === eventId);
+    return eventId ? all.filter(s => s.eventId === eventId) : all;
   } catch (err) {
     return [];
   }

@@ -498,7 +498,7 @@ export default function EventDetailPage() {
             <div className="space-y-6">
               <div className="glass-panel p-6 rounded-2xl space-y-4 border border-slate-800">
                 <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <Users className="w-4.5 h-4.5 text-indigo-400" />
+                  <Users className="w-4 h-4 text-indigo-400" />
                   RSVP Capacity Meter
                 </h3>
 

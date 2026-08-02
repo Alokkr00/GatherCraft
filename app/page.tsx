@@ -96,7 +96,7 @@ export default function DashboardPage() {
               }}
               className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl font-semibold text-slate-300 hover:text-white bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 transition-all"
             >
-              <Bookmark className="w-4.5 h-4.5 text-amber-400" />
+              <Bookmark className="w-4 h-4 text-amber-400" />
               <span>Explore Formats</span>
             </button>
           </div>
