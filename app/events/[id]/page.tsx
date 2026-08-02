@@ -15,6 +15,7 @@ import {
   getEventById, saveEvent, getGuests, saveGuest, 
   saveGuestsBulk, deleteGuest, calculateDietarySummary 
 } from '@/lib/storage';
+import { subscribeToGuests, subscribeToEvent } from '@/lib/db';
 
 // v0.2 Components
 import TimelineEditor from '@/components/TimelineEditor';
@@ -47,6 +48,24 @@ export default function EventDetailPage() {
 
   useEffect(() => {
     loadEventData();
+
+    // Attach real-time cloud Firestore listeners
+    const unsubGuests = subscribeToGuests(eventId, (realtimeGuests) => {
+      if (realtimeGuests.length > 0) {
+        setGuests(realtimeGuests);
+      }
+    });
+
+    const unsubEvent = subscribeToEvent(eventId, (realtimeEvent) => {
+      if (realtimeEvent) {
+        setEvent(realtimeEvent);
+      }
+    });
+
+    return () => {
+      unsubGuests?.();
+      unsubEvent?.();
+    };
   }, [eventId]);
 
   const loadEventData = () => {

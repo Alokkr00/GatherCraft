@@ -3,6 +3,7 @@ import {
   TimelineItem, TaskItem, BudgetItem, ShoppingItem, HostRetrospective 
 } from './types';
 import { STARTER_TEMPLATES } from './templates';
+import { saveEventCloud, deleteEventCloud, saveGuestCloud } from './db';
 
 const EVENTS_KEY = 'party_planner_events';
 const GUESTS_KEY = 'party_planner_guests';
@@ -226,16 +227,19 @@ export const saveEvent = (event: PartyEvent): void => {
   if (!isClient) return;
   const events = getEvents();
   const index = events.findIndex(e => e.id === event.id);
+  const updatedEvent = { ...event, updatedAt: new Date().toISOString() };
   const updated = index >= 0
-    ? events.map((e, i) => i === index ? { ...event, updatedAt: new Date().toISOString() } : e)
-    : [event, ...events];
+    ? events.map((e, i) => i === index ? updatedEvent : e)
+    : [updatedEvent, ...events];
   localStorage.setItem(EVENTS_KEY, JSON.stringify(updated));
+  saveEventCloud(updatedEvent).catch(console.error);
 };
 
 export const deleteEvent = (id: string): void => {
   if (!isClient) return;
   const events = getEvents().filter(e => e.id !== id);
   localStorage.setItem(EVENTS_KEY, JSON.stringify(events));
+  deleteEventCloud(id).catch(console.error);
 
   // Cascade cleanup child entities safely
   const guests = getGuests().filter(g => g.eventId !== id);
@@ -270,10 +274,12 @@ export const saveGuest = (guest: Guest): void => {
   if (!isClient) return;
   const allGuests = getGuests();
   const index = allGuests.findIndex(g => g.id === guest.id);
+  const updatedGuest = { ...guest, updatedAt: new Date().toISOString() };
   const updated = index >= 0
-    ? allGuests.map((g, i) => i === index ? { ...guest, updatedAt: new Date().toISOString() } : g)
-    : [...allGuests, guest];
+    ? allGuests.map((g, i) => i === index ? updatedGuest : g)
+    : [...allGuests, updatedGuest];
   localStorage.setItem(GUESTS_KEY, JSON.stringify(updated));
+  saveGuestCloud(updatedGuest).catch(console.error);
 };
 
 export const saveGuestsBulk = (newGuests: Guest[]): void => {
