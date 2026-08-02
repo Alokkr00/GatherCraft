@@ -8,6 +8,7 @@ import {
 import { ShoppingItem } from '@/lib/types';
 import { getShoppingItems, saveShoppingItem, deleteShoppingItem, generateShoppingList } from '@/lib/storage';
 import ConfirmModal from '@/components/ConfirmModal';
+import CustomSelect from '@/components/CustomSelect';
 
 interface ShoppingListProps {
   eventId: string;
@@ -234,18 +235,18 @@ export default function ShoppingList({ eventId, confirmedHeadcount }: ShoppingLi
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">Category</label>
-                  <select
+                  <CustomSelect
                     value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full p-3 rounded-xl glass-input text-xs"
-                  >
-                    <option value="Drinks">Drinks</option>
-                    <option value="Food">Food</option>
-                    <option value="Supplies">Supplies</option>
-                    <option value="Other">Other</option>
-                  </select>
+                    options={[
+                      { value: 'Drinks', label: 'Drinks' },
+                      { value: 'Food', label: 'Food' },
+                      { value: 'Decor & Supplies', label: 'Decor & Supplies' },
+                      { value: 'Venue', label: 'Venue' },
+                      { value: 'Other', label: 'Other' },
+                    ]}
+                    onChange={(val) => setCategory(val)}
+                  />
                 </div>
-
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">Quantity</label>
                   <input

@@ -11,6 +11,7 @@ import {
 import { PartyEvent, Guest, RSVPStatus } from '@/lib/types';
 import { getEventById, getGuests, updateGuestRSVP } from '@/lib/storage';
 import SkeletonLoader from '@/components/SkeletonLoader';
+import CustomSelect from '@/components/CustomSelect';
 
 function InviteContent() {
   const params = useParams();
@@ -292,15 +293,15 @@ function InviteContent() {
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-300 mb-1">Plus-Ones</label>
-                      <select
-                        value={plusOnesActual}
-                        onChange={(e) => setPlusOnesActual(parseInt(e.target.value) || 0)}
-                        className="w-full p-3 rounded-xl glass-input text-xs"
-                      >
-                        <option value={0}>Just me (0 plus-ones)</option>
-                        <option value={1}>Me + 1 Guest (+1)</option>
-                        <option value={2}>Me + 2 Guests (+2)</option>
-                      </select>
+                      <CustomSelect
+                        value={String(plusOnesActual)}
+                        options={[
+                          { value: '0', label: 'Just me (0 plus-ones)' },
+                          { value: '1', label: 'Me + 1 Guest (+1)' },
+                          { value: '2', label: 'Me + 2 Guests (+2)' },
+                        ]}
+                        onChange={(val) => setPlusOnesActual(parseInt(val) || 0)}
+                      />
                     </div>
                   </div>
 

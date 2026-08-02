@@ -19,6 +19,7 @@ import { subscribeToGuests, subscribeToEvent } from '@/lib/db';
 
 import SkeletonLoader from '@/components/SkeletonLoader';
 import ConfirmModal from '@/components/ConfirmModal';
+import CustomSelect from '@/components/CustomSelect';
 
 // v0.2 Components
 import TimelineEditor from '@/components/TimelineEditor';
@@ -491,24 +492,18 @@ export default function EventDetailPage() {
                         </div>
 
                         <div className="flex items-center gap-3">
-                          <select
+                          <CustomSelect
                             value={g.rsvpStatus}
-                            onChange={(e) => handleToggleRSVP(g, e.target.value as RSVPStatus)}
-                            className={`px-3 py-1 rounded-xl text-xs font-bold border ${
-                              g.rsvpStatus === 'yes'
-                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                                : g.rsvpStatus === 'no'
-                                ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
-                                : g.rsvpStatus === 'maybe'
-                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                                : 'bg-slate-800 text-slate-300 border-slate-700'
-                            }`}
-                          >
-                            <option value="yes">Attending (Yes)</option>
-                            <option value="maybe">Maybe</option>
-                            <option value="pending">Pending</option>
-                            <option value="no">Declined (No)</option>
-                          </select>
+                            options={[
+                              { value: 'yes', label: 'Attending (Yes)' },
+                              { value: 'maybe', label: 'Maybe' },
+                              { value: 'pending', label: 'Pending' },
+                              { value: 'no', label: 'Declined (No)' },
+                            ]}
+                            onChange={(val) => handleToggleRSVP(g, val as RSVPStatus)}
+                            size="sm"
+                            className="w-36"
+                          />
 
                           <button
                             onClick={() => handleDeleteGuest(g.id)}
@@ -685,16 +680,16 @@ export default function EventDetailPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">Role</label>
-                  <select
+                  <CustomSelect
                     value={guestRole}
-                    onChange={(e) => setGuestRole(e.target.value as GuestRole)}
-                    className="w-full p-3 rounded-xl glass-input text-xs"
-                  >
-                    <option value="guest">Guest</option>
-                    <option value="co-host">Co-host</option>
-                    <option value="helper">Helper</option>
-                    <option value="vip">VIP</option>
-                  </select>
+                    options={[
+                      { value: 'guest', label: 'Guest' },
+                      { value: 'co-host', label: 'Co-host' },
+                      { value: 'helper', label: 'Helper' },
+                      { value: 'vip', label: 'VIP' },
+                    ]}
+                    onChange={(val) => setGuestRole(val as GuestRole)}
+                  />
                 </div>
 
                 <div>

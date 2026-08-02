@@ -10,6 +10,7 @@ import {
 import { STARTER_TEMPLATES } from '@/lib/templates';
 import { PartyEvent, StarterTemplate } from '@/lib/types';
 import { saveEvent } from '@/lib/storage';
+import CustomSelect from '@/components/CustomSelect';
 
 function EventCreateWizard() {
   const router = useRouter();
@@ -600,17 +601,17 @@ function EventCreateWizard() {
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">
                   Currency
                 </label>
-                <select
+                <CustomSelect
                   value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                  className="w-full p-3 rounded-xl glass-input text-xs font-medium"
-                >
-                  <option value="USD">USD ($)</option>
-                  <option value="EUR">EUR (€)</option>
-                  <option value="GBP">GBP (£)</option>
-                  <option value="CAD">CAD ($)</option>
-                  <option value="AUD">AUD ($)</option>
-                </select>
+                  options={[
+                    { value: 'USD', label: 'USD ($)' },
+                    { value: 'EUR', label: 'EUR (€)' },
+                    { value: 'GBP', label: 'GBP (£)' },
+                    { value: 'CAD', label: 'CAD ($)' },
+                    { value: 'AUD', label: 'AUD ($)' },
+                  ]}
+                  onChange={(val) => setCurrency(val)}
+                />
               </div>
             </div>
           </div>

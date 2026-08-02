@@ -8,6 +8,7 @@ import {
 import { TaskItem, TaskCategory, TaskPriority, TaskStatus } from '@/lib/types';
 import { getTasks, saveTask, deleteTask, generateDefaultTasks } from '@/lib/storage';
 import ConfirmModal from '@/components/ConfirmModal';
+import CustomSelect from '@/components/CustomSelect';
 
 interface TaskManagerProps {
   eventId: string;
@@ -221,21 +222,17 @@ export default function TaskManager({ eventId, eventTitle }: TaskManagerProps) {
               </div>
 
               <div className="flex items-center gap-2">
-                <select
+                <CustomSelect
                   value={t.status}
-                  onChange={(e) => handleStatusChange(t, e.target.value as TaskStatus)}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold border capitalize ${
-                    t.status === 'done'
-                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                      : t.status === 'in_progress'
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                      : 'bg-slate-800 text-slate-300 border-slate-700'
-                  }`}
-                >
-                  <option value="todo">To Do</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="done">Done</option>
-                </select>
+                  options={[
+                    { value: 'todo', label: 'To Do' },
+                    { value: 'in_progress', label: 'In Progress' },
+                    { value: 'done', label: 'Done' },
+                  ]}
+                  onChange={(val) => handleStatusChange(t, val as TaskStatus)}
+                  size="sm"
+                  className="w-32"
+                />
 
                 <button
                   onClick={() => handleDelete(t.id)}
@@ -283,31 +280,31 @@ export default function TaskManager({ eventId, eventTitle }: TaskManagerProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">Category</label>
-                  <select
+                  <CustomSelect
                     value={category}
-                    onChange={(e) => setCategory(e.target.value as TaskCategory)}
-                    className="w-full p-3 rounded-xl glass-input text-xs"
-                  >
-                    <option value="Setup">Setup</option>
-                    <option value="Food">Food</option>
-                    <option value="Drinks">Drinks</option>
-                    <option value="Decor">Decor</option>
-                    <option value="Cleanup">Cleanup</option>
-                    <option value="Other">Other</option>
-                  </select>
+                    options={[
+                      { value: 'Setup', label: 'Setup' },
+                      { value: 'Food', label: 'Food' },
+                      { value: 'Drinks', label: 'Drinks' },
+                      { value: 'Decor', label: 'Decor' },
+                      { value: 'Cleanup', label: 'Cleanup' },
+                      { value: 'Other', label: 'Other' },
+                    ]}
+                    onChange={(val) => setCategory(val as TaskCategory)}
+                  />
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">Priority</label>
-                  <select
+                  <CustomSelect
                     value={priority}
-                    onChange={(e) => setPriority(e.target.value as TaskPriority)}
-                    className="w-full p-3 rounded-xl glass-input text-xs"
-                  >
-                    <option value="high">High</option>
-                    <option value="medium">Medium</option>
-                    <option value="low">Low</option>
-                  </select>
+                    options={[
+                      { value: 'high', label: 'High' },
+                      { value: 'medium', label: 'Medium' },
+                      { value: 'low', label: 'Low' },
+                    ]}
+                    onChange={(val) => setPriority(val as TaskPriority)}
+                  />
                 </div>
               </div>
 
