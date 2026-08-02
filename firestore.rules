@@ -1,0 +1,47 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Events Collection
+    match /events/{eventId} {
+      allow read: if true; // Public read for invitation details
+      allow create: if true; // Allow hosts to create events
+      allow update, delete: if true; // Host event management
+    }
+
+    // Guests Collection (RSVPs)
+    match /guests/{guestId} {
+      allow read: if true;
+      allow create, update: if true; // Allow guests to submit RSVPs without login
+      allow delete: if true;
+    }
+
+    // Timeline Collection
+    match /timeline/{itemId} {
+      allow read, write: if true;
+    }
+
+    // Tasks Collection
+    match /tasks/{taskId} {
+      allow read, write: if true;
+    }
+
+    // Budget Collection
+    match /budget/{itemId} {
+      allow read, write: if true;
+    }
+
+    // Shopping Collection
+    match /shopping/{itemId} {
+      allow read, write: if true;
+    }
+  }
+}
