@@ -9,6 +9,7 @@ import { TaskItem, TaskCategory, TaskPriority, TaskStatus } from '@/lib/types';
 import { getTasks, saveTask, deleteTask, generateDefaultTasks } from '@/lib/storage';
 import ConfirmModal from '@/components/ConfirmModal';
 import CustomSelect from '@/components/CustomSelect';
+import CustomDatePicker from '@/components/CustomDatePicker';
 
 interface TaskManagerProps {
   eventId: string;
@@ -322,11 +323,9 @@ export default function TaskManager({ eventId, eventTitle }: TaskManagerProps) {
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">Due Date</label>
-                  <input
-                    type="date"
+                  <CustomDatePicker
                     value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full p-3 rounded-xl glass-input text-xs"
+                    onChange={(val) => setDueDate(val)}
                   />
                 </div>
               </div>

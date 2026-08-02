@@ -11,6 +11,8 @@ import { STARTER_TEMPLATES } from '@/lib/templates';
 import { PartyEvent, StarterTemplate } from '@/lib/types';
 import { saveEvent } from '@/lib/storage';
 import CustomSelect from '@/components/CustomSelect';
+import CustomDatePicker from '@/components/CustomDatePicker';
+import CustomTimePicker from '@/components/CustomTimePicker';
 
 function EventCreateWizard() {
   const router = useRouter();
@@ -470,11 +472,9 @@ function EventCreateWizard() {
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">
                   Event Date
                 </label>
-                <input
-                  type="date"
+                <CustomDatePicker
                   value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="w-full p-3 rounded-xl glass-input text-xs font-medium"
+                  onChange={(val) => setDate(val)}
                 />
               </div>
 
@@ -482,11 +482,9 @@ function EventCreateWizard() {
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">
                   Start Time
                 </label>
-                <input
-                  type="time"
+                <CustomTimePicker
                   value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full p-3 rounded-xl glass-input text-xs font-medium"
+                  onChange={(val) => setStartTime(val)}
                 />
               </div>
 
@@ -495,11 +493,9 @@ function EventCreateWizard() {
                   <span>Hard End Time</span>
                   <span className="text-[10px] text-amber-400 font-normal">Encouraged</span>
                 </label>
-                <input
-                  type="time"
+                <CustomTimePicker
                   value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full p-3 rounded-xl glass-input text-xs font-medium"
+                  onChange={(val) => setEndTime(val)}
                 />
               </div>
             </div>
