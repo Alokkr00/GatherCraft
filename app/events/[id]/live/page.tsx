@@ -24,9 +24,53 @@ export default function LiveModePage() {
   const [timeline, setTimeline] = useState<TimelineItem[]>([]);
   const [guestSearch, setGuestSearch] = useState('');
 
+  const [aiTip, setAiTip] = useState<string>('');
+  const [aiTipLoading, setAiTipLoading] = useState<boolean>(false);
+
+  const confirmedGuests = guests.filter(g => g.rsvpStatus === 'yes');
+  const checkedInGuests = guests.filter(g => Boolean(g.checkInAt));
+  const totalHeadcount = confirmedGuests.reduce((acc, g) => acc + 1 + (g.plusOnesActual || 0), 0);
+  const checkedInCount = checkedInGuests.reduce((acc, g) => acc + 1 + (g.plusOnesActual || 0), 0);
+
+  const activeStep = timeline.find(t => !t.isCompleted);
+  const completedSteps = timeline.filter(t => t.isCompleted).length;
+
   useEffect(() => {
     loadLiveData();
   }, [eventId]);
+
+  const fetchLiveCoaching = async (currentStep?: TimelineItem | null) => {
+    if (!event) return;
+    setAiTipLoading(true);
+    try {
+      const res = await fetch('/api/live-coaching', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentStepTitle: currentStep?.title || 'General Party Flow',
+          offsetMinutes: currentStep?.offsetMinutes || 0,
+          checkedInCount,
+          totalGuests: totalHeadcount,
+          purposeStatement: event.purpose?.selectedStatement,
+          eventTitle: event.title
+        })
+      });
+      const data = await res.json();
+      if (data.tip) {
+        setAiTip(data.tip);
+      }
+    } catch (err) {
+      console.error('Fetch live coaching error:', err);
+    } finally {
+      setAiTipLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (event) {
+      fetchLiveCoaching(activeStep);
+    }
+  }, [event?.id, activeStep?.id]);
 
   const loadLiveData = () => {
     const ev = getEventById(eventId);
@@ -57,14 +101,6 @@ export default function LiveModePage() {
   };
 
   if (!event) return <div className="text-center py-12 text-slate-400">Loading Live Mode...</div>;
-
-  const confirmedGuests = guests.filter(g => g.rsvpStatus === 'yes');
-  const checkedInGuests = guests.filter(g => Boolean(g.checkInAt));
-  const totalHeadcount = confirmedGuests.reduce((acc, g) => acc + 1 + (g.plusOnesActual || 0), 0);
-  const checkedInCount = checkedInGuests.reduce((acc, g) => acc + 1 + (g.plusOnesActual || 0), 0);
-
-  const activeStep = timeline.find(t => !t.isCompleted);
-  const completedSteps = timeline.filter(t => t.isCompleted).length;
 
   const filteredGuests = guests.filter(g => g.name.toLowerCase().includes(guestSearch.toLowerCase()));
 
@@ -160,14 +196,23 @@ export default function LiveModePage() {
 
       {/* AI Host Coaching Prompt */}
       <div className="glass-panel p-5 rounded-2xl border border-amber-500/30 bg-amber-950/20 space-y-2">
-        <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
-          <Sparkles className="w-4 h-4" />
-          <span>AI Host Coaching Prompt</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
+            <Sparkles className="w-4 h-4" />
+            <span>AI Host Coaching Prompt</span>
+          </div>
+          <button
+            onClick={() => fetchLiveCoaching(activeStep)}
+            disabled={aiTipLoading}
+            className="text-[11px] font-semibold text-amber-300 hover:text-amber-200 underline disabled:opacity-50"
+          >
+            {aiTipLoading ? 'Coaching...' : 'Refresh Tip'}
+          </button>
         </div>
         <p className="text-xs text-slate-200 italic">
-          "{activeStep 
+          "{aiTip || (activeStep 
             ? `Keep energy high! Introduce new arrivals to guests who share similar interests before starting "${activeStep.title}".`
-            : "Great hosting! Hand out leftovers, capture final selfies, and send guests off with warm gratitude."}"
+            : "Great hosting! Hand out leftovers, capture final selfies, and send guests off with warm gratitude.")}"
         </p>
       </div>
 

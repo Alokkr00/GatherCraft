@@ -50,12 +50,33 @@ export default function AftermathPage() {
     }
   };
 
-  const handleCopyThankYou = (guestName: string, guestId: string) => {
+  const handleCopyThankYou = async (guest: Guest) => {
     if (!event) return;
-    const msg = generateThankYouMessage(event.title, guestName, selectedTone);
-    navigator.clipboard.writeText(msg);
-    setCopiedGuestId(guestId);
-    setTimeout(() => setCopiedGuestId(null), 2500);
+    try {
+      const res = await fetch('/api/generate-thank-you', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          guestName: guest.name,
+          role: guest.role,
+          tone: selectedTone,
+          eventTitle: event.title,
+          purposeStatement: event.purpose?.selectedStatement,
+          retrospectiveNotes: whatWorked
+        })
+      });
+      const data = await res.json();
+      const msg = data.message || generateThankYouMessage(event.title, guest.name, selectedTone);
+      navigator.clipboard.writeText(msg);
+      setCopiedGuestId(guest.id);
+      setTimeout(() => setCopiedGuestId(null), 2500);
+    } catch (err) {
+      console.error('Copy thank-you error:', err);
+      const fallback = generateThankYouMessage(event.title, guest.name, selectedTone);
+      navigator.clipboard.writeText(fallback);
+      setCopiedGuestId(guest.id);
+      setTimeout(() => setCopiedGuestId(null), 2500);
+    }
   };
 
   const handleSaveRetro = (e: React.FormEvent) => {
@@ -155,7 +176,7 @@ export default function AftermathPage() {
                     <span className="font-bold text-sm text-white">{g.name}</span>
 
                     <button
-                      onClick={() => handleCopyThankYou(g.name, g.id)}
+                      onClick={() => handleCopyThankYou(g)}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-indigo-300 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/40 transition-colors"
                     >
                       {copiedGuestId === g.id ? (
