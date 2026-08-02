@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { TaskItem, TaskCategory, TaskPriority, TaskStatus } from '@/lib/types';
 import { getTasks, saveTask, deleteTask, generateDefaultTasks } from '@/lib/storage';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface TaskManagerProps {
   eventId: string;
@@ -39,9 +40,16 @@ export default function TaskManager({ eventId, eventTitle }: TaskManagerProps) {
     loadTasks();
   };
 
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
   const handleDelete = (id: string) => {
-    if (confirm('Delete this task?')) {
-      deleteTask(id);
+    setDeleteId(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId) {
+      deleteTask(deleteId);
+      setDeleteId(null);
       loadTasks();
     }
   };
@@ -345,6 +353,16 @@ export default function TaskManager({ eventId, eventTitle }: TaskManagerProps) {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={Boolean(deleteId)}
+        title="Delete Task"
+        message="Are you sure you want to delete this checklist task?"
+        confirmText="Delete Task"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   );
 }

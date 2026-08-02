@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { ShoppingItem } from '@/lib/types';
 import { getShoppingItems, saveShoppingItem, deleteShoppingItem, generateShoppingList } from '@/lib/storage';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface ShoppingListProps {
   eventId: string;
@@ -36,9 +37,16 @@ export default function ShoppingList({ eventId, confirmedHeadcount }: ShoppingLi
     loadShopping();
   };
 
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
   const handleDelete = (id: string) => {
-    if (confirm('Delete shopping item?')) {
-      deleteShoppingItem(id);
+    setDeleteId(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId) {
+      deleteShoppingItem(deleteId);
+      setDeleteId(null);
       loadShopping();
     }
   };
@@ -269,6 +277,16 @@ export default function ShoppingList({ eventId, confirmedHeadcount }: ShoppingLi
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={Boolean(deleteId)}
+        title="Delete Shopping Item"
+        message="Are you sure you want to remove this item from your shopping list?"
+        confirmText="Remove Item"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   );
 }

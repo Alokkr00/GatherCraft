@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { TimelineItem } from '@/lib/types';
 import { getTimelineItems, saveTimelineItem, deleteTimelineItem } from '@/lib/storage';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface TimelineEditorProps {
   eventId: string;
@@ -47,9 +48,16 @@ export default function TimelineEditor({ eventId, startTime }: TimelineEditorPro
     loadTimeline();
   };
 
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
   const handleDelete = (id: string) => {
-    if (confirm('Delete this timeline step?')) {
-      deleteTimelineItem(id);
+    setDeleteId(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId) {
+      deleteTimelineItem(deleteId);
+      setDeleteId(null);
       loadTimeline();
     }
   };
@@ -280,6 +288,16 @@ export default function TimelineEditor({ eventId, startTime }: TimelineEditorPro
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={Boolean(deleteId)}
+        title="Delete Timeline Step"
+        message="Are you sure you want to delete this timeline step?"
+        confirmText="Delete Step"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   );
 }

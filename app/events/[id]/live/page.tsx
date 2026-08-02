@@ -15,6 +15,7 @@ import {
 } from '@/lib/storage';
 
 import SkeletonLoader from '@/components/SkeletonLoader';
+import ConfirmModal from '@/components/ConfirmModal';
 
 export default function LiveModePage() {
   const params = useParams();
@@ -95,11 +96,16 @@ export default function LiveModePage() {
     loadLiveData();
   };
 
+  const [showEndModal, setShowEndModal] = useState(false);
+
   const handleEndEvent = () => {
-    if (confirm('Are you ready to end the party and close out the event?')) {
-      closeEvent(eventId);
-      router.push(`/events/${eventId}/aftermath`);
-    }
+    setShowEndModal(true);
+  };
+
+  const confirmEndEvent = () => {
+    closeEvent(eventId);
+    setShowEndModal(false);
+    router.push(`/events/${eventId}/aftermath`);
   };
 
   if (!event) return <SkeletonLoader label="Loading Live Mode Copilot..." />;
@@ -281,6 +287,16 @@ export default function LiveModePage() {
           {event.location.notes && <p className="italic text-slate-400">Notes: {event.location.notes}</p>}
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={showEndModal}
+        title="End Gathering & Close Out"
+        message="Are you ready to end the party and proceed to post-event closeout & thank-you notes?"
+        confirmText="End Event & Close Out"
+        variant="info"
+        onConfirm={confirmEndEvent}
+        onCancel={() => setShowEndModal(false)}
+      />
     </div>
   );
 }

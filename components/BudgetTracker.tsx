@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { BudgetItem } from '@/lib/types';
 import { getBudgetItems, saveBudgetItem, deleteBudgetItem } from '@/lib/storage';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface BudgetTrackerProps {
   eventId: string;
@@ -35,9 +36,16 @@ export default function BudgetTracker({ eventId, totalBudgetLimit, currency }: B
     setItems(getBudgetItems(eventId));
   };
 
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
   const handleDelete = (id: string) => {
-    if (confirm('Delete budget item?')) {
-      deleteBudgetItem(id);
+    setDeleteId(id);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId) {
+      deleteBudgetItem(deleteId);
+      setDeleteId(null);
       loadBudget();
     }
   };
@@ -323,6 +331,16 @@ export default function BudgetTracker({ eventId, totalBudgetLimit, currency }: B
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={Boolean(deleteId)}
+        title="Delete Budget Line Item"
+        message="Are you sure you want to remove this line item from your budget?"
+        confirmText="Remove Item"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   );
 }

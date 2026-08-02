@@ -13,7 +13,7 @@ export default function Navbar() {
           </div>
           <div>
             <span className="font-extrabold text-xl tracking-tight text-white flex items-center gap-1.5">
-              GatherCraft <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">v0.3 Live</span>
+              GatherCraft
             </span>
             <p className="text-[10px] text-slate-400 font-medium">Purpose-First Party Planner</p>
           </div>
