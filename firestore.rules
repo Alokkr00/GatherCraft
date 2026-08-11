@@ -1,45 +1,41 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
     // Helper Functions
-    function isAuthenticated() {
+    function isSignedIn() {
       return request.auth != null;
     }
-    
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
-    }
 
-    // Events Collection
+    // Events Collection: Anyone can read single event for public invites, but list is restricted
     match /events/{eventId} {
-      allow read: if true; // Public read for invitation details
-      allow create: if true; // Allow hosts to create events
-      allow update, delete: if true; // Host event management
+      allow get: if true; // Public read for invitation details
+      allow list: if isSignedIn(); // Restricted list for authenticated hosts
+      allow create: if true;
+      allow update, delete: if true;
     }
 
     // Guests Collection (RSVPs)
     match /guests/{guestId} {
-      allow read: if true;
-      allow create, update: if true; // Allow guests to submit RSVPs without login
+      allow get: if true;
+      allow list: if true; // Allow real-time guest list lookup for active event
+      allow create, update: if true; // Allow guest 1-click RSVPs without login
       allow delete: if true;
     }
 
-    // Timeline Collection
+    // Timeline, Tasks, Budget, Shopping Collections
     match /timeline/{itemId} {
       allow read, write: if true;
     }
 
-    // Tasks Collection
     match /tasks/{taskId} {
       allow read, write: if true;
     }
 
-    // Budget Collection
     match /budget/{itemId} {
       allow read, write: if true;
     }
 
-    // Shopping Collection
     match /shopping/{itemId} {
       allow read, write: if true;
     }

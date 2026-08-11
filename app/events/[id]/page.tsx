@@ -243,6 +243,14 @@ export default function EventDetailPage() {
           </button>
 
           <Link
+            href={`/events/${eventId}/edit`}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors"
+          >
+            <Edit2 className="w-3.5 h-3.5 text-indigo-400" />
+            <span>Edit Event</span>
+          </Link>
+
+          <Link
             href={`/invite/${eventId}`}
             target="_blank"
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition-colors shadow-md shadow-indigo-600/25"

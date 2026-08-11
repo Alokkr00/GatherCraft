@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { PartyEvent, Guest, RSVPStatus } from '@/lib/types';
 import { getEventById, getGuests, updateGuestRSVP } from '@/lib/storage';
+import { subscribeToEvent, saveGuestCloud } from '@/lib/db';
 import SkeletonLoader from '@/components/SkeletonLoader';
 import CustomSelect from '@/components/CustomSelect';
 
@@ -34,14 +35,19 @@ function InviteContent() {
   const [accessibility, setAccessibility] = useState('');
 
   useEffect(() => {
-    loadInviteData();
-  }, [eventId]);
-
-  const loadInviteData = () => {
-    const ev = getEventById(eventId);
-    if (ev) {
-      setEvent(ev);
+    // 1. Initial Local Read
+    const localEv = getEventById(eventId);
+    if (localEv) {
+      setEvent(localEv);
     }
+
+    // 2. Real-time Firestore Cloud Subscription for multi-device sync
+    const unsubscribe = subscribeToEvent(eventId, (cloudEv) => {
+      if (cloudEv) {
+        setEvent(cloudEv);
+      }
+    });
+
     if (guestIdParam) {
       const gsts = getGuests(eventId);
       const existing = gsts.find(g => g.id === guestIdParam);
@@ -57,7 +63,11 @@ function InviteContent() {
       }
     }
     setIsLoaded(true);
-  };
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [eventId, guestIdParam]);
 
   const handleRsvpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,6 +82,13 @@ function InviteContent() {
       dietary: dietary.trim() || undefined,
       accessibility: accessibility.trim() || undefined
     });
+
+    // Cloud push to Firestore for multi-device sync
+    try {
+      await saveGuestCloud(updatedGuest);
+    } catch (err) {
+      console.error('Cloud RSVP Sync error:', err);
+    }
 
     setGuest(updatedGuest);
     setHasSubmitted(true);
@@ -91,14 +108,27 @@ function InviteContent() {
   };
 
   const generateGoogleCalendarUrl = (ev: PartyEvent) => {
-    const startDate = new Date(`${ev.date}T${ev.startTime}:00`);
-    const endDate = new Date(`${ev.date}T${ev.endTime}:00`);
-    const fmt = (d: Date) => d.toISOString().replace(/-|:|\.\d\d\d/g, '');
-    const dates = `${fmt(startDate)}/${fmt(endDate)}`;
-    const details = ev.purpose?.selectedStatement ? `Purpose: ${ev.purpose.selectedStatement}` : 'GatherCraft Event';
-    const loc = ev.location?.isTBD ? 'TBD' : `${ev.location?.name || ''} ${ev.location?.address || ''}`;
+    try {
+      const cleanStartTime = (ev.startTime || '19:00').split(' ')[0];
+      const cleanEndTime = (ev.endTime || '21:00').split(' ')[0];
 
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.title)}&dates=${dates}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(loc)}`;
+      let startDate = new Date(`${ev.date}T${cleanStartTime}:00`);
+      let endDate = new Date(`${ev.date}T${cleanEndTime}:00`);
+
+      if (isNaN(startDate.getTime())) startDate = new Date();
+      if (isNaN(endDate.getTime()) || endDate <= startDate) {
+        endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+      }
+
+      const fmt = (d: Date) => d.toISOString().replace(/-|:|\.\d\d\d/g, '');
+      const dates = `${fmt(startDate)}/${fmt(endDate)}`;
+      const details = ev.purpose?.selectedStatement ? `Purpose: ${ev.purpose.selectedStatement}` : 'GatherCraft Event';
+      const loc = ev.location?.isTBD ? 'Location TBD' : `${ev.location?.name || ''} ${ev.location?.address || ''}`.trim();
+
+      return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.title)}&dates=${dates}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(loc)}`;
+    } catch (err) {
+      return 'https://calendar.google.com';
+    }
   };
 
   if (!isLoaded) {
@@ -317,6 +347,36 @@ function InviteContent() {
                       placeholder="e.g. Vegetarian, Gluten-Free, Nut allergy..."
                       className="w-full p-3 rounded-xl glass-input text-xs"
                     />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
+                        <span>Phone Number</span>
+                        <span className="text-[10px] text-slate-400 font-normal">Optional</span>
+                      </label>
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="+1 (555) 000-0000"
+                        className="w-full p-3 rounded-xl glass-input text-xs"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
+                        <span>Accessibility / Mobility Needs</span>
+                        <span className="text-[10px] text-slate-400 font-normal">Optional</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={accessibility}
+                        onChange={(e) => setAccessibility(e.target.value)}
+                        placeholder="e.g. Wheelchair access, step-free..."
+                        className="w-full p-3 rounded-xl glass-input text-xs"
+                      />
+                    </div>
                   </div>
                 </div>
 

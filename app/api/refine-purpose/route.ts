@@ -10,15 +10,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Raw purpose is required' }, { status: 400 });
     }
 
+    // Input length capping to prevent prompt injection and excessive token usage
+    const sanitizedPurpose = rawPurpose.trim().slice(0, 500);
+    const sanitizedTitle = (title || 'Party').toString().trim().slice(0, 100);
+    const sanitizedCategory = (category || 'General').toString().trim().slice(0, 50);
+
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
       // Intelligent fallback when GEMINI_API_KEY is not configured
       return NextResponse.json({
         suggestions: {
-          warm: `To create an unforgettable, welcoming environment around "${title || 'our event'}" where guests feel genuinely valued and connected.`,
-          bold: `To host a high-energy gathering focused on ${rawPurpose}, inspiring everyone present and setting a new standard for host excellence.`,
-          minimal: `To gather close friends for ${rawPurpose || title || 'a great time'} with zero friction.`
+          warm: `To create an unforgettable, welcoming environment around "${sanitizedTitle}" where guests feel genuinely valued and connected.`,
+          bold: `To host a high-energy gathering focused on ${sanitizedPurpose}, inspiring everyone present and setting a new standard for host excellence.`,
+          minimal: `To gather close friends for ${sanitizedPurpose || sanitizedTitle} with zero friction.`
         },
         successCriteria: [
           'Guests feel welcome and engaged within 15 minutes of arrival',
@@ -36,9 +41,9 @@ export async function POST(req: NextRequest) {
     Refine the following event purpose into 3 distinct, actionable, and disputable purpose statements, along with 3 clear success criteria.
 
     Event Context:
-    - Raw Host Idea: "${rawPurpose}"
-    - Event Title: "${title || 'Party'}"
-    - Category: "${category || 'General'}"
+    - Raw Host Idea: "${sanitizedPurpose}"
+    - Event Title: "${sanitizedTitle}"
+    - Category: "${sanitizedCategory}"
 
     Format your response EXACTLY as a JSON object with this key structure:
     {
@@ -63,12 +68,16 @@ export async function POST(req: NextRequest) {
     const cleanJsonText = jsonMatch ? jsonMatch[0] : text;
     const data = JSON.parse(cleanJsonText);
 
+    if (!data.suggestions || !data.suggestions.warm) {
+      throw new Error('Invalid JSON structure returned by model');
+    }
+
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('Error refining purpose with Gemini API:', error);
     return NextResponse.json({
       suggestions: {
-        warm: `To host a warm gathering that brings people together around ${error.message ? 'this special occasion' : 'shared moments'}.`,
+        warm: `To host a warm gathering that brings people together around meaningful shared moments.`,
         bold: `To make this event an unforgettable high-energy experience for every guest.`,
         minimal: `To connect, celebrate, and enjoy great company.`
       },
