@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { STARTER_TEMPLATES } from '@/lib/templates';
 import { PartyEvent, StarterTemplate } from '@/lib/types';
-import { saveEvent } from '@/lib/storage';
+import { saveEvent, saveEventAsync } from '@/lib/storage';
 import CustomSelect from '@/components/CustomSelect';
 import CustomDatePicker from '@/components/CustomDatePicker';
 import CustomTimePicker from '@/components/CustomTimePicker';
@@ -21,6 +21,7 @@ function EventCreateWizard() {
 
   const [step, setStep] = useState<number>(1);
   const [selectedTemplate, setSelectedTemplate] = useState<StarterTemplate | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form State
   const [rawPurpose, setRawPurpose] = useState('');
@@ -123,42 +124,43 @@ function EventCreateWizard() {
     setSuccessCriteria(successCriteria.filter((_, i) => i !== index));
   };
 
-  const handleFinalSubmit = () => {
-    const eventId = 'event_' + Math.random().toString(36).substring(2, 9);
-    const newEvent: PartyEvent = {
-      id: eventId,
-      title: title || (selectedTemplate ? selectedTemplate.title : 'My Party Gathering'),
-      ownerId: 'current-host',
-      templateId: selectedTemplate?.id,
-      status: 'planning',
-      purpose: {
-        rawInput: rawPurpose,
-        selectedStatement: selectedStatement || rawPurpose,
-        suggestions,
-        successCriteria: successCriteria.filter(c => c.trim().length > 0),
-        isPrivate: isPurposePrivate
-      },
-      date,
-      startTime,
-      endTime,
-      timezone,
-      location: {
-        name: locationName,
-        address,
-        notes: locationNotes,
-        isTBD
-      },
-      capacity: Number(capacity) || 15,
-      totalBudget: Number(totalBudget) || 150,
-      currency,
-      coverAssetUrl: selectedTemplate?.coverImage || 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1200&auto=format&fit=crop',
-      themeColor: selectedTemplate?.themeColor || 'from-indigo-600 to-violet-600',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+  const handleFinalSubmit = async () => {
+    try {
+      setIsSubmitting(true);
+      const newEvent = await saveEventAsync({
+        title: title.trim() || (selectedTemplate ? selectedTemplate.title : 'My Gathering'),
+        ownerId: 'current-host',
+        templateId: selectedTemplate?.id,
+        status: 'planning',
+        purpose: {
+          rawInput: rawPurpose,
+          selectedStatement: selectedStatement || rawPurpose,
+          suggestions,
+          successCriteria: successCriteria.filter(c => c.trim().length > 0),
+          isPrivate: isPurposePrivate
+        },
+        date,
+        startTime,
+        endTime,
+        timezone,
+        location: {
+          name: locationName,
+          address,
+          notes: locationNotes,
+          isTBD
+        },
+        capacity: Number(capacity) || 15,
+        totalBudget: Number(totalBudget) || 150,
+        currency,
+        coverAssetUrl: selectedTemplate?.coverImage || 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1200&auto=format&fit=crop',
+        themeColor: selectedTemplate?.themeColor || 'from-indigo-600 to-violet-600',
+      });
 
-    saveEvent(newEvent);
-    router.push(`/events/${eventId}`);
+      router.push(`/events/${newEvent.id}`);
+    } catch (err) {
+      console.error('Failed to create event:', err);
+      setIsSubmitting(false);
+    }
   };
 
   return (

@@ -4,6 +4,7 @@ import {
 } from './types';
 import { STARTER_TEMPLATES } from './templates';
 import { saveEventCloud, deleteEventCloud, saveGuestCloud } from './db';
+import { generatePrefixedId } from './id';
 
 const EVENTS_KEY = 'party_planner_events';
 const GUESTS_KEY = 'party_planner_guests';
@@ -14,10 +15,11 @@ const SHOPPING_KEY = 'party_planner_shopping';
 
 const isClient = typeof window !== 'undefined';
 
-// Initial Sample Event
+// Initial Sample Events
 export const INITIAL_SAMPLE_EVENTS: PartyEvent[] = [
   {
     id: 'sample-cocktail-party',
+    inviteToken: 'sample-cocktail-party',
     title: 'Friday Sunset Cocktails & Bites',
     ownerId: 'host-1',
     templateId: 'cocktail-party',
@@ -57,6 +59,7 @@ export const INITIAL_SAMPLE_EVENTS: PartyEvent[] = [
   },
   {
     id: 'sample-birthday-dinner',
+    inviteToken: 'sample-birthday-dinner',
     title: "Maya's 30th Milestone Birthday Dinner",
     ownerId: 'host-1',
     templateId: 'birthday-dinner',
@@ -151,91 +154,58 @@ export const INITIAL_SAMPLE_GUESTS: Guest[] = [
     name: 'Elena Rostova',
     email: 'elena@example.com',
     role: 'guest',
-    rsvpStatus: 'pending',
+    rsvpStatus: 'no',
     plusOnesAllowed: 0,
     plusOnesActual: 0,
+    dietary: 'Nut allergy',
     updatedAt: new Date().toISOString()
   }
 ];
 
 export const INITIAL_SAMPLE_TIMELINE: TimelineItem[] = [
-  {
-    id: 't-1',
-    eventId: 'sample-cocktail-party',
-    title: 'Arrival & Welcome Signature Drink',
-    description: 'Greet guests at the door, hand them a welcome cocktail/mocktail, and introduce them to the first person nearby.',
-    offsetMinutes: 0,
-    durationMinutes: 30,
-    assigneeName: 'Host (You)',
-    isCompleted: true,
-    orderIndex: 0
-  },
-  {
-    id: 't-2',
-    eventId: 'sample-cocktail-party',
-    title: 'First Icebreaker Game ("Match 3")',
-    description: 'Gather everyone around the kitchen island. Ask each person to share one surprising passion project.',
-    offsetMinutes: 30,
-    durationMinutes: 30,
-    assigneeName: 'Alex Rivera',
-    isCompleted: false,
-    orderIndex: 1
-  },
-  {
-    id: 't-3',
-    eventId: 'sample-cocktail-party',
-    title: 'Open Grazing & Small Group Mingling',
-    description: 'Refill drinks, encourage people to mix with someone they haven\'t spoken to yet.',
-    offsetMinutes: 60,
-    durationMinutes: 45,
-    assigneeName: 'Host (You)',
-    isCompleted: false,
-    orderIndex: 2
-  },
-  {
-    id: 't-4',
-    eventId: 'sample-cocktail-party',
-    title: 'Host Toast & Group Photo',
-    description: 'Short 2-minute toast thanking everyone for coming. Capture a group photo on the terrace.',
-    offsetMinutes: 105,
-    durationMinutes: 15,
-    assigneeName: 'Host (You)',
-    isCompleted: false,
-    orderIndex: 3
-  },
-  {
-    id: 't-5',
-    eventId: 'sample-cocktail-party',
-    title: 'Hard End Time Wrap-Up',
-    description: 'Enforce hard end time! Thank guests, give out leftovers/cards, and invite those interested to an optional after-hang.',
-    offsetMinutes: 120,
-    durationMinutes: 10,
-    assigneeName: 'Host (You)',
-    isCompleted: false,
-    orderIndex: 4
-  }
+  { id: 'item-1', eventId: 'sample-cocktail-party', title: 'Arrival & Welcome Drinks', description: 'Serve signature cocktail & hand out icebreaker cards', offsetMinutes: 0, durationMinutes: 30, isCompleted: true, orderIndex: 0 },
+  { id: 'item-2', eventId: 'sample-cocktail-party', title: 'Speed Icebreaker Circle', description: 'Introduce guests with 1 non-work passion', offsetMinutes: 30, durationMinutes: 20, isCompleted: true, orderIndex: 1 },
+  { id: 'item-3', eventId: 'sample-cocktail-party', title: 'Host Toast & Grazing Platter', description: 'Share purpose statement and thank everyone', offsetMinutes: 50, durationMinutes: 30, isCompleted: false, orderIndex: 2 },
+  { id: 'item-4', eventId: 'sample-cocktail-party', title: 'Hard Stop & Group Farewell', description: 'Wrap up event on time to leave guests wanting more', offsetMinutes: 120, durationMinutes: 10, isCompleted: false, orderIndex: 3 }
 ];
 
 export const INITIAL_SAMPLE_TASKS: TaskItem[] = [
-  { id: 'tk-1', eventId: 'sample-cocktail-party', title: 'Buy ice bags & citrus garnishes', description: '3 bags of cubed ice + limes', category: 'Drinks', assigneeName: 'Alex Rivera', dueDate: '2026-08-14', priority: 'high', status: 'done', updatedAt: new Date().toISOString() },
-  { id: 'tk-2', eventId: 'sample-cocktail-party', title: 'Chill glassware & pre-batch welcome punch', category: 'Drinks', assigneeName: 'Host (You)', dueDate: '2026-08-14', priority: 'high', status: 'in_progress', updatedAt: new Date().toISOString() },
-  { id: 'tk-3', eventId: 'sample-cocktail-party', title: 'Set up grazing board', category: 'Food', assigneeName: 'Host (You)', dueDate: '2026-08-14', priority: 'medium', status: 'todo', updatedAt: new Date().toISOString() },
-  { id: 'tk-4', eventId: 'sample-cocktail-party', title: 'Curate playlist', category: 'Decor', assigneeName: 'Sarah Chen', dueDate: '2026-08-13', priority: 'medium', status: 'done', updatedAt: new Date().toISOString() }
+  { id: 'task-1', eventId: 'sample-cocktail-party', title: 'Finalize drink menu & ice order', category: 'Drinks', priority: 'high', status: 'done', updatedAt: new Date().toISOString() },
+  { id: 'task-2', eventId: 'sample-cocktail-party', title: 'Confirm dietary preferences with guests', category: 'Food', priority: 'high', status: 'done', updatedAt: new Date().toISOString() },
+  { id: 'task-3', eventId: 'sample-cocktail-party', title: 'Prep name tags & icebreaker question cards', category: 'Setup', priority: 'medium', status: 'in_progress', updatedAt: new Date().toISOString() },
+  { id: 'task-4', eventId: 'sample-cocktail-party', title: 'Curate 2-hour playlist', category: 'Decor', priority: 'low', status: 'todo', updatedAt: new Date().toISOString() }
 ];
 
 export const INITIAL_SAMPLE_BUDGET: BudgetItem[] = [
-  { id: 'b-1', eventId: 'sample-cocktail-party', category: 'Drinks', name: 'Spirits & Bitters', plannedAmount: 90, actualAmount: 85, vendor: 'BevMo', updatedAt: new Date().toISOString() },
-  { id: 'b-2', eventId: 'sample-cocktail-party', category: 'Food', name: 'Artisan Cheeses & Fruit', plannedAmount: 60, actualAmount: 68, vendor: 'Trader Joe\'s', updatedAt: new Date().toISOString() },
-  { id: 'b-3', eventId: 'sample-cocktail-party', category: 'Decor', name: 'Biodegradable Cups & Napkins', plannedAmount: 25, actualAmount: 22, vendor: 'Target', updatedAt: new Date().toISOString() }
+  { id: 'b-1', eventId: 'sample-cocktail-party', category: 'Drinks', name: 'Artisan Spirits & Mixers', plannedAmount: 80, actualAmount: 75, vendor: 'Local Cellar', updatedAt: new Date().toISOString() },
+  { id: 'b-2', eventId: 'sample-cocktail-party', category: 'Food', name: 'Artisan Cheese & Charcuterie Platter', plannedAmount: 60, actualAmount: 65, vendor: 'Gourmet Market', updatedAt: new Date().toISOString() },
+  { id: 'b-3', eventId: 'sample-cocktail-party', category: 'Supplies', name: 'Glassware, Napkins & Ice', plannedAmount: 30, actualAmount: 25, vendor: 'Party Outlet', updatedAt: new Date().toISOString() }
 ];
 
 export const INITIAL_SAMPLE_SHOPPING: ShoppingItem[] = [
-  { id: 's-1', eventId: 'sample-cocktail-party', name: 'Cubed Ice Bags', category: 'Drinks', quantity: '3 bags', isPurchased: true },
-  { id: 's-2', eventId: 'sample-cocktail-party', name: 'Fresh Limes & Lemons', category: 'Drinks', quantity: '12 limes', isPurchased: true },
-  { id: 's-3', eventId: 'sample-cocktail-party', name: 'Artisan Crackers & Cheeses', category: 'Food', quantity: '3 blocks', isPurchased: false }
+  { id: 's-1', eventId: 'sample-cocktail-party', name: 'Fresh Rosemary & Citrus for Garnish', category: 'Drinks', quantity: '2 bunches', isPurchased: true },
+  { id: 's-2', eventId: 'sample-cocktail-party', name: 'Artisan Sourdough Crackers', category: 'Food', quantity: '3 boxes', isPurchased: true },
+  { id: 's-3', eventId: 'sample-cocktail-party', name: 'Ice (2 Large Bags)', category: 'Drinks', quantity: '2 bags', isPurchased: false },
+  { id: 's-4', eventId: 'sample-cocktail-party', name: 'Cocktail Napkins', category: 'Supplies', quantity: '50 pack', isPurchased: false }
 ];
 
-// --- EVENT & GUEST CRUD ---
+// --- SERVER SYNC HELPER ---
+async function syncToServer(url: string, method: string, data?: any) {
+  if (!isClient) return null;
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: data ? JSON.stringify(data) : undefined
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    return null;
+  }
+}
+
+// --- EVENTS CRUD ---
 export const getEvents = (): PartyEvent[] => {
   if (!isClient) return INITIAL_SAMPLE_EVENTS;
   try {
@@ -257,11 +227,10 @@ export const getEvents = (): PartyEvent[] => {
 
 export const getEventById = (id: string): PartyEvent | null => {
   const events = getEvents();
-  const found = events.find(e => e.id === id);
+  const found = events.find(e => e.id === id || e.inviteToken === id);
   if (found) return found;
 
-  // Fallback to sample events if ID matches
-  const sampleFallback = INITIAL_SAMPLE_EVENTS.find(e => e.id === id);
+  const sampleFallback = INITIAL_SAMPLE_EVENTS.find(e => e.id === id || e.inviteToken === id);
   if (sampleFallback) {
     saveEvent(sampleFallback);
     return sampleFallback;
@@ -279,13 +248,44 @@ export const saveEvent = (event: PartyEvent): void => {
     ? events.map((e, i) => i === index ? updatedEvent : e)
     : [updatedEvent, ...events];
   localStorage.setItem(EVENTS_KEY, JSON.stringify(updated));
+  
+  // Async background server sync
+  syncToServer(index >= 0 ? `/api/events/${event.id}` : '/api/events', index >= 0 ? 'PUT' : 'POST', updatedEvent);
   saveEventCloud(updatedEvent).catch(console.error);
+};
+
+export const saveEventAsync = async (event: Partial<PartyEvent> & { title: string }): Promise<PartyEvent> => {
+  const serverRes = await syncToServer('/api/events', 'POST', event);
+  const savedEvent: PartyEvent = serverRes?.event || {
+    ...event,
+    id: event.id || generatePrefixedId('ev'),
+    inviteToken: event.inviteToken || generatePrefixedId('inv'),
+    title: event.title,
+    ownerId: event.ownerId || 'current-host',
+    status: event.status || 'planning',
+    purpose: event.purpose || { rawInput: '', selectedStatement: '', isPrivate: false },
+    date: event.date || new Date().toISOString().split('T')[0],
+    startTime: event.startTime || '18:00',
+    endTime: event.endTime || '21:00',
+    timezone: event.timezone || 'UTC',
+    location: event.location || { address: '', isTBD: true },
+    capacity: event.capacity || 20,
+    totalBudget: event.totalBudget || 0,
+    currency: event.currency || 'USD',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  saveEvent(savedEvent);
+  return savedEvent;
 };
 
 export const deleteEvent = (id: string): void => {
   if (!isClient) return;
   const events = getEvents().filter(e => e.id !== id);
   localStorage.setItem(EVENTS_KEY, JSON.stringify(events));
+  
+  syncToServer(`/api/events/${id}`, 'DELETE');
   deleteEventCloud(id).catch(console.error);
 
   // Cascade cleanup child entities safely
@@ -305,6 +305,7 @@ export const deleteEvent = (id: string): void => {
   localStorage.setItem(SHOPPING_KEY, JSON.stringify(shopping));
 };
 
+// --- GUESTS CRUD ---
 export const getGuests = (eventId?: string): Guest[] => {
   if (!isClient) return INITIAL_SAMPLE_GUESTS;
   try {
@@ -326,6 +327,8 @@ export const saveGuest = (guest: Guest): void => {
     ? allGuests.map((g, i) => i === index ? updatedGuest : g)
     : [...allGuests, updatedGuest];
   localStorage.setItem(GUESTS_KEY, JSON.stringify(updated));
+  
+  syncToServer(`/api/events/${guest.eventId}/guests`, 'POST', updatedGuest);
   saveGuestCloud(updatedGuest).catch(console.error);
 };
 
@@ -335,12 +338,22 @@ export const saveGuestsBulk = (newGuests: Guest[]): void => {
   const newIds = new Set(newGuests.map(g => g.id));
   const remaining = allGuests.filter(g => !newIds.has(g.id));
   localStorage.setItem(GUESTS_KEY, JSON.stringify([...remaining, ...newGuests]));
+  newGuests.forEach(g => {
+    syncToServer(`/api/events/${g.eventId}/guests`, 'POST', g);
+    saveGuestCloud(g).catch(console.error);
+  });
 };
 
 export const deleteGuest = (id: string): void => {
   if (!isClient) return;
-  const allGuests = getGuests().filter(g => g.id !== id);
-  localStorage.setItem(GUESTS_KEY, JSON.stringify(allGuests));
+  const allGuests = getGuests();
+  const guest = allGuests.find(g => g.id === id);
+  const filtered = allGuests.filter(g => g.id !== id);
+  localStorage.setItem(GUESTS_KEY, JSON.stringify(filtered));
+  
+  if (guest) {
+    syncToServer(`/api/events/${guest.eventId}/guests?guestId=${id}`, 'DELETE');
+  }
 };
 
 export const updateGuestRSVP = (
@@ -377,7 +390,7 @@ export const updateGuestRSVP = (
     return updated;
   } else {
     const newGuest: Guest = {
-      id: 'guest_' + Math.random().toString(36).substring(2, 9),
+      id: generatePrefixedId('gst'),
       eventId,
       name: data.name || 'Guest',
       email: data.email,
@@ -395,7 +408,7 @@ export const updateGuestRSVP = (
   }
 };
 
-// --- v0.3 LIVE MODE & AFTERMATH HELPERS ---
+// --- LIVE MODE & AFTERMATH HELPERS ---
 export const toggleGuestCheckIn = (guest: Guest): Guest => {
   const isCheckedIn = Boolean(guest.checkInAt);
   const updated: Guest = {
@@ -485,14 +498,19 @@ export const saveTimelineItem = (item: TimelineItem): void => {
   if (idx >= 0) all[idx] = item;
   else all.push(item);
   localStorage.setItem(TIMELINE_KEY, JSON.stringify(all));
+  syncToServer(`/api/events/${item.eventId}/timeline`, 'POST', item);
 };
 
 export const deleteTimelineItem = (id: string): void => {
   if (!isClient) return;
   const raw = localStorage.getItem(TIMELINE_KEY);
   let all: TimelineItem[] = raw ? JSON.parse(raw) : INITIAL_SAMPLE_TIMELINE;
+  const item = all.find(t => t.id === id);
   all = all.filter(t => t.id !== id);
   localStorage.setItem(TIMELINE_KEY, JSON.stringify(all));
+  if (item) {
+    syncToServer(`/api/events/${item.eventId}/timeline?itemId=${id}`, 'DELETE');
+  }
 };
 
 // --- TASKS CRUD ---
@@ -513,26 +531,32 @@ export const saveTask = (task: TaskItem): void => {
   const raw = localStorage.getItem(TASKS_KEY);
   let all: TaskItem[] = raw ? JSON.parse(raw) : INITIAL_SAMPLE_TASKS;
   const idx = all.findIndex(t => t.id === task.id);
-  if (idx >= 0) all[idx] = { ...task, updatedAt: new Date().toISOString() };
-  else all.push(task);
+  const updatedTask = { ...task, updatedAt: new Date().toISOString() };
+  if (idx >= 0) all[idx] = updatedTask;
+  else all.push(updatedTask);
   localStorage.setItem(TASKS_KEY, JSON.stringify(all));
+  syncToServer(`/api/events/${task.eventId}/tasks`, 'POST', updatedTask);
 };
 
 export const deleteTask = (id: string): void => {
   if (!isClient) return;
   const raw = localStorage.getItem(TASKS_KEY);
   let all: TaskItem[] = raw ? JSON.parse(raw) : INITIAL_SAMPLE_TASKS;
+  const task = all.find(t => t.id === id);
   all = all.filter(t => t.id !== id);
   localStorage.setItem(TASKS_KEY, JSON.stringify(all));
+  if (task) {
+    syncToServer(`/api/events/${task.eventId}/tasks?taskId=${id}`, 'DELETE');
+  }
 };
 
 export const generateDefaultTasks = (eventId: string, eventTitle: string): TaskItem[] => {
   const defaults: TaskItem[] = [
-    { id: `tk_${Math.random()}`, eventId, title: 'Finalize headcount & dietary needs', category: 'Food', priority: 'high', status: 'todo', updatedAt: new Date().toISOString() },
-    { id: `tk_${Math.random()}`, eventId, title: 'Purchase drinks, ice & signature mixers', category: 'Drinks', priority: 'high', status: 'todo', updatedAt: new Date().toISOString() },
-    { id: `tk_${Math.random()}`, eventId, title: 'Clean main area & clear coat rack / entrance', category: 'Setup', priority: 'medium', status: 'todo', updatedAt: new Date().toISOString() },
-    { id: `tk_${Math.random()}`, eventId, title: 'Set up background music & playlist', category: 'Decor', priority: 'medium', status: 'todo', updatedAt: new Date().toISOString() },
-    { id: `tk_${Math.random()}`, eventId, title: 'Prep trash bags & dishwasher for easy cleanup', category: 'Cleanup', priority: 'low', status: 'todo', updatedAt: new Date().toISOString() }
+    { id: generatePrefixedId('tk'), eventId, title: 'Finalize headcount & dietary needs', category: 'Food', priority: 'high', status: 'todo', updatedAt: new Date().toISOString() },
+    { id: generatePrefixedId('tk'), eventId, title: 'Purchase drinks, ice & signature mixers', category: 'Drinks', priority: 'high', status: 'todo', updatedAt: new Date().toISOString() },
+    { id: generatePrefixedId('tk'), eventId, title: 'Clean main area & clear coat rack / entrance', category: 'Setup', priority: 'medium', status: 'todo', updatedAt: new Date().toISOString() },
+    { id: generatePrefixedId('tk'), eventId, title: 'Set up background music & playlist', category: 'Decor', priority: 'medium', status: 'todo', updatedAt: new Date().toISOString() },
+    { id: generatePrefixedId('tk'), eventId, title: 'Prep trash bags & dishwasher for easy cleanup', category: 'Cleanup', priority: 'low', status: 'todo', updatedAt: new Date().toISOString() }
   ];
   defaults.forEach(saveTask);
   return getTasks(eventId);
@@ -556,17 +580,23 @@ export const saveBudgetItem = (item: BudgetItem): void => {
   const raw = localStorage.getItem(BUDGET_KEY);
   let all: BudgetItem[] = raw ? JSON.parse(raw) : INITIAL_SAMPLE_BUDGET;
   const idx = all.findIndex(b => b.id === item.id);
-  if (idx >= 0) all[idx] = { ...item, updatedAt: new Date().toISOString() };
-  else all.push(item);
+  const updatedItem = { ...item, updatedAt: new Date().toISOString() };
+  if (idx >= 0) all[idx] = updatedItem;
+  else all.push(updatedItem);
   localStorage.setItem(BUDGET_KEY, JSON.stringify(all));
+  syncToServer(`/api/events/${item.eventId}/budget`, 'POST', updatedItem);
 };
 
 export const deleteBudgetItem = (id: string): void => {
   if (!isClient) return;
   const raw = localStorage.getItem(BUDGET_KEY);
   let all: BudgetItem[] = raw ? JSON.parse(raw) : INITIAL_SAMPLE_BUDGET;
+  const item = all.find(b => b.id === id);
   all = all.filter(b => b.id !== id);
   localStorage.setItem(BUDGET_KEY, JSON.stringify(all));
+  if (item) {
+    syncToServer(`/api/events/${item.eventId}/budget?itemId=${id}`, 'DELETE');
+  }
 };
 
 // --- SHOPPING CRUD ---
@@ -590,24 +620,29 @@ export const saveShoppingItem = (item: ShoppingItem): void => {
   if (idx >= 0) all[idx] = item;
   else all.push(item);
   localStorage.setItem(SHOPPING_KEY, JSON.stringify(all));
+  syncToServer(`/api/events/${item.eventId}/shopping`, 'POST', item);
 };
 
 export const deleteShoppingItem = (id: string): void => {
   if (!isClient) return;
   const raw = localStorage.getItem(SHOPPING_KEY);
   let all: ShoppingItem[] = raw ? JSON.parse(raw) : INITIAL_SAMPLE_SHOPPING;
+  const item = all.find(s => s.id === id);
   all = all.filter(s => s.id !== id);
   localStorage.setItem(SHOPPING_KEY, JSON.stringify(all));
+  if (item) {
+    syncToServer(`/api/events/${item.eventId}/shopping?itemId=${id}`, 'DELETE');
+  }
 };
 
 export const generateShoppingList = (eventId: string, headcount: number): ShoppingItem[] => {
   const count = headcount > 0 ? headcount : 10;
   const items: ShoppingItem[] = [
-    { id: `shop_${Math.random()}`, eventId, name: 'Ice Bags', category: 'Drinks', quantity: `${Math.ceil(count / 5)} bags`, isPurchased: false },
-    { id: `shop_${Math.random()}`, eventId, name: 'Assorted Drinks / Mixers', category: 'Drinks', quantity: `${Math.ceil(count * 0.75)} liters`, isPurchased: false },
-    { id: `shop_${Math.random()}`, eventId, name: 'Snacks / Grazing platter items', category: 'Food', quantity: `${count} servings`, isPurchased: false },
-    { id: `shop_${Math.random()}`, eventId, name: 'Cocktail Napkins & Plates', category: 'Supplies', quantity: `${count * 2} count`, isPurchased: false },
-    { id: `shop_${Math.random()}`, eventId, name: 'Trash Bags & Cleanup Supplies', category: 'Supplies', quantity: '1 pack', isPurchased: false }
+    { id: generatePrefixedId('shop'), eventId, name: 'Ice Bags', category: 'Drinks', quantity: `${Math.ceil(count / 5)} bags`, isPurchased: false },
+    { id: generatePrefixedId('shop'), eventId, name: 'Assorted Drinks / Mixers', category: 'Drinks', quantity: `${Math.ceil(count * 0.75)} liters`, isPurchased: false },
+    { id: generatePrefixedId('shop'), eventId, name: 'Snacks / Grazing platter items', category: 'Food', quantity: `${count} servings`, isPurchased: false },
+    { id: generatePrefixedId('shop'), eventId, name: 'Cocktail Napkins & Plates', category: 'Supplies', quantity: `${count * 2} count`, isPurchased: false },
+    { id: generatePrefixedId('shop'), eventId, name: 'Trash Bags & Cleanup Supplies', category: 'Supplies', quantity: '1 pack', isPurchased: false }
   ];
   items.forEach(saveShoppingItem);
   return getShoppingItems(eventId);

@@ -2,42 +2,45 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper Functions
-    function isSignedIn() {
-      return request.auth != null;
+    function isSignedIn() { 
+      return request.auth != null; 
+    }
+    
+    function isHost(eventId) {
+      let ev = get(/databases/$(database)/documents/events/$(eventId)).data;
+      return isSignedIn() && (request.auth.uid == ev.ownerId || request.auth.uid in ev.get('coHostIds', []));
     }
 
-    // Events Collection: Anyone can read single event for public invites, but list is restricted
     match /events/{eventId} {
-      allow get: if true; // Public read for invitation details
-      allow list: if isSignedIn(); // Restricted list for authenticated hosts
-      allow create: if true;
-      allow update, delete: if true;
+      allow get: if true; // Public read for invitation view
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isHost(eventId);
     }
 
-    // Guests Collection (RSVPs)
     match /guests/{guestId} {
       allow get: if true;
-      allow list: if true; // Allow real-time guest list lookup for active event
-      allow create, update: if true; // Allow guest 1-click RSVPs without login
-      allow delete: if true;
+      allow list: if false; // Block bulk enumeration of guest personal data
+      allow create: if true; // Allow guest RSVPs
+      allow update, delete: if isHost(resource.data.eventId);
     }
 
-    // Timeline, Tasks, Budget, Shopping Collections
     match /timeline/{itemId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isHost(resource.data.eventId);
     }
 
     match /tasks/{taskId} {
-      allow read, write: if true;
+      allow read, write: if isHost(resource.data.eventId);
     }
 
     match /budget/{itemId} {
-      allow read, write: if true;
+      allow read, write: if isHost(resource.data.eventId);
     }
 
     match /shopping/{itemId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if isHost(resource.data.eventId);
     }
   }
 }

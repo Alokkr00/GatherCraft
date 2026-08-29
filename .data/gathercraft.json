@@ -1,0 +1,451 @@
+{
+  "events": [
+    {
+      "id": "ev_f5c8a2cc-a36c-4a9e-a45e-b507a550a74f",
+      "inviteToken": "a393a8e9039f4b74851ab6b4a84c7b6c",
+      "title": "E2E Cross-Device Celebration",
+      "ownerId": "current-host",
+      "coHostIds": [],
+      "templateId": "cocktail-party",
+      "status": "planning",
+      "purpose": {
+        "rawInput": "To bring together friends and new acquaintances for light bites, high-energy conversation, and introducing people who should know each other.",
+        "selectedStatement": "To bring together friends and new acquaintances for light bites, high-energy conversation, and introducing people who should know each other.",
+        "suggestions": {
+          "warm": "",
+          "bold": "",
+          "minimal": ""
+        },
+        "successCriteria": [
+          "Guests meet at least 3 people they did not know before",
+          "Hard end time enforced so guests leave wanting more",
+          "Icebreakers kick off within the first 30 minutes"
+        ],
+        "isPrivate": false
+      },
+      "date": "2026-09-05",
+      "startTime": "19:00",
+      "endTime": "21:00",
+      "timezone": "Asia/Calcutta",
+      "location": {
+        "name": "",
+        "address": "",
+        "notes": "",
+        "isTBD": false
+      },
+      "capacity": 15,
+      "totalBudget": 150,
+      "currency": "USD",
+      "coverAssetUrl": "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1200&auto=format&fit=crop",
+      "themeColor": "from-amber-500 to-rose-600",
+      "createdAt": "2026-08-29T14:10:49.759Z",
+      "updatedAt": "2026-08-29T14:10:50.002Z"
+    },
+    {
+      "id": "ev_24e4d0f2-6353-4717-8b8f-9fde2191c9f7",
+      "inviteToken": "fbe78f92b3a64c3298c603513e3adada",
+      "title": "E2E Cross-Device Celebration",
+      "ownerId": "current-host",
+      "coHostIds": [],
+      "templateId": "cocktail-party",
+      "status": "planning",
+      "purpose": {
+        "rawInput": "To bring together friends and new acquaintances for light bites, high-energy conversation, and introducing people who should know each other.",
+        "selectedStatement": "To bring together friends and new acquaintances for light bites, high-energy conversation, and introducing people who should know each other.",
+        "suggestions": {
+          "warm": "",
+          "bold": "",
+          "minimal": ""
+        },
+        "successCriteria": [
+          "Guests meet at least 3 people they did not know before",
+          "Hard end time enforced so guests leave wanting more",
+          "Icebreakers kick off within the first 30 minutes"
+        ],
+        "isPrivate": false
+      },
+      "date": "2026-09-05",
+      "startTime": "19:00",
+      "endTime": "21:00",
+      "timezone": "Asia/Calcutta",
+      "location": {
+        "name": "",
+        "address": "",
+        "notes": "",
+        "isTBD": false
+      },
+      "capacity": 15,
+      "totalBudget": 150,
+      "currency": "USD",
+      "coverAssetUrl": "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1200&auto=format&fit=crop",
+      "themeColor": "from-amber-500 to-rose-600",
+      "createdAt": "2026-08-29T14:06:59.211Z",
+      "updatedAt": "2026-08-29T14:06:59.801Z"
+    },
+    {
+      "id": "ev_fef4576a-4dff-423d-82fc-56227a8b4f4b",
+      "inviteToken": "43a5a4f937094ca3afb615fca260f88d",
+      "title": "E2E Cross-Device Celebration",
+      "ownerId": "current-host",
+      "coHostIds": [],
+      "templateId": "cocktail-party",
+      "status": "planning",
+      "purpose": {
+        "rawInput": "To bring together friends and new acquaintances for light bites, high-energy conversation, and introducing people who should know each other.",
+        "selectedStatement": "To bring together friends and new acquaintances for light bites, high-energy conversation, and introducing people who should know each other.",
+        "suggestions": {
+          "warm": "",
+          "bold": "",
+          "minimal": ""
+        },
+        "successCriteria": [
+          "Guests meet at least 3 people they did not know before",
+          "Hard end time enforced so guests leave wanting more",
+          "Icebreakers kick off within the first 30 minutes"
+        ],
+        "isPrivate": false
+      },
+      "date": "2026-09-05",
+      "startTime": "19:00",
+      "endTime": "21:00",
+      "timezone": "Asia/Calcutta",
+      "location": {
+        "name": "",
+        "address": "",
+        "notes": "",
+        "isTBD": false
+      },
+      "capacity": 15,
+      "totalBudget": 150,
+      "currency": "USD",
+      "coverAssetUrl": "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1200&auto=format&fit=crop",
+      "themeColor": "from-amber-500 to-rose-600",
+      "createdAt": "2026-08-29T14:01:13.719Z",
+      "updatedAt": "2026-08-29T14:01:13.806Z"
+    },
+    {
+      "id": "ev_01d2dba4-4e8d-465d-ac39-85688d4d45f5",
+      "inviteToken": "ca6d876d134f40d098e4db54df9ebf7c",
+      "title": "E2E Cross-Device Celebration",
+      "ownerId": "current-host",
+      "coHostIds": [],
+      "templateId": "cocktail-party",
+      "status": "planning",
+      "purpose": {
+        "rawInput": "To bring together friends and new acquaintances for light bites, high-energy conversation, and introducing people who should know each other.",
+        "selectedStatement": "To bring together friends and new acquaintances for light bites, high-energy conversation, and introducing people who should know each other.",
+        "suggestions": {
+          "warm": "",
+          "bold": "",
+          "minimal": ""
+        },
+        "successCriteria": [
+          "Guests meet at least 3 people they did not know before",
+          "Hard end time enforced so guests leave wanting more",
+          "Icebreakers kick off within the first 30 minutes"
+        ],
+        "isPrivate": false
+      },
+      "date": "2026-09-05",
+      "startTime": "19:00",
+      "endTime": "21:00",
+      "timezone": "Asia/Calcutta",
+      "location": {
+        "name": "",
+        "address": "",
+        "notes": "",
+        "isTBD": false
+      },
+      "capacity": 15,
+      "totalBudget": 150,
+      "currency": "USD",
+      "coverAssetUrl": "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1200&auto=format&fit=crop",
+      "themeColor": "from-amber-500 to-rose-600",
+      "createdAt": "2026-08-29T13:49:22.904Z",
+      "updatedAt": "2026-08-29T13:49:23.000Z"
+    },
+    {
+      "id": "ev_751dd1e2-30dd-445e-9c37-542c40901d10",
+      "inviteToken": "b166ab7c29bc415f887145c52d8f95ef",
+      "title": "E2E Cross-Device Celebration",
+      "ownerId": "current-host",
+      "coHostIds": [],
+      "templateId": "cocktail-party",
+      "status": "planning",
+      "purpose": {
+        "rawInput": "To bring together friends and new acquaintances for light bites, high-energy conversation, and introducing people who should know each other.",
+        "selectedStatement": "To bring together friends and new acquaintances for light bites, high-energy conversation, and introducing people who should know each other.",
+        "suggestions": {
+          "warm": "",
+          "bold": "",
+          "minimal": ""
+        },
+        "successCriteria": [
+          "Guests meet at least 3 people they did not know before",
+          "Hard end time enforced so guests leave wanting more",
+          "Icebreakers kick off within the first 30 minutes"
+        ],
+        "isPrivate": false
+      },
+      "date": "2026-09-05",
+      "startTime": "19:00",
+      "endTime": "21:00",
+      "timezone": "Asia/Calcutta",
+      "location": {
+        "name": "",
+        "address": "",
+        "notes": "",
+        "isTBD": false
+      },
+      "capacity": 15,
+      "totalBudget": 150,
+      "currency": "USD",
+      "coverAssetUrl": "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1200&auto=format&fit=crop",
+      "themeColor": "from-amber-500 to-rose-600",
+      "createdAt": "2026-08-29T13:47:17.770Z",
+      "updatedAt": "2026-08-29T13:47:17.932Z"
+    },
+    {
+      "id": "sample-cocktail-party",
+      "inviteToken": "sample-cocktail-party",
+      "title": "Friday Sunset Cocktails & Bites",
+      "ownerId": "host-1",
+      "templateId": "cocktail-party",
+      "status": "planning",
+      "purpose": {
+        "rawInput": "Host a fun cocktail gathering to introduce friends from different circles.",
+        "selectedStatement": "To bring together 15 friends from tech, design, and music for high-energy conversations, introducing people who should know each other.",
+        "suggestions": {
+          "warm": "To create a cozy evening where old and new friends naturally connect over artisan drinks.",
+          "bold": "To host a fast-paced, high-impact mixer designed to spark new friendships and collaborations.",
+          "minimal": "To gather good people for great drinks and meaningful introductions."
+        },
+        "successCriteria": [
+          "Guests meet at least 3 people they did not know before",
+          "Enforce hard end time so everyone leaves energized",
+          "Serve signature house cocktail + non-alcoholic alternative"
+        ],
+        "isPrivate": false
+      },
+      "date": "2026-09-05",
+      "startTime": "18:30",
+      "endTime": "20:30",
+      "timezone": "America/Los_Angeles",
+      "location": {
+        "address": "742 Evergreen Terrace, San Francisco, CA",
+        "name": "Host Penthouse Terrace",
+        "notes": "Ring bell #4B. Elevator to top floor.",
+        "isTBD": false
+      },
+      "capacity": 16,
+      "totalBudget": 200,
+      "currency": "USD",
+      "coverAssetUrl": "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1200&auto=format&fit=crop",
+      "themeColor": "from-amber-500 to-rose-600",
+      "createdAt": "2026-08-29T13:47:17.505Z",
+      "updatedAt": "2026-08-29T13:47:17.505Z"
+    },
+    {
+      "id": "sample-birthday-dinner",
+      "inviteToken": "sample-birthday-dinner",
+      "title": "Maya's 30th Milestone Birthday Dinner",
+      "ownerId": "host-1",
+      "templateId": "birthday-dinner",
+      "status": "completed",
+      "purpose": {
+        "rawInput": "Celebrate Maya turning 30 with intimate storytelling and great food.",
+        "selectedStatement": "To honor Maya's 30th birthday with 10 close friends sharing personal stories, gratitude, and a gourmet 3-course dinner.",
+        "suggestions": {
+          "warm": "To gather Maya's inner circle for a memorable feast filled with heartfelt toasts.",
+          "bold": "To mark Maya's 30th milestone with an unforgettable dinner party and surprise guest tributes.",
+          "minimal": "To celebrate Maya turning 30 with good food and great stories."
+        },
+        "successCriteria": [
+          "Every guest shares one favorite memory or tribute during dessert",
+          "3-course meal served family style",
+          "Capture high-quality group photo before departure"
+        ],
+        "isPrivate": false
+      },
+      "date": "2026-08-26",
+      "startTime": "19:00",
+      "endTime": "22:00",
+      "timezone": "America/Los_Angeles",
+      "location": {
+        "address": "1288 Mission St, San Francisco, CA",
+        "name": "Private Dining Room - Osteria Bella",
+        "notes": "Reservation under Maya Lin.",
+        "isTBD": false
+      },
+      "capacity": 12,
+      "totalBudget": 450,
+      "currency": "USD",
+      "coverAssetUrl": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?q=80&w=1200&auto=format&fit=crop",
+      "themeColor": "from-violet-600 to-indigo-600",
+      "isClosed": true,
+      "retrospective": {
+        "rating": 5,
+        "whatWorked": "The toast round during dessert was incredible — everyone shared heartfelt memories. Food was served right on time.",
+        "whatToImprove": "Set up background music playlist earlier before guests arrive.",
+        "completedAt": "2026-08-26T13:47:17.505Z",
+        "savedAsTemplate": true
+      },
+      "createdAt": "2026-08-19T13:47:17.506Z",
+      "updatedAt": "2026-08-26T13:47:17.506Z"
+    }
+  ],
+  "guests": [
+    {
+      "id": "guest-1",
+      "eventId": "sample-cocktail-party",
+      "name": "Alex Rivera",
+      "email": "alex@example.com",
+      "phone": "+1 415-555-0192",
+      "role": "co-host",
+      "rsvpStatus": "yes",
+      "plusOnesAllowed": 1,
+      "plusOnesActual": 1,
+      "dietary": "Vegetarian",
+      "notes": "Bringing signature mezcal bottle",
+      "checkInAt": "2026-08-29T13:47:17.506Z",
+      "updatedAt": "2026-08-29T13:47:17.506Z"
+    },
+    {
+      "id": "guest-2",
+      "eventId": "sample-cocktail-party",
+      "name": "Sarah Chen",
+      "email": "sarah.c@example.com",
+      "role": "guest",
+      "rsvpStatus": "yes",
+      "plusOnesAllowed": 0,
+      "plusOnesActual": 0,
+      "dietary": "Gluten-Free",
+      "notes": "Introduced by Alex",
+      "updatedAt": "2026-08-29T13:47:17.506Z"
+    },
+    {
+      "id": "guest-3",
+      "eventId": "sample-cocktail-party",
+      "name": "Marcus Vance",
+      "email": "marcus@example.com",
+      "role": "guest",
+      "rsvpStatus": "maybe",
+      "plusOnesAllowed": 1,
+      "plusOnesActual": 0,
+      "dietary": "None",
+      "updatedAt": "2026-08-29T13:47:17.506Z"
+    },
+    {
+      "id": "guest-4",
+      "eventId": "sample-cocktail-party",
+      "name": "Elena Rostova",
+      "email": "elena@example.com",
+      "role": "guest",
+      "rsvpStatus": "no",
+      "plusOnesAllowed": 0,
+      "plusOnesActual": 0,
+      "dietary": "Nut allergy",
+      "updatedAt": "2026-08-29T13:47:17.506Z"
+    },
+    {
+      "id": "gst_b7914589-154e-4292-81ae-60d09c3daf11",
+      "eventId": "ev_751dd1e2-30dd-445e-9c37-542c40901d10",
+      "name": "Sarah Tester",
+      "email": "sarah.tester@example.com",
+      "role": "guest",
+      "rsvpStatus": "yes",
+      "plusOnesAllowed": 0,
+      "plusOnesActual": 0,
+      "updatedAt": "2026-08-29T13:47:33.941Z"
+    },
+    {
+      "id": "gst_9370215610764697",
+      "eventId": "ev_751dd1e2-30dd-445e-9c37-542c40901d10",
+      "name": "Sarah Tester",
+      "email": "sarah.tester@example.com",
+      "role": "guest",
+      "rsvpStatus": "yes",
+      "plusOnesAllowed": 1,
+      "plusOnesActual": 0,
+      "dietary": "",
+      "accessibility": "",
+      "updatedAt": "2026-08-29T13:47:34.230Z"
+    },
+    {
+      "id": "gst_9603efd0-c436-4b46-947b-341bff3f2628",
+      "eventId": "ev_01d2dba4-4e8d-465d-ac39-85688d4d45f5",
+      "name": "Sarah Tester",
+      "email": "sarah.tester@example.com",
+      "role": "guest",
+      "rsvpStatus": "yes",
+      "plusOnesAllowed": 0,
+      "plusOnesActual": 0,
+      "updatedAt": "2026-08-29T13:49:32.651Z"
+    },
+    {
+      "id": "gst_5b6e8c2bba4d48aa",
+      "eventId": "ev_01d2dba4-4e8d-465d-ac39-85688d4d45f5",
+      "name": "Sarah Tester",
+      "email": "sarah.tester@example.com",
+      "role": "guest",
+      "rsvpStatus": "yes",
+      "plusOnesAllowed": 1,
+      "plusOnesActual": 0,
+      "dietary": "",
+      "accessibility": "",
+      "updatedAt": "2026-08-29T13:49:33.002Z"
+    },
+    {
+      "id": "gst_ea689f1a-86c7-43e6-ba95-ef16846aea8d",
+      "eventId": "ev_fef4576a-4dff-423d-82fc-56227a8b4f4b",
+      "name": "Sarah Tester",
+      "email": "sarah.tester@example.com",
+      "role": "guest",
+      "rsvpStatus": "yes",
+      "plusOnesAllowed": 0,
+      "plusOnesActual": 0,
+      "updatedAt": "2026-08-29T14:01:41.399Z"
+    },
+    {
+      "id": "gst_656fe3a36b72407c",
+      "eventId": "ev_fef4576a-4dff-423d-82fc-56227a8b4f4b",
+      "name": "Sarah Tester",
+      "email": "sarah.tester@example.com",
+      "role": "guest",
+      "rsvpStatus": "yes",
+      "plusOnesAllowed": 1,
+      "plusOnesActual": 0,
+      "dietary": "",
+      "accessibility": "",
+      "updatedAt": "2026-08-29T14:01:41.540Z"
+    },
+    {
+      "id": "gst_1a9eef18-032a-4546-8f33-54b4cdfcc596",
+      "eventId": "ev_f5c8a2cc-a36c-4a9e-a45e-b507a550a74f",
+      "name": "Sarah Tester",
+      "email": "sarah.tester@example.com",
+      "role": "guest",
+      "rsvpStatus": "yes",
+      "plusOnesAllowed": 0,
+      "plusOnesActual": 0,
+      "updatedAt": "2026-08-29T14:11:15.314Z"
+    },
+    {
+      "id": "gst_4e4f0f7847a9454f",
+      "eventId": "ev_f5c8a2cc-a36c-4a9e-a45e-b507a550a74f",
+      "name": "Sarah Tester",
+      "email": "sarah.tester@example.com",
+      "role": "guest",
+      "rsvpStatus": "yes",
+      "plusOnesAllowed": 1,
+      "plusOnesActual": 0,
+      "dietary": "",
+      "accessibility": "",
+      "updatedAt": "2026-08-29T14:11:16.202Z"
+    }
+  ],
+  "timeline": [],
+  "tasks": [],
+  "budget": [],
+  "shopping": []
+}

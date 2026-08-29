@@ -15,6 +15,7 @@ import {
   getEventById, saveEvent, getGuests, saveGuest, 
   saveGuestsBulk, deleteGuest, calculateDietarySummary 
 } from '@/lib/storage';
+import { generatePrefixedId } from '@/lib/id';
 import { subscribeToGuests, subscribeToEvent } from '@/lib/db';
 
 import SkeletonLoader from '@/components/SkeletonLoader';
@@ -74,26 +75,50 @@ export default function EventDetailPage() {
     };
   }, [eventId]);
 
-  const loadEventData = () => {
+  const loadEventData = async () => {
+    // 1. Initial Local Cache
     const ev = getEventById(eventId);
-    if (!ev) {
-      router.push('/');
-      return;
+    if (ev) {
+      setEvent(ev);
     }
-    setEvent(ev);
     const gsts = getGuests(eventId);
     setGuests(gsts);
+
+    // 2. Authoritative Server Sync
+    try {
+      const [evRes, gstRes] = await Promise.all([
+        fetch(`/api/events/${eventId}`),
+        fetch(`/api/events/${eventId}/guests`)
+      ]);
+
+      if (evRes.ok) {
+        const evData = await evRes.json();
+        if (evData.event) {
+          setEvent(evData.event);
+        }
+      }
+
+      if (gstRes.ok) {
+        const gstData = await gstRes.json();
+        if (Array.isArray(gstData.guests)) {
+          setGuests(gstData.guests);
+        }
+      }
+    } catch (err) {
+      console.warn('Could not sync workspace data with server:', err);
+    }
   };
 
   const handleCopyInvite = () => {
-    const link = `${window.location.origin}/invite/${eventId}`;
+    const inviteIdentifier = event?.inviteToken || eventId;
+    const link = `${window.location.origin}/invite/${inviteIdentifier}`;
     navigator.clipboard.writeText(link);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2500);
   };
 
   const handleCopyCoHostLink = () => {
-    const link = `${window.location.origin}/events/${eventId}?cohost=true`;
+    const link = `${window.location.origin}/events/${eventId}`;
     navigator.clipboard.writeText(link);
     setCopiedCoHost(true);
     setTimeout(() => setCopiedCoHost(false), 2500);
@@ -104,7 +129,7 @@ export default function EventDetailPage() {
     if (!guestName.trim()) return;
 
     const newGuest: Guest = {
-      id: 'guest_' + Math.random().toString(36).substring(2, 9),
+      id: generatePrefixedId('gst'),
       eventId,
       name: guestName.trim(),
       email: guestEmail.trim() || undefined,
@@ -133,9 +158,9 @@ export default function EventDetailPage() {
 
     lines.forEach((line) => {
       const parts = line.split(',').map(s => s.trim());
-      if (parts.length >= 1 && parts[0]) {
+      if (parts.length >= 1 && parts[0] && parts[0].toLowerCase() !== 'name') {
         parsedGuests.push({
-          id: 'guest_' + Math.random().toString(36).substring(2, 9),
+          id: generatePrefixedId('gst'),
           eventId,
           name: parts[0],
           email: parts[1] || undefined,

@@ -32,6 +32,7 @@ export interface HostRetrospective {
 
 export interface PartyEvent {
   id: string;
+  inviteToken?: string;
   title: string;
   ownerId: string;
   coHostIds?: string[];
@@ -53,12 +54,32 @@ export interface PartyEvent {
   coverAssetUrl?: string;
   themeColor?: string;
   
-  // v0.3 Closeout
+  // Expiry & Closeout
+  inviteExpiresAt?: string;
   isClosed?: boolean;
   retrospective?: HostRetrospective;
 
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PublicInviteView {
+  id: string;
+  inviteToken?: string;
+  title: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  timezone: string;
+  locationName?: string;
+  address?: string;
+  isTBD: boolean;
+  publicPurpose?: string;
+  themeColor?: string;
+  coverAssetUrl?: string;
+  capacity?: number;
+  status: EventStatus;
+  confirmedCount?: number;
 }
 
 export interface Guest {

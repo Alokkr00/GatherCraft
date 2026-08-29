@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { TimelineItem } from '@/lib/types';
 import { getTimelineItems, saveTimelineItem, deleteTimelineItem } from '@/lib/storage';
+import { generatePrefixedId } from '@/lib/id';
 import ConfirmModal from '@/components/ConfirmModal';
 
 interface TimelineEditorProps {
@@ -67,7 +68,7 @@ export default function TimelineEditor({ eventId, startTime }: TimelineEditorPro
     if (!title.trim()) return;
 
     const newItem: TimelineItem = {
-      id: 't_' + Math.random().toString(36).substring(2, 9),
+      id: generatePrefixedId('tl'),
       eventId,
       title: title.trim(),
       description: description.trim() || undefined,

@@ -7,8 +7,9 @@ import {
 } from 'lucide-react';
 import { BudgetItem } from '@/lib/types';
 import { getBudgetItems, saveBudgetItem, deleteBudgetItem } from '@/lib/storage';
-import ConfirmModal from '@/components/ConfirmModal';
+import { generatePrefixedId } from '@/lib/id';
 import CustomSelect from '@/components/CustomSelect';
+import ConfirmModal from '@/components/ConfirmModal';
 
 interface BudgetTrackerProps {
   eventId: string;
@@ -56,7 +57,7 @@ export default function BudgetTracker({ eventId, totalBudgetLimit, currency }: B
     if (!name.trim()) return;
 
     const newItem: BudgetItem = {
-      id: 'b_' + Math.random().toString(36).substring(2, 9),
+      id: generatePrefixedId('bg'),
       eventId,
       category,
       name: name.trim(),

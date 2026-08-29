@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { ShoppingItem } from '@/lib/types';
 import { getShoppingItems, saveShoppingItem, deleteShoppingItem, generateShoppingList } from '@/lib/storage';
+import { generatePrefixedId } from '@/lib/id';
 import ConfirmModal from '@/components/ConfirmModal';
 import CustomSelect from '@/components/CustomSelect';
 
@@ -62,7 +63,7 @@ export default function ShoppingList({ eventId, confirmedHeadcount }: ShoppingLi
     if (!name.trim()) return;
 
     const newItem: ShoppingItem = {
-      id: 'shop_' + Math.random().toString(36).substring(2, 9),
+      id: generatePrefixedId('shop'),
       eventId,
       category,
       name: name.trim(),

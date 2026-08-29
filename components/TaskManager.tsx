@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { TaskItem, TaskCategory, TaskPriority, TaskStatus } from '@/lib/types';
 import { getTasks, saveTask, deleteTask, generateDefaultTasks } from '@/lib/storage';
+import { generatePrefixedId } from '@/lib/id';
 import ConfirmModal from '@/components/ConfirmModal';
 import CustomSelect from '@/components/CustomSelect';
 import CustomDatePicker from '@/components/CustomDatePicker';
@@ -66,7 +67,7 @@ export default function TaskManager({ eventId, eventTitle }: TaskManagerProps) {
     if (!title.trim()) return;
 
     const newTask: TaskItem = {
-      id: 'tk_' + Math.random().toString(36).substring(2, 9),
+      id: generatePrefixedId('tk'),
       eventId,
       title: title.trim(),
       description: description.trim() || undefined,
