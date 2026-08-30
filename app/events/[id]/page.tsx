@@ -17,6 +17,7 @@ import {
 } from '@/lib/storage';
 import { generatePrefixedId } from '@/lib/id';
 import { subscribeToGuests, subscribeToEvent } from '@/lib/db';
+import { buildInviteUrl, buildEventUrl } from '@/lib/paths';
 
 import SkeletonLoader from '@/components/SkeletonLoader';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -111,14 +112,14 @@ export default function EventDetailPage() {
 
   const handleCopyInvite = () => {
     const inviteIdentifier = event?.inviteToken || eventId;
-    const link = `${window.location.origin}/invite/${inviteIdentifier}`;
+    const link = buildInviteUrl(inviteIdentifier);
     navigator.clipboard.writeText(link);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2500);
   };
 
   const handleCopyCoHostLink = () => {
-    const link = `${window.location.origin}/events/${eventId}`;
+    const link = buildEventUrl(eventId);
     navigator.clipboard.writeText(link);
     setCopiedCoHost(true);
     setTimeout(() => setCopiedCoHost(false), 2500);
@@ -222,7 +223,7 @@ export default function EventDetailPage() {
 
   const dietarySummary: DietarySummary = calculateDietarySummary(guests);
 
-  const inviteUrl = typeof window !== 'undefined' ? `${window.location.origin}/invite/${eventId}` : '';
+  const inviteUrl = buildInviteUrl(event.inviteToken || eventId);
   const waShareUrl = `https://wa.me/?text=${encodeURIComponent(`You're invited to ${event.title}! RSVP here: ${inviteUrl}`)}`;
   const emailShareUrl = `mailto:?subject=${encodeURIComponent(`You're invited: ${event.title}`)}&body=${encodeURIComponent(`Hi,\n\nI'd love for you to join us for ${event.title}!\n\nDate: ${event.date}\nTime: ${event.startTime}\n\nPlease RSVP here: ${inviteUrl}\n\nHope to see you there!`)}`;
 

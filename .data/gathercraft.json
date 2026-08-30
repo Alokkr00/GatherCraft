@@ -1,6 +1,47 @@
 {
   "events": [
     {
+      "id": "ev_36f150e4-610a-40d7-9dd5-080f6725c36e",
+      "inviteToken": "b2fe99f7583a4b76b259ab45ff5134b6",
+      "title": "E2E Cross-Device Celebration",
+      "ownerId": "current-host",
+      "coHostIds": [],
+      "templateId": "cocktail-party",
+      "status": "planning",
+      "purpose": {
+        "rawInput": "To bring together friends and new acquaintances for light bites, high-energy conversation, and introducing people who should know each other.",
+        "selectedStatement": "To bring together friends and new acquaintances for light bites, high-energy conversation, and introducing people who should know each other.",
+        "suggestions": {
+          "warm": "",
+          "bold": "",
+          "minimal": ""
+        },
+        "successCriteria": [
+          "Guests meet at least 3 people they did not know before",
+          "Hard end time enforced so guests leave wanting more",
+          "Icebreakers kick off within the first 30 minutes"
+        ],
+        "isPrivate": false
+      },
+      "date": "2026-09-06",
+      "startTime": "19:00",
+      "endTime": "21:00",
+      "timezone": "Asia/Calcutta",
+      "location": {
+        "name": "",
+        "address": "",
+        "notes": "",
+        "isTBD": false
+      },
+      "capacity": 15,
+      "totalBudget": 150,
+      "currency": "USD",
+      "coverAssetUrl": "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1200&auto=format&fit=crop",
+      "themeColor": "from-amber-500 to-rose-600",
+      "createdAt": "2026-08-30T12:48:10.133Z",
+      "updatedAt": "2026-08-30T12:48:10.299Z"
+    },
+    {
       "id": "ev_f5c8a2cc-a36c-4a9e-a45e-b507a550a74f",
       "inviteToken": "a393a8e9039f4b74851ab6b4a84c7b6c",
       "title": "E2E Cross-Device Celebration",
@@ -442,6 +483,30 @@
       "dietary": "",
       "accessibility": "",
       "updatedAt": "2026-08-29T14:11:16.202Z"
+    },
+    {
+      "id": "gst_8ee7816f-e08a-43ee-9b21-b69004cfa72a",
+      "eventId": "ev_36f150e4-610a-40d7-9dd5-080f6725c36e",
+      "name": "Sarah Tester",
+      "email": "sarah.tester@example.com",
+      "role": "guest",
+      "rsvpStatus": "yes",
+      "plusOnesAllowed": 0,
+      "plusOnesActual": 0,
+      "updatedAt": "2026-08-30T12:48:22.909Z"
+    },
+    {
+      "id": "gst_11c6a3eb677e4dbd",
+      "eventId": "ev_36f150e4-610a-40d7-9dd5-080f6725c36e",
+      "name": "Sarah Tester",
+      "email": "sarah.tester@example.com",
+      "role": "guest",
+      "rsvpStatus": "yes",
+      "plusOnesAllowed": 1,
+      "plusOnesActual": 0,
+      "dietary": "",
+      "accessibility": "",
+      "updatedAt": "2026-08-30T12:48:23.038Z"
     }
   ],
   "timeline": [],

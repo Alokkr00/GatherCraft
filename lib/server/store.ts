@@ -6,6 +6,7 @@ import {
   PublicInviteView, RSVPStatus 
 } from '@/lib/types';
 import { STARTER_TEMPLATES } from '@/lib/templates';
+import { getStorageFilePath, atomicWriteJsonSync, safeReadJsonSync } from '@/lib/server/paths';
 
 interface ServerDbSchema {
   events: PartyEvent[];
@@ -16,8 +17,7 @@ interface ServerDbSchema {
   shopping: ShoppingItem[];
 }
 
-const DATA_DIR = path.join(process.cwd(), '.data');
-const DATA_FILE = path.join(DATA_DIR, 'gathercraft.json');
+const DB_FILENAME = 'gathercraft.json';
 
 // In-memory cache for ultra-fast queries across requests
 let memoryCache: ServerDbSchema | null = null;
@@ -171,25 +171,7 @@ const INITIAL_SAMPLE_GUESTS: Guest[] = [
 function initDb(): ServerDbSchema {
   if (memoryCache) return memoryCache;
 
-  try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-
-    if (fs.existsSync(DATA_FILE)) {
-      const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-      const parsed = JSON.parse(raw) as ServerDbSchema;
-      if (parsed && Array.isArray(parsed.events)) {
-        memoryCache = parsed;
-        return memoryCache;
-      }
-    }
-  } catch (err) {
-    console.warn('Server file db read warning:', err);
-  }
-
-  // Default seed
-  memoryCache = {
+  const defaultSeed: ServerDbSchema = {
     events: INITIAL_SAMPLE_EVENTS,
     guests: INITIAL_SAMPLE_GUESTS,
     timeline: [],
@@ -198,6 +180,18 @@ function initDb(): ServerDbSchema {
     shopping: []
   };
 
+  try {
+    const dbPath = getStorageFilePath(DB_FILENAME);
+    const parsed = safeReadJsonSync<ServerDbSchema>(dbPath, defaultSeed);
+    if (parsed && Array.isArray(parsed.events)) {
+      memoryCache = parsed;
+      return memoryCache;
+    }
+  } catch (err) {
+    console.warn('Server file db initialization warning:', err);
+  }
+
+  memoryCache = defaultSeed;
   persistDb();
   return memoryCache;
 }
@@ -205,10 +199,8 @@ function initDb(): ServerDbSchema {
 function persistDb() {
   if (!memoryCache) return;
   try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-    fs.writeFileSync(DATA_FILE, JSON.stringify(memoryCache, null, 2), 'utf-8');
+    const dbPath = getStorageFilePath(DB_FILENAME);
+    atomicWriteJsonSync(dbPath, memoryCache);
   } catch (err) {
     console.warn('Server file db write warning:', err);
   }
