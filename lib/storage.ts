@@ -318,10 +318,29 @@ export const getGuests = (eventId?: string): Guest[] => {
   }
 };
 
+export const saveGuestLocalOnly = (guest: Guest): void => {
+  if (!isClient) return;
+  const allGuests = getGuests();
+  const index = allGuests.findIndex(g => 
+    g.id === guest.id || 
+    (g.eventId === guest.eventId && guest.email && g.email?.toLowerCase() === guest.email.toLowerCase()) ||
+    (g.eventId === guest.eventId && g.name.toLowerCase() === guest.name.toLowerCase())
+  );
+  const updatedGuest = { ...guest, updatedAt: new Date().toISOString() };
+  const updated = index >= 0
+    ? allGuests.map((g, i) => i === index ? updatedGuest : g)
+    : [...allGuests, updatedGuest];
+  localStorage.setItem(GUESTS_KEY, JSON.stringify(updated));
+};
+
 export const saveGuest = (guest: Guest): void => {
   if (!isClient) return;
   const allGuests = getGuests();
-  const index = allGuests.findIndex(g => g.id === guest.id);
+  const index = allGuests.findIndex(g => 
+    g.id === guest.id || 
+    (g.eventId === guest.eventId && guest.email && g.email?.toLowerCase() === guest.email.toLowerCase()) ||
+    (g.eventId === guest.eventId && g.name.toLowerCase() === guest.name.toLowerCase())
+  );
   const updatedGuest = { ...guest, updatedAt: new Date().toISOString() };
   const updated = index >= 0
     ? allGuests.map((g, i) => i === index ? updatedGuest : g)
@@ -371,7 +390,9 @@ export const updateGuestRSVP = (
 ): Guest => {
   const eventGuests = getGuests(eventId);
   let existing = eventGuests.find(
-    g => g.id === guestIdOrName || (data.email && g.email?.toLowerCase() === data.email.toLowerCase())
+    g => g.id === guestIdOrName || 
+         (data.email && g.email?.toLowerCase() === data.email.toLowerCase()) ||
+         (data.name && g.name.toLowerCase() === data.name.trim().toLowerCase())
   );
 
   if (existing) {
@@ -389,8 +410,12 @@ export const updateGuestRSVP = (
     saveGuest(updated);
     return updated;
   } else {
+    const guestId = (guestIdOrName && guestIdOrName.startsWith('gst_')) 
+      ? guestIdOrName 
+      : generatePrefixedId('gst');
+
     const newGuest: Guest = {
-      id: generatePrefixedId('gst'),
+      id: guestId,
       eventId,
       name: data.name || 'Guest',
       email: data.email,

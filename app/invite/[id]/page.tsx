@@ -9,7 +9,7 @@ import {
   AlertCircle, Hourglass
 } from 'lucide-react';
 import { PartyEvent, Guest, RSVPStatus, PublicInviteView } from '@/lib/types';
-import { getEventById, getGuests, updateGuestRSVP } from '@/lib/storage';
+import { getEventById, getGuests, saveGuestLocalOnly } from '@/lib/storage';
 import { subscribeToEvent, saveGuestCloud } from '@/lib/db';
 import SkeletonLoader from '@/components/SkeletonLoader';
 import CustomSelect from '@/components/CustomSelect';
@@ -147,8 +147,8 @@ function InviteContent() {
         updatedAt: new Date().toISOString()
       };
 
-      // 2. Update local storage & cloud
-      updateGuestRSVP(event?.id || eventId, savedGuest.id, savedGuest);
+      // 2. Cache in local storage safely without duplicate server POST
+      saveGuestLocalOnly(savedGuest);
       saveGuestCloud(savedGuest).catch(console.error);
 
       setGuest(savedGuest);

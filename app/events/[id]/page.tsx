@@ -54,13 +54,33 @@ export default function EventDetailPage() {
   const [guestRole, setGuestRole] = useState<GuestRole>('guest');
   const [plusOnesAllowed, setPlusOnesAllowed] = useState(0);
 
+  const deduplicateGuestList = (guestList: Guest[]): Guest[] => {
+    if (!Array.isArray(guestList)) return [];
+    const map = new Map<string, Guest>();
+    for (const g of guestList) {
+      const key = `${g.eventId}_${(g.email || g.name || '').toLowerCase().trim()}`;
+      if (!map.has(key)) {
+        map.set(key, g);
+      } else {
+        const existing = map.get(key)!;
+        map.set(key, {
+          ...existing,
+          ...g,
+          id: existing.id,
+          updatedAt: g.updatedAt || existing.updatedAt
+        });
+      }
+    }
+    return Array.from(map.values());
+  };
+
   useEffect(() => {
     loadEventData();
 
     // Attach real-time cloud Firestore listeners
     const unsubGuests = subscribeToGuests(eventId, (realtimeGuests) => {
       if (realtimeGuests.length > 0) {
-        setGuests(realtimeGuests);
+        setGuests(deduplicateGuestList(realtimeGuests));
       }
     });
 
@@ -83,7 +103,7 @@ export default function EventDetailPage() {
       setEvent(ev);
     }
     const gsts = getGuests(eventId);
-    setGuests(gsts);
+    setGuests(deduplicateGuestList(gsts));
 
     // 2. Authoritative Server Sync
     try {
@@ -102,7 +122,7 @@ export default function EventDetailPage() {
       if (gstRes.ok) {
         const gstData = await gstRes.json();
         if (Array.isArray(gstData.guests)) {
-          setGuests(gstData.guests);
+          setGuests(deduplicateGuestList(gstData.guests));
         }
       }
     } catch (err) {

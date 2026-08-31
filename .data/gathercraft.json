@@ -1,6 +1,47 @@
 {
   "events": [
     {
+      "id": "ev_adbf1195-98c7-4614-a6e3-2ab62c2808d3",
+      "inviteToken": "ae458285546244939a5a25d5f483cbdb",
+      "title": "E2E Cross-Device Celebration",
+      "ownerId": "current-host",
+      "coHostIds": [],
+      "templateId": "cocktail-party",
+      "status": "planning",
+      "purpose": {
+        "rawInput": "To bring together friends and new acquaintances for light bites, high-energy conversation, and introducing people who should know each other.",
+        "selectedStatement": "To bring together friends and new acquaintances for light bites, high-energy conversation, and introducing people who should know each other.",
+        "suggestions": {
+          "warm": "",
+          "bold": "",
+          "minimal": ""
+        },
+        "successCriteria": [
+          "Guests meet at least 3 people they did not know before",
+          "Hard end time enforced so guests leave wanting more",
+          "Icebreakers kick off within the first 30 minutes"
+        ],
+        "isPrivate": false
+      },
+      "date": "2026-09-07",
+      "startTime": "19:00",
+      "endTime": "21:00",
+      "timezone": "Asia/Calcutta",
+      "location": {
+        "name": "",
+        "address": "",
+        "notes": "",
+        "isTBD": false
+      },
+      "capacity": 15,
+      "totalBudget": 150,
+      "currency": "USD",
+      "coverAssetUrl": "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1200&auto=format&fit=crop",
+      "themeColor": "from-amber-500 to-rose-600",
+      "createdAt": "2026-08-31T10:15:28.840Z",
+      "updatedAt": "2026-08-31T10:15:28.938Z"
+    },
+    {
       "id": "ev_36f150e4-610a-40d7-9dd5-080f6725c36e",
       "inviteToken": "b2fe99f7583a4b76b259ab45ff5134b6",
       "title": "E2E Cross-Device Celebration",
@@ -395,22 +436,11 @@
       "email": "sarah.tester@example.com",
       "role": "guest",
       "rsvpStatus": "yes",
-      "plusOnesAllowed": 0,
-      "plusOnesActual": 0,
-      "updatedAt": "2026-08-29T13:47:33.941Z"
-    },
-    {
-      "id": "gst_9370215610764697",
-      "eventId": "ev_751dd1e2-30dd-445e-9c37-542c40901d10",
-      "name": "Sarah Tester",
-      "email": "sarah.tester@example.com",
-      "role": "guest",
-      "rsvpStatus": "yes",
       "plusOnesAllowed": 1,
       "plusOnesActual": 0,
+      "updatedAt": "2026-08-29T13:47:34.230Z",
       "dietary": "",
-      "accessibility": "",
-      "updatedAt": "2026-08-29T13:47:34.230Z"
+      "accessibility": ""
     },
     {
       "id": "gst_9603efd0-c436-4b46-947b-341bff3f2628",
@@ -419,22 +449,11 @@
       "email": "sarah.tester@example.com",
       "role": "guest",
       "rsvpStatus": "yes",
-      "plusOnesAllowed": 0,
-      "plusOnesActual": 0,
-      "updatedAt": "2026-08-29T13:49:32.651Z"
-    },
-    {
-      "id": "gst_5b6e8c2bba4d48aa",
-      "eventId": "ev_01d2dba4-4e8d-465d-ac39-85688d4d45f5",
-      "name": "Sarah Tester",
-      "email": "sarah.tester@example.com",
-      "role": "guest",
-      "rsvpStatus": "yes",
       "plusOnesAllowed": 1,
       "plusOnesActual": 0,
+      "updatedAt": "2026-08-29T13:49:33.002Z",
       "dietary": "",
-      "accessibility": "",
-      "updatedAt": "2026-08-29T13:49:33.002Z"
+      "accessibility": ""
     },
     {
       "id": "gst_ea689f1a-86c7-43e6-ba95-ef16846aea8d",
@@ -443,22 +462,11 @@
       "email": "sarah.tester@example.com",
       "role": "guest",
       "rsvpStatus": "yes",
-      "plusOnesAllowed": 0,
-      "plusOnesActual": 0,
-      "updatedAt": "2026-08-29T14:01:41.399Z"
-    },
-    {
-      "id": "gst_656fe3a36b72407c",
-      "eventId": "ev_fef4576a-4dff-423d-82fc-56227a8b4f4b",
-      "name": "Sarah Tester",
-      "email": "sarah.tester@example.com",
-      "role": "guest",
-      "rsvpStatus": "yes",
       "plusOnesAllowed": 1,
       "plusOnesActual": 0,
+      "updatedAt": "2026-08-29T14:01:41.540Z",
       "dietary": "",
-      "accessibility": "",
-      "updatedAt": "2026-08-29T14:01:41.540Z"
+      "accessibility": ""
     },
     {
       "id": "gst_1a9eef18-032a-4546-8f33-54b4cdfcc596",
@@ -467,22 +475,11 @@
       "email": "sarah.tester@example.com",
       "role": "guest",
       "rsvpStatus": "yes",
-      "plusOnesAllowed": 0,
-      "plusOnesActual": 0,
-      "updatedAt": "2026-08-29T14:11:15.314Z"
-    },
-    {
-      "id": "gst_4e4f0f7847a9454f",
-      "eventId": "ev_f5c8a2cc-a36c-4a9e-a45e-b507a550a74f",
-      "name": "Sarah Tester",
-      "email": "sarah.tester@example.com",
-      "role": "guest",
-      "rsvpStatus": "yes",
       "plusOnesAllowed": 1,
       "plusOnesActual": 0,
+      "updatedAt": "2026-08-29T14:11:16.202Z",
       "dietary": "",
-      "accessibility": "",
-      "updatedAt": "2026-08-29T14:11:16.202Z"
+      "accessibility": ""
     },
     {
       "id": "gst_8ee7816f-e08a-43ee-9b21-b69004cfa72a",
@@ -491,22 +488,22 @@
       "email": "sarah.tester@example.com",
       "role": "guest",
       "rsvpStatus": "yes",
-      "plusOnesAllowed": 0,
+      "plusOnesAllowed": 1,
       "plusOnesActual": 0,
-      "updatedAt": "2026-08-30T12:48:22.909Z"
+      "updatedAt": "2026-08-30T12:48:23.038Z",
+      "dietary": "",
+      "accessibility": ""
     },
     {
-      "id": "gst_11c6a3eb677e4dbd",
-      "eventId": "ev_36f150e4-610a-40d7-9dd5-080f6725c36e",
+      "id": "gst_89267da8-e724-46b9-89f9-f1c1f07b5ac4",
+      "eventId": "ev_adbf1195-98c7-4614-a6e3-2ab62c2808d3",
       "name": "Sarah Tester",
       "email": "sarah.tester@example.com",
       "role": "guest",
       "rsvpStatus": "yes",
-      "plusOnesAllowed": 1,
+      "plusOnesAllowed": 0,
       "plusOnesActual": 0,
-      "dietary": "",
-      "accessibility": "",
-      "updatedAt": "2026-08-30T12:48:23.038Z"
+      "updatedAt": "2026-08-31T10:15:32.763Z"
     }
   ],
   "timeline": [],

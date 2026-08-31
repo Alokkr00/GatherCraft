@@ -168,6 +168,27 @@ const INITIAL_SAMPLE_GUESTS: Guest[] = [
   }
 ];
 
+function deduplicateGuestList(guests: Guest[]): Guest[] {
+  if (!Array.isArray(guests)) return [];
+  const map = new Map<string, Guest>();
+  for (const g of guests) {
+    // Unique key: eventId + (email || name)
+    const key = `${g.eventId}_${(g.email || g.name || '').toLowerCase().trim()}`;
+    if (!map.has(key)) {
+      map.set(key, g);
+    } else {
+      const existing = map.get(key)!;
+      map.set(key, {
+        ...existing,
+        ...g,
+        id: existing.id,
+        updatedAt: g.updatedAt || existing.updatedAt
+      });
+    }
+  }
+  return Array.from(map.values());
+}
+
 function initDb(): ServerDbSchema {
   if (memoryCache) return memoryCache;
 
@@ -184,7 +205,9 @@ function initDb(): ServerDbSchema {
     const dbPath = getStorageFilePath(DB_FILENAME);
     const parsed = safeReadJsonSync<ServerDbSchema>(dbPath, defaultSeed);
     if (parsed && Array.isArray(parsed.events)) {
+      parsed.guests = deduplicateGuestList(parsed.guests || []);
       memoryCache = parsed;
+      persistDb();
       return memoryCache;
     }
   } catch (err) {
@@ -327,7 +350,16 @@ export async function getGuestsServer(eventId?: string): Promise<Guest[]> {
 export async function saveGuestServer(guestData: Partial<Guest> & { eventId: string; name: string }): Promise<Guest> {
   const db = initDb();
   const now = new Date().toISOString();
-  const existingIndex = guestData.id ? db.guests.findIndex(g => g.id === guestData.id) : -1;
+  const trimmedName = guestData.name.trim().toLowerCase();
+  const trimmedEmail = guestData.email?.trim().toLowerCase();
+
+  const existingIndex = db.guests.findIndex(g => 
+    g.eventId === guestData.eventId && (
+      (guestData.id && g.id === guestData.id) ||
+      (trimmedEmail && g.email && g.email.toLowerCase() === trimmedEmail) ||
+      (g.name.toLowerCase() === trimmedName)
+    )
+  );
 
   let guest: Guest;
   if (existingIndex >= 0) {
