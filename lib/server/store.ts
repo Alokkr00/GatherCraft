@@ -1,428 +1,345 @@
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
+import { prisma } from '@/lib/prisma';
 import { 
-  PartyEvent, Guest, TimelineItem, TaskItem, BudgetItem, ShoppingItem, 
-  PublicInviteView, RSVPStatus 
+  PartyEvent, Guest, TimelineItem, TaskItem, 
+  BudgetItem, ShoppingItem, PublicInviteView, RSVPStatus 
 } from '@/lib/types';
-import { STARTER_TEMPLATES } from '@/lib/templates';
-import { getStorageFilePath, atomicWriteJsonSync, safeReadJsonSync } from '@/lib/server/paths';
 
-interface ServerDbSchema {
-  events: PartyEvent[];
-  guests: Guest[];
-  timeline: TimelineItem[];
-  tasks: TaskItem[];
-  budget: BudgetItem[];
-  shopping: ShoppingItem[];
-}
+// ==========================================
+// PRISMA MODEL ADAPTERS
+// ==========================================
 
-const DB_FILENAME = 'gathercraft.json';
-
-// In-memory cache for ultra-fast queries across requests
-let memoryCache: ServerDbSchema | null = null;
-
-const INITIAL_SAMPLE_EVENTS: PartyEvent[] = [
-  {
-    id: 'sample-cocktail-party',
-    inviteToken: 'sample-cocktail-party',
-    title: 'Friday Sunset Cocktails & Bites',
-    ownerId: 'host-1',
-    templateId: 'cocktail-party',
-    status: 'planning',
+function prismaToPartyEvent(ev: any): PartyEvent {
+  return {
+    id: ev.id,
+    inviteToken: ev.inviteToken,
+    title: ev.title,
+    ownerId: ev.ownerId,
+    coHostIds: ev.coHosts ? ev.coHosts.map((u: any) => u.id) : [],
+    templateId: ev.templateId || undefined,
+    status: ev.status as any,
     purpose: {
-      rawInput: 'Host a fun cocktail gathering to introduce friends from different circles.',
-      selectedStatement: 'To bring together 15 friends from tech, design, and music for high-energy conversations, introducing people who should know each other.',
-      suggestions: {
-        warm: 'To create a cozy evening where old and new friends naturally connect over artisan drinks.',
-        bold: 'To host a fast-paced, high-impact mixer designed to spark new friendships and collaborations.',
-        minimal: 'To gather good people for great drinks and meaningful introductions.'
-      },
-      successCriteria: [
-        'Guests meet at least 3 people they did not know before',
-        'Enforce hard end time so everyone leaves energized',
-        'Serve signature house cocktail + non-alcoholic alternative'
-      ],
-      isPrivate: false
+      rawInput: ev.rawPurpose || '',
+      selectedStatement: ev.purposeStatement || ev.rawPurpose || '',
+      suggestions: { warm: '', bold: '', minimal: '' },
+      successCriteria: [],
+      isPrivate: ev.isPurposePrivate || false,
     },
-    date: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
-    startTime: '18:30',
-    endTime: '20:30',
-    timezone: 'America/Los_Angeles',
+    date: ev.date,
+    startTime: ev.startTime,
+    endTime: ev.endTime,
+    timezone: ev.timezone,
     location: {
-      address: '742 Evergreen Terrace, San Francisco, CA',
-      name: 'Host Penthouse Terrace',
-      notes: 'Ring bell #4B. Elevator to top floor.',
-      isTBD: false
+      name: ev.locationName || undefined,
+      address: ev.address || '',
+      notes: ev.locationNotes || undefined,
+      isTBD: ev.isLocationTBD,
     },
-    capacity: 16,
-    totalBudget: 200,
-    currency: 'USD',
-    coverAssetUrl: STARTER_TEMPLATES[0].coverImage,
-    themeColor: STARTER_TEMPLATES[0].themeColor,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'sample-birthday-dinner',
-    inviteToken: 'sample-birthday-dinner',
-    title: "Maya's 30th Milestone Birthday Dinner",
-    ownerId: 'host-1',
-    templateId: 'birthday-dinner',
-    status: 'completed',
-    purpose: {
-      rawInput: 'Celebrate Maya turning 30 with intimate storytelling and great food.',
-      selectedStatement: "To honor Maya's 30th birthday with 10 close friends sharing personal stories, gratitude, and a gourmet 3-course dinner.",
-      suggestions: {
-        warm: "To gather Maya's inner circle for a memorable feast filled with heartfelt toasts.",
-        bold: "To mark Maya's 30th milestone with an unforgettable dinner party and surprise guest tributes.",
-        minimal: "To celebrate Maya turning 30 with good food and great stories."
-      },
-      successCriteria: [
-        'Every guest shares one favorite memory or tribute during dessert',
-        '3-course meal served family style',
-        'Capture high-quality group photo before departure'
-      ],
-      isPrivate: false
-    },
-    date: new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0],
-    startTime: '19:00',
-    endTime: '22:00',
-    timezone: 'America/Los_Angeles',
-    location: {
-      address: '1288 Mission St, San Francisco, CA',
-      name: 'Private Dining Room - Osteria Bella',
-      notes: 'Reservation under Maya Lin.',
-      isTBD: false
-    },
-    capacity: 12,
-    totalBudget: 450,
-    currency: 'USD',
-    coverAssetUrl: STARTER_TEMPLATES[1].coverImage,
-    themeColor: STARTER_TEMPLATES[1].themeColor,
-    isClosed: true,
-    retrospective: {
-      rating: 5,
-      whatWorked: 'The toast round during dessert was incredible — everyone shared heartfelt memories. Food was served right on time.',
-      whatToImprove: 'Set up background music playlist earlier before guests arrive.',
-      completedAt: new Date(Date.now() - 3 * 86400000).toISOString(),
-      savedAsTemplate: true
-    },
-    createdAt: new Date(Date.now() - 10 * 86400000).toISOString(),
-    updatedAt: new Date(Date.now() - 3 * 86400000).toISOString()
-  }
-];
-
-const INITIAL_SAMPLE_GUESTS: Guest[] = [
-  {
-    id: 'guest-1',
-    eventId: 'sample-cocktail-party',
-    name: 'Alex Rivera',
-    email: 'alex@example.com',
-    phone: '+1 415-555-0192',
-    role: 'co-host',
-    rsvpStatus: 'yes',
-    plusOnesAllowed: 1,
-    plusOnesActual: 1,
-    dietary: 'Vegetarian',
-    notes: 'Bringing signature mezcal bottle',
-    checkInAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'guest-2',
-    eventId: 'sample-cocktail-party',
-    name: 'Sarah Chen',
-    email: 'sarah.c@example.com',
-    role: 'guest',
-    rsvpStatus: 'yes',
-    plusOnesAllowed: 0,
-    plusOnesActual: 0,
-    dietary: 'Gluten-Free',
-    notes: 'Introduced by Alex',
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'guest-3',
-    eventId: 'sample-cocktail-party',
-    name: 'Marcus Vance',
-    email: 'marcus@example.com',
-    role: 'guest',
-    rsvpStatus: 'maybe',
-    plusOnesAllowed: 1,
-    plusOnesActual: 0,
-    dietary: 'None',
-    updatedAt: new Date().toISOString()
-  },
-  {
-    id: 'guest-4',
-    eventId: 'sample-cocktail-party',
-    name: 'Elena Rostova',
-    email: 'elena@example.com',
-    role: 'guest',
-    rsvpStatus: 'no',
-    plusOnesAllowed: 0,
-    plusOnesActual: 0,
-    dietary: 'Nut allergy',
-    updatedAt: new Date().toISOString()
-  }
-];
-
-function deduplicateGuestList(guests: Guest[]): Guest[] {
-  if (!Array.isArray(guests)) return [];
-  const map = new Map<string, Guest>();
-  for (const g of guests) {
-    // Unique key: eventId + (email || name)
-    const key = `${g.eventId}_${(g.email || g.name || '').toLowerCase().trim()}`;
-    if (!map.has(key)) {
-      map.set(key, g);
-    } else {
-      const existing = map.get(key)!;
-      map.set(key, {
-        ...existing,
-        ...g,
-        id: existing.id,
-        updatedAt: g.updatedAt || existing.updatedAt
-      });
-    }
-  }
-  return Array.from(map.values());
-}
-
-function initDb(): ServerDbSchema {
-  if (memoryCache) return memoryCache;
-
-  const defaultSeed: ServerDbSchema = {
-    events: INITIAL_SAMPLE_EVENTS,
-    guests: INITIAL_SAMPLE_GUESTS,
-    timeline: [],
-    tasks: [],
-    budget: [],
-    shopping: []
+    capacity: ev.capacity,
+    totalBudget: ev.totalBudget,
+    currency: ev.currency,
+    coverAssetUrl: ev.coverAssetUrl || undefined,
+    themeColor: ev.themeColor || undefined,
+    isClosed: ev.status === 'completed',
+    retrospective: ev.retrospective
+      ? {
+          rating: ev.retrospective.rating || 5,
+          whatWorked: ev.retrospective.whatWorked || '',
+          whatToImprove: ev.retrospective.whatToImprove || '',
+          completedAt: ev.retrospective.completedAt?.toISOString() || new Date().toISOString(),
+          savedAsTemplate: false,
+        }
+      : undefined,
+    createdAt: ev.createdAt instanceof Date ? ev.createdAt.toISOString() : ev.createdAt,
+    updatedAt: ev.updatedAt instanceof Date ? ev.updatedAt.toISOString() : ev.updatedAt,
   };
-
-  try {
-    const dbPath = getStorageFilePath(DB_FILENAME);
-    const parsed = safeReadJsonSync<ServerDbSchema>(dbPath, defaultSeed);
-    if (parsed && Array.isArray(parsed.events)) {
-      parsed.guests = deduplicateGuestList(parsed.guests || []);
-      memoryCache = parsed;
-      persistDb();
-      return memoryCache;
-    }
-  } catch (err) {
-    console.warn('Server file db initialization warning:', err);
-  }
-
-  memoryCache = defaultSeed;
-  persistDb();
-  return memoryCache;
 }
 
-function persistDb() {
-  if (!memoryCache) return;
-  try {
-    const dbPath = getStorageFilePath(DB_FILENAME);
-    atomicWriteJsonSync(dbPath, memoryCache);
-  } catch (err) {
-    console.warn('Server file db write warning:', err);
-  }
+function prismaToGuest(g: any): Guest {
+  return {
+    id: g.id,
+    eventId: g.eventId,
+    name: g.name,
+    email: g.email || undefined,
+    phone: g.phone || undefined,
+    role: g.role as any,
+    rsvpStatus: g.rsvpStatus as any,
+    plusOnesAllowed: g.plusOnesAllowed,
+    plusOnesActual: g.plusOnesActual,
+    dietary: g.dietary || undefined,
+    accessibility: g.accessibility || undefined,
+    notes: g.notes || undefined,
+    checkInAt: g.checkInAt ? (g.checkInAt instanceof Date ? g.checkInAt.toISOString() : g.checkInAt) : undefined,
+    updatedAt: g.updatedAt instanceof Date ? g.updatedAt.toISOString() : g.updatedAt,
+  };
 }
 
-// --- EVENTS ---
+function prismaToTimeline(t: any): TimelineItem {
+  return {
+    id: t.id,
+    eventId: t.eventId,
+    title: t.title,
+    description: t.description || undefined,
+    offsetMinutes: t.offsetMinutes,
+    durationMinutes: t.durationMinutes,
+    isCompleted: t.isCompleted,
+    assigneeName: t.assigneeName || undefined,
+    orderIndex: t.order ?? 0,
+  };
+}
+
+function prismaToTask(t: any): TaskItem {
+  return {
+    id: t.id,
+    eventId: t.eventId,
+    title: t.title,
+    category: (t.category as any) || 'General',
+    priority: (t.priority as any) || 'medium',
+    status: (t.status as any) || 'todo',
+    updatedAt: t.updatedAt instanceof Date ? t.updatedAt.toISOString() : t.updatedAt,
+  };
+}
+
+function prismaToBudget(b: any): BudgetItem {
+  return {
+    id: b.id,
+    eventId: b.eventId,
+    name: b.name,
+    category: b.category || 'General',
+    plannedAmount: b.plannedAmount,
+    actualAmount: b.actualAmount ?? 0,
+    notes: b.notes || undefined,
+    updatedAt: b.updatedAt instanceof Date ? b.updatedAt.toISOString() : b.updatedAt,
+  };
+}
+
+function prismaToShopping(s: any): ShoppingItem {
+  return {
+    id: s.id,
+    eventId: s.eventId,
+    name: s.name,
+    category: s.category || 'General',
+    quantity: String(s.quantity ?? 1),
+    isPurchased: Boolean(s.isBought),
+  };
+}
+
+async function ensureUserExists(userId: string) {
+  await prisma.user.upsert({
+    where: { id: userId },
+    update: {},
+    create: {
+      id: userId,
+      email: `${userId}@gathercraft.local`,
+      name: 'Host',
+    },
+  });
+}
+
+// ==========================================
+// EVENTS CRUD
+// ==========================================
+
 export async function getEventsServer(ownerId?: string): Promise<PartyEvent[]> {
-  const db = initDb();
+  const where: any = {};
   if (ownerId && ownerId !== 'all') {
-    return db.events.filter(e => e.ownerId === ownerId || e.coHostIds?.includes(ownerId));
+    where.OR = [
+      { ownerId },
+      { coHosts: { some: { id: ownerId } } }
+    ];
   }
-  return db.events;
+
+  const events = await prisma.event.findMany({
+    where,
+    include: {
+      coHosts: true,
+      retrospective: true,
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return events.map(prismaToPartyEvent);
 }
 
 export async function getEventByIdServer(idOrToken: string): Promise<PartyEvent | null> {
-  const db = initDb();
-  const ev = db.events.find(e => e.id === idOrToken || e.inviteToken === idOrToken);
-  return ev || null;
+  const ev = await prisma.event.findFirst({
+    where: {
+      OR: [{ id: idOrToken }, { inviteToken: idOrToken }],
+    },
+    include: {
+      coHosts: true,
+      retrospective: true,
+    },
+  });
+
+  return ev ? prismaToPartyEvent(ev) : null;
 }
 
 export async function getPublicInviteServer(tokenOrId: string): Promise<PublicInviteView | null> {
-  const ev = await getEventByIdServer(tokenOrId);
+  const ev = await prisma.event.findFirst({
+    where: {
+      OR: [{ id: tokenOrId }, { inviteToken: tokenOrId }],
+    },
+    include: {
+      guests: {
+        where: { rsvpStatus: 'yes' },
+        select: { plusOnesActual: true },
+      },
+    },
+  });
+
   if (!ev) return null;
 
-  const db = initDb();
-  const confirmedGuests = db.guests.filter(g => g.eventId === ev.id && g.rsvpStatus === 'yes');
-  const confirmedCount = confirmedGuests.reduce((acc, g) => acc + 1 + (g.plusOnesActual || 0), 0);
+  const confirmedCount = ev.guests.reduce((acc, g) => acc + 1 + g.plusOnesActual, 0);
 
   return {
     id: ev.id,
-    inviteToken: ev.inviteToken || ev.id,
+    inviteToken: ev.inviteToken,
     title: ev.title,
     date: ev.date,
     startTime: ev.startTime,
     endTime: ev.endTime,
     timezone: ev.timezone,
-    locationName: ev.location.isTBD ? 'Location TBD' : (ev.location.name || 'Venue to be announced'),
-    address: ev.location.isTBD ? '' : (ev.location.address || ''),
-    isTBD: ev.location.isTBD,
-    publicPurpose: ev.purpose.isPrivate ? undefined : ev.purpose.selectedStatement,
-    themeColor: ev.themeColor,
-    coverAssetUrl: ev.coverAssetUrl,
+    locationName: ev.isLocationTBD ? 'Location TBD' : (ev.locationName || 'Venue to be announced'),
+    address: ev.isLocationTBD ? '' : (ev.address || ''),
+    isTBD: ev.isLocationTBD,
+    publicPurpose: ev.isPurposePrivate ? undefined : (ev.purposeStatement || ev.rawPurpose || undefined),
+    themeColor: ev.themeColor || undefined,
+    coverAssetUrl: ev.coverAssetUrl || undefined,
     capacity: ev.capacity,
-    status: ev.status,
-    confirmedCount
+    status: ev.status as any,
+    confirmedCount,
   };
 }
 
 export async function saveEventServer(eventData: Partial<PartyEvent> & { title: string }): Promise<PartyEvent> {
-  const db = initDb();
-  const now = new Date().toISOString();
-  
-  let event: PartyEvent;
-  const existingIndex = eventData.id ? db.events.findIndex(e => e.id === eventData.id) : -1;
+  const ownerId = eventData.ownerId || 'host-1';
+  await ensureUserExists(ownerId);
 
-  if (existingIndex >= 0) {
-    event = {
-      ...db.events[existingIndex],
-      ...eventData,
-      updatedAt: now
-    };
-    db.events[existingIndex] = event;
-  } else {
-    const id = eventData.id || `ev_${crypto.randomUUID()}`;
-    const inviteToken = eventData.inviteToken || crypto.randomUUID().replace(/-/g, '');
+  const id = eventData.id || `ev_${crypto.randomUUID()}`;
+  const inviteToken = eventData.inviteToken || crypto.randomUUID().replace(/-/g, '');
 
-    event = {
+  const data: any = {
+    title: eventData.title,
+    templateId: eventData.templateId || null,
+    status: eventData.status || 'planning',
+    rawPurpose: eventData.purpose?.rawInput || null,
+    purposeStatement: eventData.purpose?.selectedStatement || null,
+    isPurposePrivate: eventData.purpose?.isPrivate || false,
+    date: eventData.date || new Date().toISOString().split('T')[0],
+    startTime: eventData.startTime || '18:00',
+    endTime: eventData.endTime || '21:00',
+    timezone: eventData.timezone || 'UTC',
+    locationName: eventData.location?.name || null,
+    address: eventData.location?.address || '',
+    locationNotes: eventData.location?.notes || null,
+    isLocationTBD: eventData.location?.isTBD || false,
+    capacity: eventData.capacity || 20,
+    totalBudget: eventData.totalBudget || 0,
+    currency: eventData.currency || 'USD',
+    coverAssetUrl: eventData.coverAssetUrl || null,
+    themeColor: eventData.themeColor || null,
+  };
+
+  const saved = await prisma.event.upsert({
+    where: { id },
+    update: data,
+    create: {
+      ...data,
       id,
       inviteToken,
-      title: eventData.title,
-      ownerId: eventData.ownerId || `host_${crypto.randomUUID()}`,
-      coHostIds: eventData.coHostIds || [],
-      templateId: eventData.templateId,
-      status: eventData.status || 'planning',
-      purpose: eventData.purpose || {
-        rawInput: '',
-        selectedStatement: '',
-        isPrivate: false
-      },
-      date: eventData.date || new Date().toISOString().split('T')[0],
-      startTime: eventData.startTime || '18:00',
-      endTime: eventData.endTime || '21:00',
-      timezone: eventData.timezone || 'UTC',
-      location: eventData.location || { address: '', isTBD: true },
-      capacity: eventData.capacity || 20,
-      totalBudget: eventData.totalBudget || 0,
-      currency: eventData.currency || 'USD',
-      coverAssetUrl: eventData.coverAssetUrl,
-      themeColor: eventData.themeColor,
-      createdAt: eventData.createdAt || now,
-      updatedAt: now
-    };
-    db.events.unshift(event);
-  }
+      ownerId,
+    },
+    include: {
+      coHosts: true,
+      retrospective: true,
+    },
+  });
 
-  persistDb();
-  return event;
+  return prismaToPartyEvent(saved);
 }
 
 export async function deleteEventServer(id: string): Promise<boolean> {
-  const db = initDb();
-  const beforeLen = db.events.length;
-  db.events = db.events.filter(e => e.id !== id);
-  
-  if (db.events.length !== beforeLen) {
-    // Cascade deletions
-    db.guests = db.guests.filter(g => g.eventId !== id);
-    db.timeline = db.timeline.filter(t => t.eventId !== id);
-    db.tasks = db.tasks.filter(t => t.eventId !== id);
-    db.budget = db.budget.filter(b => b.eventId !== id);
-    db.shopping = db.shopping.filter(s => s.eventId !== id);
-    persistDb();
+  try {
+    await prisma.event.delete({ where: { id } });
     return true;
+  } catch {
+    return false;
   }
-  return false;
 }
 
-// --- GUESTS & RSVP ---
+// ==========================================
+// GUESTS & RSVP CRUD
+// ==========================================
+
 export async function getGuestsServer(eventId?: string): Promise<Guest[]> {
-  const db = initDb();
-  return eventId ? db.guests.filter(g => g.eventId === eventId) : db.guests;
+  const guests = await prisma.guest.findMany({
+    where: eventId ? { eventId } : undefined,
+    orderBy: { name: 'asc' },
+  });
+  return guests.map(prismaToGuest);
 }
 
 export async function saveGuestServer(guestData: Partial<Guest> & { eventId: string; name: string }): Promise<Guest> {
-  const db = initDb();
-  const now = new Date().toISOString();
-  const trimmedName = guestData.name.trim().toLowerCase();
-  const trimmedEmail = guestData.email?.trim().toLowerCase();
+  const trimmedName = guestData.name.trim();
+  const trimmedEmail = guestData.email?.trim().toLowerCase() || null;
 
-  const existingIndex = db.guests.findIndex(g => 
-    g.eventId === guestData.eventId && (
-      (guestData.id && g.id === guestData.id) ||
-      (trimmedEmail && g.email && g.email.toLowerCase() === trimmedEmail) ||
-      (g.name.toLowerCase() === trimmedName)
-    )
-  );
-
-  let guest: Guest;
-  if (existingIndex >= 0) {
-    guest = {
-      ...db.guests[existingIndex],
-      ...guestData,
-      updatedAt: now
-    };
-    db.guests[existingIndex] = guest;
-  } else {
-    guest = {
-      id: guestData.id || `gst_${crypto.randomUUID()}`,
-      eventId: guestData.eventId,
-      name: guestData.name.trim(),
-      email: guestData.email?.trim(),
-      phone: guestData.phone?.trim(),
-      role: guestData.role || 'guest',
-      rsvpStatus: guestData.rsvpStatus || 'yes',
-      plusOnesAllowed: guestData.plusOnesAllowed || 0,
-      plusOnesActual: guestData.plusOnesActual || 0,
-      dietary: guestData.dietary?.trim(),
-      accessibility: guestData.accessibility?.trim(),
-      notes: guestData.notes,
-      checkInAt: guestData.checkInAt,
-      updatedAt: now
-    };
-    db.guests.push(guest);
+  // Find existing guest by ID or (eventId + email) or (eventId + name)
+  let existing = null;
+  if (guestData.id) {
+    existing = await prisma.guest.findUnique({ where: { id: guestData.id } });
   }
 
-  persistDb();
-  return guest;
+  if (!existing) {
+    existing = await prisma.guest.findFirst({
+      where: {
+        eventId: guestData.eventId,
+        OR: [
+          ...(trimmedEmail ? [{ email: trimmedEmail }] : []),
+          { name: trimmedName },
+        ],
+      },
+    });
+  }
+
+  const payload: any = {
+    name: trimmedName,
+    email: trimmedEmail,
+    phone: guestData.phone?.trim() || null,
+    role: guestData.role || 'guest',
+    rsvpStatus: guestData.rsvpStatus || 'yes',
+    plusOnesAllowed: guestData.plusOnesAllowed || 0,
+    plusOnesActual: guestData.plusOnesActual || 0,
+    dietary: guestData.dietary?.trim() || null,
+    accessibility: guestData.accessibility?.trim() || null,
+    notes: guestData.notes || null,
+    checkInAt: guestData.checkInAt ? new Date(guestData.checkInAt) : null,
+  };
+
+  let saved;
+  if (existing) {
+    saved = await prisma.guest.update({
+      where: { id: existing.id },
+      data: payload,
+    });
+  } else {
+    saved = await prisma.guest.create({
+      data: {
+        ...payload,
+        id: guestData.id || `gst_${crypto.randomUUID()}`,
+        eventId: guestData.eventId,
+      },
+    });
+  }
+
+  return prismaToGuest(saved);
 }
 
 export async function deleteGuestServer(id: string): Promise<boolean> {
-  const db = initDb();
-  const initialLen = db.guests.length;
-  db.guests = db.guests.filter(g => g.id !== id);
-  if (db.guests.length !== initialLen) {
-    persistDb();
-    return true;
-  }
-  return false;
-}
-
-const eventLocks = new Map<string, Promise<any>>();
-
-export async function runWithEventLock<T>(eventId: string, fn: () => Promise<T>): Promise<T> {
-  const currentLock = eventLocks.get(eventId) || Promise.resolve();
-  let releaseLock: () => void;
-  const nextLock = new Promise<void>((resolve) => {
-    releaseLock = resolve;
-  });
-  
-  eventLocks.set(eventId, nextLock);
-
   try {
-    await currentLock;
-    return await fn();
-  } finally {
-    releaseLock!();
-    if (eventLocks.get(eventId) === nextLock) {
-      eventLocks.delete(eventId);
-    }
+    await prisma.guest.delete({ where: { id } });
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -436,224 +353,256 @@ export async function submitRsvpServer(params: {
   dietary?: string;
   accessibility?: string;
 }): Promise<{ success: boolean; guest?: Guest; waitlisted?: boolean; error?: string }> {
-  const ev = await getEventByIdServer(params.eventIdOrToken);
-  if (!ev) {
-    return { success: false, error: 'Event not found' };
-  }
+  try {
+    const ev = await prisma.event.findFirst({
+      where: {
+        OR: [{ id: params.eventIdOrToken }, { inviteToken: params.eventIdOrToken }],
+      },
+    });
 
-  return runWithEventLock(ev.id, async () => {
-    const db = initDb();
-    const existingGuest = db.guests.find(
-      g => g.eventId === ev.id && (
-        (params.email && g.email?.toLowerCase() === params.email.toLowerCase()) ||
-        g.name.toLowerCase() === params.name.trim().toLowerCase()
-      )
-    );
-
-  const plusOnes = Math.max(0, Math.min(5, Number(params.plusOnesActual) || 0));
-  let status = params.rsvpStatus;
-  let waitlisted = false;
-
-  // Capacity check
-  if (status === 'yes' && ev.capacity && ev.capacity > 0) {
-    const currentConfirmed = db.guests
-      .filter(g => g.eventId === ev.id && g.rsvpStatus === 'yes' && g.id !== existingGuest?.id)
-      .reduce((sum, g) => sum + 1 + (g.plusOnesActual || 0), 0);
-
-    if (currentConfirmed + 1 + plusOnes > ev.capacity) {
-      status = 'waitlist';
-      waitlisted = true;
+    if (!ev) {
+      return { success: false, error: 'Event not found' };
     }
+
+    const plusOnes = Math.max(0, Math.min(5, Number(params.plusOnesActual) || 0));
+    let status = params.rsvpStatus;
+    let waitlisted = false;
+
+    const result = await prisma.$transaction(async (tx) => {
+      const trimmedEmail = params.email?.trim().toLowerCase();
+      const existing = await tx.guest.findFirst({
+        where: {
+          eventId: ev.id,
+          OR: [
+            ...(trimmedEmail ? [{ email: trimmedEmail }] : []),
+            { name: params.name.trim() },
+          ],
+        },
+      });
+
+      // Atomic capacity check
+      if (status === 'yes' && ev.capacity > 0) {
+        const confirmedGuests = await tx.guest.findMany({
+          where: {
+            eventId: ev.id,
+            rsvpStatus: 'yes',
+            ...(existing ? { NOT: { id: existing.id } } : {}),
+          },
+        });
+        const currentCount = confirmedGuests.reduce((acc, g) => acc + 1 + g.plusOnesActual, 0);
+
+        if (currentCount + 1 + plusOnes > ev.capacity) {
+          status = 'waitlist';
+          waitlisted = true;
+        }
+      }
+
+      const guestData = {
+        name: params.name.trim(),
+        email: trimmedEmail || null,
+        phone: params.phone?.trim() || null,
+        role: existing?.role || 'guest',
+        rsvpStatus: status,
+        plusOnesAllowed: existing?.plusOnesAllowed || plusOnes,
+        plusOnesActual: plusOnes,
+        dietary: params.dietary?.trim() || null,
+        accessibility: params.accessibility?.trim() || null,
+      };
+
+      if (existing) {
+        return await tx.guest.update({
+          where: { id: existing.id },
+          data: guestData,
+        });
+      } else {
+        return await tx.guest.create({
+          data: {
+            ...guestData,
+            id: `gst_${crypto.randomUUID()}`,
+            eventId: ev.id,
+          },
+        });
+      }
+    });
+
+    return { success: true, guest: prismaToGuest(result), waitlisted };
+  } catch (err: any) {
+    console.error('Prisma submitRsvpServer error:', err);
+    return { success: false, error: err.message || 'Failed to submit RSVP' };
   }
-
-  const saved = await saveGuestServer({
-    id: existingGuest?.id,
-    eventId: ev.id,
-    name: params.name.trim(),
-    email: params.email?.trim() || undefined,
-    phone: params.phone?.trim() || undefined,
-    role: existingGuest?.role || 'guest',
-    rsvpStatus: status,
-    plusOnesAllowed: existingGuest?.plusOnesAllowed || plusOnes,
-    plusOnesActual: plusOnes,
-    dietary: params.dietary?.trim() || undefined,
-    accessibility: params.accessibility?.trim() || undefined
-  });
-
-    return { success: true, guest: saved, waitlisted };
-  });
 }
 
-// --- TIMELINE ---
+// ==========================================
+// TIMELINE CRUD
+// ==========================================
+
 export async function getTimelineItemsServer(eventId?: string): Promise<TimelineItem[]> {
-  const db = initDb();
-  return eventId ? db.timeline.filter(t => t.eventId === eventId) : db.timeline;
+  const items = await prisma.timelineItem.findMany({
+    where: eventId ? { eventId } : undefined,
+    orderBy: { offsetMinutes: 'asc' },
+  });
+  return items.map(prismaToTimeline);
 }
 
 export async function saveTimelineItemServer(itemData: Partial<TimelineItem> & { eventId: string; title: string }): Promise<TimelineItem> {
-  const db = initDb();
-  const existingIndex = itemData.id ? db.timeline.findIndex(t => t.id === itemData.id) : -1;
-  let item: TimelineItem;
+  const id = itemData.id || `time_${crypto.randomUUID()}`;
+  const payload: any = {
+    title: itemData.title,
+    description: itemData.description || null,
+    offsetMinutes: itemData.offsetMinutes || 0,
+    durationMinutes: itemData.durationMinutes || 30,
+    isCompleted: itemData.isCompleted || false,
+    assigneeName: itemData.assigneeName || null,
+    order: (itemData as any).orderIndex ?? (itemData as any).order ?? 0,
+  };
 
-  if (existingIndex >= 0) {
-    item = { ...db.timeline[existingIndex], ...itemData };
-    db.timeline[existingIndex] = item;
-  } else {
-    item = {
-      id: itemData.id || `tl_${crypto.randomUUID()}`,
+  const saved = await prisma.timelineItem.upsert({
+    where: { id },
+    update: payload,
+    create: {
+      ...payload,
+      id,
       eventId: itemData.eventId,
-      title: itemData.title,
-      description: itemData.description,
-      offsetMinutes: itemData.offsetMinutes || 0,
-      durationMinutes: itemData.durationMinutes || 30,
-      assigneeName: itemData.assigneeName,
-      isCompleted: itemData.isCompleted || false,
-      orderIndex: itemData.orderIndex || db.timeline.length
-    };
-    db.timeline.push(item);
-  }
-  persistDb();
-  return item;
+    },
+  });
+
+  return prismaToTimeline(saved);
 }
 
 export async function deleteTimelineItemServer(id: string): Promise<boolean> {
-  const db = initDb();
-  const len = db.timeline.length;
-  db.timeline = db.timeline.filter(t => t.id !== id);
-  if (db.timeline.length !== len) {
-    persistDb();
+  try {
+    await prisma.timelineItem.delete({ where: { id } });
     return true;
+  } catch {
+    return false;
   }
-  return false;
 }
 
-// --- TASKS ---
+// ==========================================
+// TASKS CRUD
+// ==========================================
+
 export async function getTasksServer(eventId?: string): Promise<TaskItem[]> {
-  const db = initDb();
-  return eventId ? db.tasks.filter(t => t.eventId === eventId) : db.tasks;
+  const tasks = await prisma.task.findMany({
+    where: eventId ? { eventId } : undefined,
+    orderBy: { updatedAt: 'desc' },
+  });
+  return tasks.map(prismaToTask);
 }
 
 export async function saveTaskServer(taskData: Partial<TaskItem> & { eventId: string; title: string }): Promise<TaskItem> {
-  const db = initDb();
-  const now = new Date().toISOString();
-  const existingIndex = taskData.id ? db.tasks.findIndex(t => t.id === taskData.id) : -1;
-  let task: TaskItem;
+  const id = taskData.id || `tk_${crypto.randomUUID()}`;
+  const payload: any = {
+    title: taskData.title,
+    category: taskData.category || 'General',
+    priority: taskData.priority || 'medium',
+    status: taskData.status || 'todo',
+  };
 
-  if (existingIndex >= 0) {
-    task = { ...db.tasks[existingIndex], ...taskData, updatedAt: now };
-    db.tasks[existingIndex] = task;
-  } else {
-    task = {
-      id: taskData.id || `tk_${crypto.randomUUID()}`,
+  const saved = await prisma.task.upsert({
+    where: { id },
+    update: payload,
+    create: {
+      ...payload,
+      id,
       eventId: taskData.eventId,
-      title: taskData.title,
-      description: taskData.description,
-      category: taskData.category || 'Setup',
-      assigneeName: taskData.assigneeName,
-      dueDate: taskData.dueDate,
-      priority: taskData.priority || 'medium',
-      status: taskData.status || 'todo',
-      linkedBudgetItemId: taskData.linkedBudgetItemId,
-      updatedAt: now
-    };
-    db.tasks.push(task);
-  }
-  persistDb();
-  return task;
+    },
+  });
+
+  return prismaToTask(saved);
 }
 
 export async function deleteTaskServer(id: string): Promise<boolean> {
-  const db = initDb();
-  const len = db.tasks.length;
-  db.tasks = db.tasks.filter(t => t.id !== id);
-  if (db.tasks.length !== len) {
-    persistDb();
+  try {
+    await prisma.task.delete({ where: { id } });
     return true;
+  } catch {
+    return false;
   }
-  return false;
 }
 
-// --- BUDGET ---
+// ==========================================
+// BUDGET CRUD
+// ==========================================
+
 export async function getBudgetItemsServer(eventId?: string): Promise<BudgetItem[]> {
-  const db = initDb();
-  return eventId ? db.budget.filter(b => b.eventId === eventId) : db.budget;
+  const items = await prisma.budgetItem.findMany({
+    where: eventId ? { eventId } : undefined,
+    orderBy: { updatedAt: 'desc' },
+  });
+  return items.map(prismaToBudget);
 }
 
 export async function saveBudgetItemServer(itemData: Partial<BudgetItem> & { eventId: string; name: string }): Promise<BudgetItem> {
-  const db = initDb();
-  const now = new Date().toISOString();
-  const existingIndex = itemData.id ? db.budget.findIndex(b => b.id === itemData.id) : -1;
-  let item: BudgetItem;
+  const id = itemData.id || `bud_${crypto.randomUUID()}`;
+  const payload: any = {
+    name: itemData.name,
+    category: itemData.category || 'General',
+    plannedAmount: itemData.plannedAmount || 0,
+    actualAmount: itemData.actualAmount || null,
+    notes: itemData.notes || null,
+  };
 
-  if (existingIndex >= 0) {
-    item = { ...db.budget[existingIndex], ...itemData, updatedAt: now };
-    db.budget[existingIndex] = item;
-  } else {
-    item = {
-      id: itemData.id || `bg_${crypto.randomUUID()}`,
+  const saved = await prisma.budgetItem.upsert({
+    where: { id },
+    update: payload,
+    create: {
+      ...payload,
+      id,
       eventId: itemData.eventId,
-      category: itemData.category || 'General',
-      name: itemData.name,
-      plannedAmount: Number(itemData.plannedAmount) || 0,
-      actualAmount: Number(itemData.actualAmount) || 0,
-      vendor: itemData.vendor,
-      notes: itemData.notes,
-      updatedAt: now
-    };
-    db.budget.push(item);
-  }
-  persistDb();
-  return item;
+    },
+  });
+
+  return prismaToBudget(saved);
 }
 
 export async function deleteBudgetItemServer(id: string): Promise<boolean> {
-  const db = initDb();
-  const len = db.budget.length;
-  db.budget = db.budget.filter(b => b.id !== id);
-  if (db.budget.length !== len) {
-    persistDb();
+  try {
+    await prisma.budgetItem.delete({ where: { id } });
     return true;
+  } catch {
+    return false;
   }
-  return false;
 }
 
-// --- SHOPPING ---
+// ==========================================
+// SHOPPING CRUD
+// ==========================================
+
 export async function getShoppingItemsServer(eventId?: string): Promise<ShoppingItem[]> {
-  const db = initDb();
-  return eventId ? db.shopping.filter(s => s.eventId === eventId) : db.shopping;
+  const items = await prisma.shoppingItem.findMany({
+    where: eventId ? { eventId } : undefined,
+  });
+  return items.map(prismaToShopping);
 }
 
 export async function saveShoppingItemServer(itemData: Partial<ShoppingItem> & { eventId: string; name: string }): Promise<ShoppingItem> {
-  const db = initDb();
-  const existingIndex = itemData.id ? db.shopping.findIndex(s => s.id === itemData.id) : -1;
-  let item: ShoppingItem;
+  const id = itemData.id || `shop_${crypto.randomUUID()}`;
+  const payload: any = {
+    name: itemData.name,
+    quantity: typeof itemData.quantity === 'number' ? itemData.quantity : (parseInt(String(itemData.quantity), 10) || 1),
+    category: itemData.category || 'General',
+    isBought: Boolean((itemData as any).isPurchased ?? (itemData as any).isBought ?? false),
+  };
 
-  if (existingIndex >= 0) {
-    item = { ...db.shopping[existingIndex], ...itemData };
-    db.shopping[existingIndex] = item;
-  } else {
-    item = {
-      id: itemData.id || `sh_${crypto.randomUUID()}`,
+  const saved = await prisma.shoppingItem.upsert({
+    where: { id },
+    update: payload,
+    create: {
+      ...payload,
+      id,
       eventId: itemData.eventId,
-      category: itemData.category || 'Other',
-      name: itemData.name,
-      quantity: itemData.quantity || '1',
-      isPurchased: itemData.isPurchased || false,
-      assignedTo: itemData.assignedTo
-    };
-    db.shopping.push(item);
-  }
-  persistDb();
-  return item;
+    },
+  });
+
+  return prismaToShopping(saved);
 }
 
 export async function deleteShoppingItemServer(id: string): Promise<boolean> {
-  const db = initDb();
-  const len = db.shopping.length;
-  db.shopping = db.shopping.filter(s => s.id !== id);
-  if (db.shopping.length !== len) {
-    persistDb();
+  try {
+    await prisma.shoppingItem.delete({ where: { id } });
     return true;
+  } catch {
+    return false;
   }
-  return false;
 }

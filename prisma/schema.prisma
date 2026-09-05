@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String?
+  image        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  ownedEvents    Event[]        @relation("Owner")
+  coHostedEvents Event[]        @relation("CoHosts")
+  assignedSteps  TimelineItem[]
+  assignedTasks  Task[]
+}
+
+model Event {
+  id               String   @id @default(cuid())
+  inviteToken      String   @unique
+  title            String
+  ownerId          String
+  owner            User     @relation("Owner", fields: [ownerId], references: [id])
+  coHosts          User[]   @relation("CoHosts")
+  templateId       String?
+  status           String   @default("planning") // planning | live | completed
+  
+  // Purpose
+  rawPurpose       String?
+  purposeStatement String?
+  isPurposePrivate Boolean  @default(false)
+  
+  // Date & Logistics
+  date             String   // YYYY-MM-DD
+  startTime        String   // HH:mm
+  endTime          String   // HH:mm
+  timezone         String   @default("UTC")
+  locationName     String?
+  address          String?
+  locationNotes    String?
+  isLocationTBD    Boolean  @default(false)
+  
+  // Visuals & Budget
+  capacity         Int      @default(20)
+  totalBudget      Float    @default(0)
+  currency         String   @default("USD")
+  coverAssetUrl    String?
+  themeColor       String?  @default("from-amber-500 to-rose-600")
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  guests           Guest[]
+  timeline         TimelineItem[]
+  tasks            Task[]
+  budget           BudgetItem[]
+  shopping         ShoppingItem[]
+  retrospective    Retrospective?
+}
+
+model Guest {
+  id              String    @id @default(cuid())
+  eventId         String
+  event           Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name            String
+  email           String?
+  phone           String?
+  role            String    @default("guest")
+  rsvpStatus      String    @default("pending") // yes | no | maybe | waitlist | pending
+  plusOnesAllowed Int       @default(0)
+  plusOnesActual  Int       @default(0)
+  dietary         String?
+  accessibility   String?
+  notes           String?
+  checkInAt       DateTime?
+  inviteToken     String?   @unique
+  updatedAt       DateTime  @updatedAt
+
+  @@index([eventId])
+}
+
+model TimelineItem {
+  id              String   @id @default(cuid())
+  eventId         String
+  event           Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  title           String
+  description     String?
+  offsetMinutes   Int      @default(0)
+  durationMinutes Int      @default(30)
+  isCompleted     Boolean  @default(false)
+  assigneeName    String?
+  assigneeId      String?
+  assignee        User?    @relation(fields: [assigneeId], references: [id])
+  order           Int      @default(0)
+  updatedAt       DateTime @updatedAt
+
+  @@index([eventId])
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  title       String
+  category    String?
+  priority    String   @default("medium")
+  status      String   @default("todo") // todo | in-progress | done
+  assigneeId  String?
+  assignee    User?    @relation(fields: [assigneeId], references: [id])
+  updatedAt   DateTime @updatedAt
+
+  @@index([eventId])
+}
+
+model BudgetItem {
+  id            String   @id @default(cuid())
+  eventId       String
+  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name          String
+  category      String?
+  plannedAmount Float    @default(0)
+  actualAmount  Float?
+  notes         String?
+  updatedAt     DateTime @updatedAt
+
+  @@index([eventId])
+}
+
+model ShoppingItem {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name      String
+  quantity  Int      @default(1)
+  unit      String?
+  category  String?
+  isBought  Boolean  @default(false)
+
+  @@index([eventId])
+}
+
+model Retrospective {
+  id            String    @id @default(cuid())
+  eventId       String    @unique
+  event         Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  rating        Int?
+  whatWorked    String?
+  whatToImprove String?
+  completedAt   DateTime?
+}

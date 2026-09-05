@@ -34,3 +34,9 @@ next-env.d.ts
 Thumbs.db
 .vscode/
 .idea/
+
+# Database
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
