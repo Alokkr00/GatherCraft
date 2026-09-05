@@ -404,6 +404,28 @@ export async function deleteGuestServer(id: string): Promise<boolean> {
   return false;
 }
 
+const eventLocks = new Map<string, Promise<any>>();
+
+export async function runWithEventLock<T>(eventId: string, fn: () => Promise<T>): Promise<T> {
+  const currentLock = eventLocks.get(eventId) || Promise.resolve();
+  let releaseLock: () => void;
+  const nextLock = new Promise<void>((resolve) => {
+    releaseLock = resolve;
+  });
+  
+  eventLocks.set(eventId, nextLock);
+
+  try {
+    await currentLock;
+    return await fn();
+  } finally {
+    releaseLock!();
+    if (eventLocks.get(eventId) === nextLock) {
+      eventLocks.delete(eventId);
+    }
+  }
+}
+
 export async function submitRsvpServer(params: {
   eventIdOrToken: string;
   name: string;
@@ -419,13 +441,14 @@ export async function submitRsvpServer(params: {
     return { success: false, error: 'Event not found' };
   }
 
-  const db = initDb();
-  const existingGuest = db.guests.find(
-    g => g.eventId === ev.id && (
-      (params.email && g.email?.toLowerCase() === params.email.toLowerCase()) ||
-      g.name.toLowerCase() === params.name.trim().toLowerCase()
-    )
-  );
+  return runWithEventLock(ev.id, async () => {
+    const db = initDb();
+    const existingGuest = db.guests.find(
+      g => g.eventId === ev.id && (
+        (params.email && g.email?.toLowerCase() === params.email.toLowerCase()) ||
+        g.name.toLowerCase() === params.name.trim().toLowerCase()
+      )
+    );
 
   const plusOnes = Math.max(0, Math.min(5, Number(params.plusOnesActual) || 0));
   let status = params.rsvpStatus;
@@ -457,7 +480,8 @@ export async function submitRsvpServer(params: {
     accessibility: params.accessibility?.trim() || undefined
   });
 
-  return { success: true, guest: saved, waitlisted };
+    return { success: true, guest: saved, waitlisted };
+  });
 }
 
 // --- TIMELINE ---

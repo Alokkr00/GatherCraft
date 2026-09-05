@@ -1,6 +1,47 @@
 {
   "events": [
     {
+      "id": "ev_752edbc2-82a4-4fbe-a2f0-87496754692c",
+      "inviteToken": "9fab42757bb24714807d6a601739a175",
+      "title": "E2E Cross-Device Celebration",
+      "ownerId": "current-host",
+      "coHostIds": [],
+      "templateId": "cocktail-party",
+      "status": "planning",
+      "purpose": {
+        "rawInput": "To bring together friends and new acquaintances for light bites, high-energy conversation, and introducing people who should know each other.",
+        "selectedStatement": "To bring together friends and new acquaintances for light bites, high-energy conversation, and introducing people who should know each other.",
+        "suggestions": {
+          "warm": "",
+          "bold": "",
+          "minimal": ""
+        },
+        "successCriteria": [
+          "Guests meet at least 3 people they did not know before",
+          "Hard end time enforced so guests leave wanting more",
+          "Icebreakers kick off within the first 30 minutes"
+        ],
+        "isPrivate": false
+      },
+      "date": "2026-09-12",
+      "startTime": "19:00",
+      "endTime": "21:00",
+      "timezone": "Asia/Calcutta",
+      "location": {
+        "name": "",
+        "address": "",
+        "notes": "",
+        "isTBD": false
+      },
+      "capacity": 15,
+      "totalBudget": 150,
+      "currency": "USD",
+      "coverAssetUrl": "https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1200&auto=format&fit=crop",
+      "themeColor": "from-amber-500 to-rose-600",
+      "createdAt": "2026-09-05T10:44:16.289Z",
+      "updatedAt": "2026-09-05T10:44:16.376Z"
+    },
+    {
       "id": "ev_adbf1195-98c7-4614-a6e3-2ab62c2808d3",
       "inviteToken": "ae458285546244939a5a25d5f483cbdb",
       "title": "E2E Cross-Device Celebration",
@@ -504,6 +545,17 @@
       "plusOnesAllowed": 0,
       "plusOnesActual": 0,
       "updatedAt": "2026-08-31T10:15:32.763Z"
+    },
+    {
+      "id": "gst_097f4c58-23cb-45d2-aa5c-8ea19a70aff6",
+      "eventId": "ev_752edbc2-82a4-4fbe-a2f0-87496754692c",
+      "name": "Sarah Tester",
+      "email": "sarah.tester@example.com",
+      "role": "guest",
+      "rsvpStatus": "yes",
+      "plusOnesAllowed": 0,
+      "plusOnesActual": 0,
+      "updatedAt": "2026-09-05T10:44:22.560Z"
     }
   ],
   "timeline": [],
