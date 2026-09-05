@@ -13,6 +13,7 @@ import {
   getEventById, getGuests, getTimelineItems, 
   toggleGuestCheckIn, saveTimelineItem, closeEvent 
 } from '@/lib/storage';
+import { getActiveTimelineStep } from '@/lib/event-time';
 
 import SkeletonLoader from '@/components/SkeletonLoader';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -26,6 +27,7 @@ export default function LiveModePage() {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [timeline, setTimeline] = useState<TimelineItem[]>([]);
   const [guestSearch, setGuestSearch] = useState('');
+  const [now, setNow] = useState(new Date());
 
   const [aiTip, setAiTip] = useState<string>('');
   const [aiTipLoading, setAiTipLoading] = useState<boolean>(false);
@@ -37,6 +39,18 @@ export default function LiveModePage() {
 
   const activeStep = timeline.find(t => !t.isCompleted);
   const completedSteps = timeline.filter(t => t.isCompleted).length;
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 10000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const timelineStatus = event 
+    ? getActiveTimelineStep(event.date, event.startTime, timeline, now)
+    : { activeStep: null, nextStep: null, status: 'complete' as const, driftMinutes: 0, humanDrift: 'Loading...' };
+
+  const currentDisplayStep = activeStep || timelineStatus.activeStep;
+  const nextDisplayStep = timelineStatus.nextStep;
 
   useEffect(() => {
     loadLiveData();
@@ -160,46 +174,102 @@ export default function LiveModePage() {
             style={{ width: `${totalHeadcount > 0 ? Math.min(100, (checkedInCount / totalHeadcount) * 100) : 0}%` }}
           />
         </div>
+
+        {/* Dietary Summary Glance Bar */}
+        {guests.some(g => g.dietary && g.dietary.trim() && g.dietary.toLowerCase() !== 'none') && (
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-1.5 max-w-md mx-auto">
+            {Array.from(new Set(guests.map(g => g.dietary?.trim()).filter(Boolean))).map((diet, idx) => (
+              <span key={idx} className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                ⚠️ {diet}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Active Run-of-Show Step Runner */}
-      <div className="glass-panel p-6 rounded-3xl border border-indigo-500/30 space-y-4">
-        <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-indigo-400">
-          <span className="flex items-center gap-1.5">
+      {/* Glanceable Heads-Up Display: NOW & NEXT */}
+      <div className="glass-panel p-6 rounded-3xl border border-indigo-500/30 space-y-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-400">
             <Clock className="w-4 h-4" />
-            Active Timeline Step ({completedSteps}/{timeline.length})
+            <span>Run-of-Show HUD ({completedSteps}/{timeline.length})</span>
+          </div>
+
+          <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${
+            timelineStatus.driftMinutes > 5
+              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+              : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+          }`}>
+            {timelineStatus.humanDrift}
           </span>
         </div>
 
-        {activeStep ? (
-          <div className="space-y-3 bg-indigo-950/40 p-4 rounded-2xl border border-indigo-500/30">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* NOW Card */}
+          <div className="p-4 rounded-2xl bg-indigo-950/50 border border-indigo-500/40 space-y-3 relative overflow-hidden">
             <div className="flex items-center justify-between">
-              <span className="px-2.5 py-1 rounded-lg text-xs font-bold font-mono bg-indigo-500/30 text-indigo-200">
-                +{activeStep.offsetMinutes}m ({activeStep.durationMinutes} mins)
+              <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-indigo-500 text-white">
+                NOW ACTIVE
               </span>
-              {activeStep.assigneeName && (
-                <span className="text-xs text-violet-300 font-semibold">
-                  Leader: {activeStep.assigneeName}
+              {currentDisplayStep && (
+                <span className="text-[11px] font-mono text-indigo-300">
+                  +{currentDisplayStep.offsetMinutes}m • {currentDisplayStep.durationMinutes}m duration
                 </span>
               )}
             </div>
 
-            <h3 className="text-lg font-bold text-white">{activeStep.title}</h3>
-            {activeStep.description && <p className="text-xs text-slate-300">{activeStep.description}</p>}
+            {currentDisplayStep ? (
+              <div className="space-y-2">
+                <h3 className="text-base sm:text-lg font-black text-white">{currentDisplayStep.title}</h3>
+                {currentDisplayStep.description && (
+                  <p className="text-xs text-slate-300 line-clamp-2">{currentDisplayStep.description}</p>
+                )}
+                {currentDisplayStep.assigneeName && (
+                  <p className="text-[11px] text-violet-300 font-semibold">
+                    Leader: {currentDisplayStep.assigneeName}
+                  </p>
+                )}
+                <button
+                  onClick={() => handleStepComplete(currentDisplayStep)}
+                  className="mt-2 w-full py-2.5 rounded-xl font-bold text-xs text-white bg-emerald-600 hover:bg-emerald-500 transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/30"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Mark Completed</span>
+                </button>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-400 italic py-4">All milestones concluded or scheduled time complete.</p>
+            )}
+          </div>
 
-            <button
-              onClick={() => handleStepComplete(activeStep)}
-              className="w-full py-3 rounded-xl font-bold text-xs text-white bg-emerald-600 hover:bg-emerald-500 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30"
-            >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>Mark Step Completed</span>
-            </button>
+          {/* NEXT Card */}
+          <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-slate-800 text-slate-300">
+                UPCOMING NEXT
+              </span>
+              {nextDisplayStep && (
+                <span className="text-[11px] font-mono text-slate-400">
+                  +{nextDisplayStep.offsetMinutes}m • {nextDisplayStep.durationMinutes}m
+                </span>
+              )}
+            </div>
+
+            {nextDisplayStep ? (
+              <div className="space-y-1">
+                <h3 className="text-base font-bold text-slate-200">{nextDisplayStep.title}</h3>
+                {nextDisplayStep.description && (
+                  <p className="text-xs text-slate-400 line-clamp-2">{nextDisplayStep.description}</p>
+                )}
+                {nextDisplayStep.assigneeName && (
+                  <p className="text-[11px] text-slate-400">Leader: {nextDisplayStep.assigneeName}</p>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-slate-500 italic py-4">Final activity of the gathering.</p>
+            )}
           </div>
-        ) : (
-          <div className="text-center p-4 text-xs text-slate-400 italic">
-            🎉 All timeline steps completed! Enforce hard end time and thank guests.
-          </div>
-        )}
+        </div>
       </div>
 
       {/* AI Host Coaching Prompt */}

@@ -5,6 +5,7 @@ import {
 import { STARTER_TEMPLATES } from './templates';
 import { saveEventCloud, deleteEventCloud, saveGuestCloud } from './db';
 import { generatePrefixedId } from './id';
+import { getCurrentHostId } from './host-session';
 
 const EVENTS_KEY = 'party_planner_events';
 const GUESTS_KEY = 'party_planner_guests';
@@ -261,7 +262,7 @@ export const saveEventAsync = async (event: Partial<PartyEvent> & { title: strin
     id: event.id || generatePrefixedId('ev'),
     inviteToken: event.inviteToken || generatePrefixedId('inv'),
     title: event.title,
-    ownerId: event.ownerId || 'current-host',
+    ownerId: event.ownerId || getCurrentHostId(),
     status: event.status || 'planning',
     purpose: event.purpose || { rawInput: '', selectedStatement: '', isPrivate: false },
     date: event.date || new Date().toISOString().split('T')[0],

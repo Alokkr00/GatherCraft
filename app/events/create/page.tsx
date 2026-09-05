@@ -10,6 +10,7 @@ import {
 import { STARTER_TEMPLATES } from '@/lib/templates';
 import { PartyEvent, StarterTemplate } from '@/lib/types';
 import { saveEvent, saveEventAsync } from '@/lib/storage';
+import { getCurrentHostId } from '@/lib/host-session';
 import CustomSelect from '@/components/CustomSelect';
 import CustomDatePicker from '@/components/CustomDatePicker';
 import CustomTimePicker from '@/components/CustomTimePicker';
@@ -129,7 +130,7 @@ function EventCreateWizard() {
       setIsSubmitting(true);
       const newEvent = await saveEventAsync({
         title: title.trim() || (selectedTemplate ? selectedTemplate.title : 'My Gathering'),
-        ownerId: 'current-host',
+        ownerId: getCurrentHostId(),
         templateId: selectedTemplate?.id,
         status: 'planning',
         purpose: {

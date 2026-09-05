@@ -294,7 +294,7 @@ export async function saveEventServer(eventData: Partial<PartyEvent> & { title: 
       id,
       inviteToken,
       title: eventData.title,
-      ownerId: eventData.ownerId || 'current-host',
+      ownerId: eventData.ownerId || `host_${crypto.randomUUID()}`,
       coHostIds: eventData.coHostIds || [],
       templateId: eventData.templateId,
       status: eventData.status || 'planning',
