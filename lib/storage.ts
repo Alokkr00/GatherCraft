@@ -240,6 +240,15 @@ export const getEventById = (id: string): PartyEvent | null => {
   return null;
 };
 
+export const saveEventsBulk = (newEvents: PartyEvent[]): void => {
+  if (!isClient || !Array.isArray(newEvents)) return;
+  const current = getEvents();
+  const map = new Map<string, PartyEvent>();
+  for (const e of current) map.set(e.id, e);
+  for (const e of newEvents) map.set(e.id, e);
+  localStorage.setItem(EVENTS_KEY, JSON.stringify(Array.from(map.values())));
+};
+
 export const saveEvent = (event: PartyEvent): void => {
   if (!isClient) return;
   const events = getEvents();

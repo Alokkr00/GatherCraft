@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { PartyEvent, Guest } from '@/lib/types';
 import { STARTER_TEMPLATES } from '@/lib/templates';
-import { getEvents, getGuests, deleteEvent, saveEvent } from '@/lib/storage';
+import { getEvents, getGuests, deleteEvent, saveEvent, saveEventsBulk } from '@/lib/storage';
 import { buildInviteUrl } from '@/lib/paths';
 
 import ConfirmModal from '@/components/ConfirmModal';
@@ -29,11 +29,26 @@ export default function DashboardPage() {
     loadData();
   }, []);
 
-  const loadData = () => {
+  const loadData = async () => {
+    // 1. Instant local render from cache
     const evs = getEvents();
     const gsts = getGuests();
     setEvents(evs);
     setGuests(gsts);
+
+    // 2. Authoritative server sync from database
+    try {
+      const res = await fetch('/api/events');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.events) && data.events.length > 0) {
+          setEvents(data.events);
+          saveEventsBulk(data.events);
+        }
+      }
+    } catch (err) {
+      console.warn('Dashboard could not sync events with server:', err);
+    }
   };
 
   const confirmDelete = () => {
