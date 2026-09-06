@@ -8,6 +8,36 @@ test.describe('GatherCraft End-to-End Event Lifecycle & Multi-Device Sync', () =
     await expect(page.getByText(/Friday Sunset Cocktails/i)).toBeVisible();
   });
 
+  test('Brand-new host onboarding funnel: landing page prompt -> wizard -> workspace', async ({ page }) => {
+    test.setTimeout(90000);
+    await page.goto('/');
+    
+    // 1. Host enters raw purpose into landing prompt card
+    const purposeInput = page.locator('input[placeholder*="What are you gathering people for?"]');
+    await expect(purposeInput).toBeVisible();
+    await purposeInput.fill('Reconnect college roommates after 5 years apart');
+    await page.click('button:has-text("Start Gathering")');
+
+    // 2. Transits directly to Purpose Engine step in wizard with purpose pre-populated
+    await page.waitForURL(url => url.pathname === '/events/create' && url.searchParams.has('purpose'), { timeout: 15000 });
+    await expect(page.getByRole('heading', { name: /Define your gathering's purpose/i })).toBeVisible();
+    await expect(page.locator('textarea')).toHaveValue(/Reconnect college roommates/);
+
+    // 3. Advances to basics lock-in
+    await page.click('text=Next: Basics Lock-in');
+    await expect(page.getByRole('heading', { name: /Where and when is it happening\?|Set date, location & budget/i })).toBeVisible();
+
+    const titleInput = page.locator('input[placeholder*="Friday Sunset Cocktails"]');
+    await expect(titleInput).toBeVisible();
+    await titleInput.fill('Roommates 5-Year Reunion');
+    await page.click('text=Lock in Event & Manage Guests');
+
+    // 4. Lands on workspace with pinned purpose
+    await page.waitForURL(url => url.pathname.startsWith('/events/') && url.pathname !== '/events/create', { timeout: 30000 });
+    await expect(page.getByText('Roommates 5-Year Reunion').first()).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText("Tonight's purpose")).toBeVisible({ timeout: 15000 });
+  });
+
   test('3-Step Wizard Event Creation and Cross-Browser RSVP Sync', async ({ browser }) => {
     test.setTimeout(90000);
 

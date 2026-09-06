@@ -161,9 +161,12 @@ export default function LiveModePage() {
         </p>
       </div>
 
-      {/* Pinned Purpose North Star Reminder */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-950/40 via-indigo-950/30 to-slate-900 border border-amber-500/30 text-center space-y-1">
-        <p className="text-[10px] font-extrabold uppercase tracking-widest text-amber-400">Tonight's Purpose North Star</p>
+      {/* Pinned Purpose Reminder */}
+      <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-950/30 via-indigo-950/25 to-slate-900 border border-amber-500/25 text-center space-y-1">
+        <p className="text-[10px] font-extrabold uppercase tracking-widest text-amber-400 flex items-center justify-center gap-1">
+          <Sparkles className="w-3 h-3" />
+          <span>Tonight's purpose</span>
+        </p>
         <p className="text-sm sm:text-base font-serif italic text-slate-100 font-medium">
           "{event.purpose?.selectedStatement || event.purpose?.rawInput || 'Bringing people together with purpose'}"
         </p>

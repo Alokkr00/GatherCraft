@@ -338,28 +338,27 @@ export default function EventDetailPage() {
           </div>
         </div>
 
-        {/* Purpose Statement Highlight Banner - The North Star */}
-        <div className="p-6 sm:p-8 bg-slate-900/60 border-t border-slate-800/80 space-y-4">
+        {/* Purpose Highlight Banner */}
+        <div className="p-6 sm:p-8 bg-slate-900/60 border-t border-slate-800/80 space-y-3">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400">
-            <Target className="w-4 h-4" />
-            <span>Tonight's Purpose North Star ({event.purpose?.isPrivate ? 'Private to Hosts' : 'Shared with Guests'})</span>
+            <Sparkles className="w-4 h-4 text-amber-400" />
+            <span>Tonight's purpose</span>
+            <span className="text-slate-500 font-normal">({event.purpose?.isPrivate ? 'Private to host' : 'Shared on invite'})</span>
           </div>
 
-          <p className="text-base sm:text-xl text-slate-100 font-serif font-medium italic bg-gradient-to-r from-amber-950/30 via-indigo-950/40 to-slate-900/50 p-5 rounded-2xl border border-amber-500/30 shadow-inner leading-relaxed">
+          <p className="text-base sm:text-xl text-slate-100 font-serif font-medium italic bg-gradient-to-r from-amber-950/25 via-indigo-950/30 to-slate-900/50 p-4 sm:p-5 rounded-2xl border border-amber-500/25 leading-relaxed">
             "{event.purpose?.selectedStatement || event.purpose?.rawInput || 'No purpose statement specified'}"
           </p>
 
           {event.purpose?.successCriteria && event.purpose.successCriteria.length > 0 && (
-            <div className="space-y-2 pt-2">
-              <p className="text-xs font-semibold text-slate-400">Success Criteria (How We Know Tonight Succeeded):</p>
-              <div className="flex flex-wrap gap-2">
-                {event.purpose.successCriteria.map((crit, i) => (
-                  <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-medium bg-slate-800/90 text-amber-200 border border-amber-500/25 shadow-sm">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                    <span>{crit}</span>
-                  </span>
-                ))}
-              </div>
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <span className="text-xs font-semibold text-slate-400">Success looks like:</span>
+              {event.purpose.successCriteria.map((crit, i) => (
+                <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-medium bg-slate-800/80 text-amber-200 border border-amber-500/20 shadow-sm">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span>{crit}</span>
+                </span>
+              ))}
             </div>
           )}
         </div>

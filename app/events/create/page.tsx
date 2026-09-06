@@ -499,7 +499,7 @@ function EventCreateWizard() {
               <div className="space-y-2">
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center justify-between">
                   <span>When do we say goodnight?</span>
-                  <span className="text-[10px] text-amber-400 font-normal">Peak-End Rule</span>
+                  <span className="text-[10px] text-amber-400 font-normal">A clear ending leaves people wanting more</span>
                 </label>
                 <CustomTimePicker
                   value={endTime}

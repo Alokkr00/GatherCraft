@@ -4,8 +4,8 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
   {
     id: 'cocktail-party',
     title: 'To Spark New Connections',
-    subtitle: 'Classic Mixer & Cocktails — high-energy introductions & dynamic conversation',
-    category: 'Mixer & Cocktails',
+    subtitle: 'Social Mixer (Classic Mixer & Cocktails) — a lively format designed to help people meet',
+    category: 'Social Mixer',
     defaultPurpose: 'To bring together friends and new acquaintances for light bites, high-energy conversation, and introducing people who should know each other.',
     defaultDurationHours: 2,
     suggestedCapacity: 15,
@@ -21,7 +21,7 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
   {
     id: 'birthday-dinner',
     title: 'To Deepen Friendships',
-    subtitle: 'Intimate Birthday Dinner — seated sociopetal dinner & heartfelt toasts',
+    subtitle: 'Intimate Dinner — a seated evening designed for meaningful conversation & toasts',
     category: 'Intimate Dinner',
     defaultPurpose: 'To gather close friends for an unforgettable evening of delicious food, heartfelt stories, and celebrating another year of life together.',
     defaultDurationHours: 3.5,
@@ -38,8 +38,8 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
   {
     id: 'casual-hang',
     title: 'To Simply Unwind',
-    subtitle: 'Casual Weekend Hangout — zero-pressure drop-in connection',
-    category: 'Casual Drop-in',
+    subtitle: 'Casual Hangout — a relaxed, low-pressure drop-in format for friends',
+    category: 'Casual Hangout',
     defaultPurpose: 'To create a zero-stress space where friends can drop in, unwind, play games, and catch up without formal expectations.',
     defaultDurationHours: 4,
     suggestedCapacity: 20,
@@ -55,8 +55,8 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
   {
     id: 'milestone-celebration',
     title: 'To Celebrate a Milestone',
-    subtitle: 'Milestone Party / Reception — vibrant celebration with music, toasts & photos',
-    category: 'Milestone Party',
+    subtitle: 'Milestone Celebration — a memorable gathering with music, toasts & shared photos',
+    category: 'Celebration',
     defaultPurpose: 'To honor a big life moment with a vibrant gathering of family and friends, featuring memorable toasts, music, and lasting photos.',
     defaultDurationHours: 4,
     suggestedCapacity: 40,
