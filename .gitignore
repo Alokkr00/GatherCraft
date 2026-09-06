@@ -42,4 +42,6 @@ Thumbs.db
 *.db-journal
 *.db-shm
 *.db-wal
-/.data/uploads/
+/.data/
+.data/
+
