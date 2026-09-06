@@ -19,14 +19,15 @@ function EventCreateWizard() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const templateParam = searchParams.get('template');
+  const purposeParam = searchParams.get('purpose');
 
   const [step, setStep] = useState<number>(1);
   const [selectedTemplate, setSelectedTemplate] = useState<StarterTemplate | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form State
-  const [rawPurpose, setRawPurpose] = useState('');
-  const [selectedStatement, setSelectedStatement] = useState('');
+  const [rawPurpose, setRawPurpose] = useState(purposeParam || '');
+  const [selectedStatement, setSelectedStatement] = useState(purposeParam || '');
   const [suggestions, setSuggestions] = useState<{ warm: string; bold: string; minimal: string }>({
     warm: '',
     bold: '',
@@ -55,15 +56,19 @@ function EventCreateWizard() {
   const [totalBudget, setTotalBudget] = useState<number>(200);
   const [currency, setCurrency] = useState('USD');
 
-  // Preload template if passed via URL
+  // Preload template or purpose if passed via URL
   useEffect(() => {
     if (templateParam) {
       const tmpl = STARTER_TEMPLATES.find(t => t.id === templateParam);
       if (tmpl) {
         applyTemplate(tmpl);
       }
+    } else if (purposeParam) {
+      setRawPurpose(purposeParam);
+      setSelectedStatement(purposeParam);
+      setStep(2);
     }
-  }, [templateParam]);
+  }, [templateParam, purposeParam]);
 
   const applyTemplate = (tmpl: StarterTemplate) => {
     setSelectedTemplate(tmpl);
@@ -279,7 +284,7 @@ function EventCreateWizard() {
 
             <div className="flex items-center justify-between pt-2">
               <span className="text-xs text-slate-400">
-                Tip: The AI will turn your idea into 3 disputable purpose versions.
+                Tip: We'll shape your thought into 3 distinct purpose versions to center the room.
               </span>
               <button
                 type="button"
@@ -287,8 +292,8 @@ function EventCreateWizard() {
                 disabled={isAiLoading}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-amber-500 via-rose-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 shadow-md shadow-amber-500/20 disabled:opacity-50 transition-all"
               >
-                <Wand2 className={`w-4 h-4 ${isAiLoading ? 'animate-spin' : ''}`} />
-                <span>{isAiLoading ? 'Refining with Gemini AI...' : 'Refine with Gemini AI'}</span>
+                <Sparkles className={`w-4 h-4 ${isAiLoading ? 'animate-spin' : ''}`} />
+                <span>{isAiLoading ? 'Finding the right words...' : 'Help Me Articulate This'}</span>
               </button>
             </div>
 
@@ -493,8 +498,8 @@ function EventCreateWizard() {
 
               <div className="space-y-2">
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center justify-between">
-                  <span>Hard End Time</span>
-                  <span className="text-[10px] text-amber-400 font-normal">Encouraged</span>
+                  <span>When do we say goodnight?</span>
+                  <span className="text-[10px] text-amber-400 font-normal">Peak-End Rule</span>
                 </label>
                 <CustomTimePicker
                   value={endTime}

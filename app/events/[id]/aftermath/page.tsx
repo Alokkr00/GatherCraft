@@ -133,15 +133,39 @@ export default function AftermathPage() {
         </div>
       </div>
 
-      {/* AI Thank-You Note Generator */}
+      {/* Purpose Fulfillment Reflection Banner */}
+      <div className="glass-panel p-6 rounded-3xl border border-amber-500/30 bg-gradient-to-r from-amber-950/20 via-slate-900 to-indigo-950/20 space-y-3">
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400">
+          <Sparkles className="w-4 h-4" />
+          <span>Purpose Fulfillment Check</span>
+        </div>
+        <p className="text-base sm:text-lg font-serif italic text-slate-100 font-medium">
+          "{event.purpose?.selectedStatement || event.purpose?.rawInput || 'Bringing people together'}"
+        </p>
+        {event.purpose?.successCriteria && event.purpose.successCriteria.length > 0 && (
+          <div className="pt-2 space-y-1.5">
+            <p className="text-xs font-semibold text-slate-400">Tonight's Intended Outcomes:</p>
+            <div className="flex flex-wrap gap-2">
+              {event.purpose.successCriteria.map((crit, i) => (
+                <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-medium bg-slate-800 text-amber-200 border border-amber-500/20">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>{crit}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Personalized Gratitude & Thank-You Notes */}
       <div className="glass-panel p-6 sm:p-8 rounded-3xl space-y-6 border border-indigo-500/20">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-amber-400" />
-              Personalized Thank-You Generator
+              <Heart className="w-5 h-5 text-rose-400" />
+              Personalized Gratitude & Thank-You Notes
             </h2>
-            <p className="text-xs text-slate-400">1-click copy personalized appreciation texts for your confirmed guests.</p>
+            <p className="text-xs text-slate-400">1-click copy heartfelt appreciation texts for your confirmed guests.</p>
           </div>
 
           {/* Tone Selector */}

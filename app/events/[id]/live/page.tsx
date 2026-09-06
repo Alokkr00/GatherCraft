@@ -69,7 +69,8 @@ export default function LiveModePage() {
           checkedInCount,
           totalGuests: totalHeadcount,
           purposeStatement: event.purpose?.selectedStatement,
-          eventTitle: event.title
+          eventTitle: event.title,
+          successCriteria: event.purpose?.successCriteria || []
         })
       });
       const data = await res.json();
@@ -157,6 +158,14 @@ export default function LiveModePage() {
         <h1 className="text-2xl sm:text-3xl font-black text-white">{event.title}</h1>
         <p className="text-xs text-slate-400">
           {event.date} • {event.startTime} - {event.endTime} ({event.timezone})
+        </p>
+      </div>
+
+      {/* Pinned Purpose North Star Reminder */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-950/40 via-indigo-950/30 to-slate-900 border border-amber-500/30 text-center space-y-1">
+        <p className="text-[10px] font-extrabold uppercase tracking-widest text-amber-400">Tonight's Purpose North Star</p>
+        <p className="text-sm sm:text-base font-serif italic text-slate-100 font-medium">
+          "{event.purpose?.selectedStatement || event.purpose?.rawInput || 'Bringing people together with purpose'}"
         </p>
       </div>
 
@@ -272,25 +281,25 @@ export default function LiveModePage() {
         </div>
       </div>
 
-      {/* AI Host Coaching Prompt */}
+      {/* Host Guidance & Generous Authority */}
       <div className="glass-panel p-5 rounded-2xl border border-amber-500/30 bg-amber-950/20 space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
             <Sparkles className="w-4 h-4" />
-            <span>AI Host Coaching Prompt</span>
+            <span>Host Guidance & Generous Authority</span>
           </div>
           <button
             onClick={() => fetchLiveCoaching(activeStep)}
             disabled={aiTipLoading}
             className="text-[11px] font-semibold text-amber-300 hover:text-amber-200 underline disabled:opacity-50"
           >
-            {aiTipLoading ? 'Coaching...' : 'Refresh Tip'}
+            {aiTipLoading ? 'Updating...' : 'Refresh Tip'}
           </button>
         </div>
-        <p className="text-xs text-slate-200 italic">
+        <p className="text-xs text-slate-200 italic leading-relaxed">
           "{aiTip || (activeStep 
             ? `Keep energy high! Introduce new arrivals to guests who share similar interests before starting "${activeStep.title}".`
-            : "Great hosting! Hand out leftovers, capture final selfies, and send guests off with warm gratitude.")}"
+            : "Great hosting! Hand out leftovers, capture final selfies, and send guests off with warm parting gratitude.")}"
         </p>
       </div>
 

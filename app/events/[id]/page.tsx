@@ -23,11 +23,9 @@ import SkeletonLoader from '@/components/SkeletonLoader';
 import ConfirmModal from '@/components/ConfirmModal';
 import CustomSelect from '@/components/CustomSelect';
 
-// v0.2 Components
+// Components
 import TimelineEditor from '@/components/TimelineEditor';
-import TaskManager from '@/components/TaskManager';
-import BudgetTracker from '@/components/BudgetTracker';
-import ShoppingList from '@/components/ShoppingList';
+import EventPrepView from '@/components/EventPrepView';
 
 export default function EventDetailPage() {
   const params = useParams();
@@ -38,7 +36,7 @@ export default function EventDetailPage() {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCoHost, setCopiedCoHost] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'tasks' | 'budget' | 'shopping'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'prep'>('overview');
   const [rsvpFilter, setRsvpFilter] = useState<'all' | RSVPStatus>('all');
 
   // Modal States
@@ -340,25 +338,25 @@ export default function EventDetailPage() {
           </div>
         </div>
 
-        {/* Purpose Statement Highlight Banner */}
+        {/* Purpose Statement Highlight Banner - The North Star */}
         <div className="p-6 sm:p-8 bg-slate-900/60 border-t border-slate-800/80 space-y-4">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400">
             <Target className="w-4 h-4" />
-            <span>Event Purpose Statement ({event.purpose?.isPrivate ? 'Private' : 'Public'})</span>
+            <span>Tonight's Purpose North Star ({event.purpose?.isPrivate ? 'Private to Hosts' : 'Shared with Guests'})</span>
           </div>
 
-          <p className="text-base sm:text-lg text-slate-100 font-medium italic bg-indigo-950/40 p-4 rounded-2xl border border-indigo-500/20">
+          <p className="text-base sm:text-xl text-slate-100 font-serif font-medium italic bg-gradient-to-r from-amber-950/30 via-indigo-950/40 to-slate-900/50 p-5 rounded-2xl border border-amber-500/30 shadow-inner leading-relaxed">
             "{event.purpose?.selectedStatement || event.purpose?.rawInput || 'No purpose statement specified'}"
           </p>
 
           {event.purpose?.successCriteria && event.purpose.successCriteria.length > 0 && (
             <div className="space-y-2 pt-2">
-              <p className="text-xs font-semibold text-slate-400">Success Criteria:</p>
+              <p className="text-xs font-semibold text-slate-400">Success Criteria (How We Know Tonight Succeeded):</p>
               <div className="flex flex-wrap gap-2">
                 {event.purpose.successCriteria.map((crit, i) => (
-                  <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-medium bg-slate-800 text-slate-200 border border-slate-700">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    {crit}
+                  <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-medium bg-slate-800/90 text-amber-200 border border-amber-500/25 shadow-sm">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>{crit}</span>
                   </span>
                 ))}
               </div>
@@ -367,14 +365,12 @@ export default function EventDetailPage() {
         </div>
       </div>
 
-      {/* Main Tabbed Navigation Bar */}
+      {/* Main Tabbed Navigation Bar - 3 Focused Pillars */}
       <div className="flex items-center gap-2 bg-slate-900/90 p-2 rounded-2xl border border-slate-800 overflow-x-auto shadow-xl">
         {[
-          { id: 'overview', label: 'Overview & Guests', icon: Users },
+          { id: 'overview', label: 'Overview & Guest Circle', icon: Users },
           { id: 'timeline', label: 'Run-of-Show Timeline', icon: Clock },
-          { id: 'tasks', label: 'Tasks & Logistics', icon: CheckSquare },
-          { id: 'budget', label: 'Budget Tracker', icon: DollarSign },
-          { id: 'shopping', label: 'Shopping List', icon: ShoppingCart },
+          { id: 'prep', label: 'Event Prep & Supplies', icon: CheckSquare },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -675,19 +671,15 @@ export default function EventDetailPage() {
         <TimelineEditor eventId={eventId} startTime={event.startTime} />
       )}
 
-      {/* TAB CONTENT 3: TASKS */}
-      {activeTab === 'tasks' && (
-        <TaskManager eventId={eventId} eventTitle={event.title} />
-      )}
-
-      {/* TAB CONTENT 4: BUDGET */}
-      {activeTab === 'budget' && (
-        <BudgetTracker eventId={eventId} totalBudgetLimit={event.totalBudget || 200} currency={event.currency} />
-      )}
-
-      {/* TAB CONTENT 5: SHOPPING */}
-      {activeTab === 'shopping' && (
-        <ShoppingList eventId={eventId} confirmedHeadcount={confirmedCount} />
+      {/* TAB CONTENT 3: PREP (Unified Tasks, Supplies, Budget) */}
+      {activeTab === 'prep' && (
+        <EventPrepView
+          eventId={eventId}
+          eventTitle={event.title}
+          totalBudget={event.totalBudget}
+          currency={event.currency}
+          confirmedHeadcount={confirmedCount}
+        />
       )}
 
       {/* Add Single Guest Modal */}

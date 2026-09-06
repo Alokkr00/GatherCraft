@@ -383,8 +383,8 @@ function InviteContent() {
         ) : (
           <form onSubmit={handleRsvpSubmit} className="space-y-6">
             <div className="space-y-1 text-center sm:text-left">
-              <h2 className="text-xl font-black text-white">Will you be attending?</h2>
-              <p className="text-xs text-slate-400">1-click RSVP — no account needed.</p>
+              <h2 className="text-xl font-black text-white">Will you join us?</h2>
+              <p className="text-xs text-slate-400">Let your host know with a single tap.</p>
             </div>
 
             {errorMessage && (
@@ -397,9 +397,9 @@ function InviteContent() {
             {/* RSVP Status Selection Pills */}
             <div className="grid grid-cols-3 gap-2">
               {[
-                { id: 'yes', label: 'Attending', emoji: '🎉', activeClass: 'bg-emerald-600 text-white border-emerald-500' },
-                { id: 'maybe', label: 'Maybe', emoji: '🤔', activeClass: 'bg-amber-600 text-white border-amber-500' },
-                { id: 'no', label: 'Can’t Make It', emoji: '💌', activeClass: 'bg-slate-800 text-slate-200 border-slate-700' },
+                { id: 'yes', label: "I'll be there!", emoji: '✨', activeClass: 'bg-emerald-600 text-white border-emerald-500 shadow-emerald-500/25' },
+                { id: 'maybe', label: 'Tentative', emoji: '⏳', activeClass: 'bg-amber-600 text-white border-amber-500 shadow-amber-500/25' },
+                { id: 'no', label: 'Can’t make it', emoji: '💌', activeClass: 'bg-slate-800 text-slate-200 border-slate-700' },
               ].map((pill) => {
                 const isSelected = rsvpStatus === pill.id;
                 return (
@@ -407,13 +407,13 @@ function InviteContent() {
                     key={pill.id}
                     type="button"
                     onClick={() => setRsvpStatus(pill.id as RSVPStatus)}
-                    className={`py-3 px-2 rounded-2xl text-xs font-bold transition-all border flex flex-col items-center gap-1 ${
+                    className={`py-3.5 px-2 rounded-2xl text-xs font-bold transition-all border flex flex-col items-center gap-1.5 ${
                       isSelected
                         ? `${pill.activeClass} shadow-lg scale-[1.02]`
                         : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800/80'
                     }`}
                   >
-                    <span className="text-base">{pill.emoji}</span>
+                    <span className="text-lg">{pill.emoji}</span>
                     <span>{pill.label}</span>
                   </button>
                 );

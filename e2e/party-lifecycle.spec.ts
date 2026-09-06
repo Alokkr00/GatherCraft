@@ -4,7 +4,7 @@ test.describe('GatherCraft End-to-End Event Lifecycle & Multi-Device Sync', () =
   test('Dashboard loads correctly and displays sample events', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveTitle(/GatherCraft/);
-    await expect(page.getByRole('heading', { name: /Stop planning parties/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Bring people together/i })).toBeVisible();
     await expect(page.getByText(/Friday Sunset Cocktails/i)).toBeVisible();
   });
 
