@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { 
   PartyPopper, Clock, Users, CheckCircle2, Circle, 
   MapPin, Sparkles, AlertCircle, ArrowLeft, ArrowRight, 
-  Phone, UserCheck, ShieldCheck, Flag
+  Phone, UserCheck, ShieldCheck, Flag, Wifi, WifiOff
 } from 'lucide-react';
 import { PartyEvent, Guest, TimelineItem } from '@/lib/types';
 import { 
@@ -14,6 +14,7 @@ import {
   toggleGuestCheckIn, saveTimelineItem, closeEvent 
 } from '@/lib/storage';
 import { getActiveTimelineStep } from '@/lib/event-time';
+import { queueOfflineCheckIn, flushOfflineQueue, getPendingQueueCount } from '@/lib/offlineSync';
 
 import SkeletonLoader from '@/components/SkeletonLoader';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -28,6 +29,10 @@ export default function LiveModePage() {
   const [timeline, setTimeline] = useState<TimelineItem[]>([]);
   const [guestSearch, setGuestSearch] = useState('');
   const [now, setNow] = useState(new Date());
+
+  // Offline resilience state
+  const [isOnline, setIsOnline] = useState(true);
+  const [pendingSync, setPendingSync] = useState(0);
 
   const [aiTip, setAiTip] = useState<string>('');
   const [aiTipLoading, setAiTipLoading] = useState<boolean>(false);
@@ -90,6 +95,35 @@ export default function LiveModePage() {
     }
   }, [event?.id, activeStep?.id]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    setIsOnline(navigator.onLine);
+    setPendingSync(getPendingQueueCount(eventId));
+
+    const handleOnline = () => {
+      setIsOnline(true);
+      flushOfflineQueue(eventId).then(() => {
+        setPendingSync(getPendingQueueCount(eventId));
+      });
+    };
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Initial flush if online
+    if (navigator.onLine) {
+      flushOfflineQueue(eventId).then(() => {
+        setPendingSync(getPendingQueueCount(eventId));
+      });
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [eventId]);
+
   const loadLiveData = () => {
     const ev = getEventById(eventId);
     if (!ev) {
@@ -102,8 +136,19 @@ export default function LiveModePage() {
   };
 
   const handleCheckInToggle = (g: Guest) => {
+    const newCheckInAt = g.checkInAt ? null : new Date().toISOString();
     toggleGuestCheckIn(g);
     loadLiveData();
+
+    // Queue for sync and flush if online
+    queueOfflineCheckIn(eventId, g.id, newCheckInAt);
+    setPendingSync(getPendingQueueCount(eventId));
+
+    flushOfflineQueue(eventId)
+      .then(() => {
+        setPendingSync(getPendingQueueCount(eventId));
+      })
+      .catch(() => {});
   };
 
   const handleStepComplete = (item: TimelineItem) => {
@@ -130,18 +175,33 @@ export default function LiveModePage() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 space-y-6 max-w-3xl mx-auto animate-fade-in pb-20">
       {/* Top Header Bar */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+      <div className="flex items-center justify-between border-b border-slate-800 pb-4 gap-2 flex-wrap">
         <button
           onClick={() => router.push(`/events/${eventId}`)}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Exit Live Mode</span>
+          <span>Exit Live</span>
         </button>
 
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-xs font-bold border border-rose-500/40">
-          <span className="w-2 h-2 rounded-full bg-rose-400 animate-ping"></span>
-          <span>LIVE MODE ACTIVE</span>
+        <div className="flex items-center gap-2">
+          {/* Network Resilience Status Indicator */}
+          {!isOnline || pendingSync > 0 ? (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 text-[10px] font-bold border border-amber-500/30 animate-pulse">
+              <WifiOff className="w-3 h-3" />
+              <span>Offline ({pendingSync} queued)</span>
+            </div>
+          ) : (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-semibold border border-emerald-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Synced</span>
+            </div>
+          )}
+
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-xs font-bold border border-rose-500/40">
+            <span className="w-2 h-2 rounded-full bg-rose-400 animate-ping"></span>
+            <span>LIVE MODE ACTIVE</span>
+          </div>
         </div>
 
         <button
@@ -343,13 +403,13 @@ export default function LiveModePage() {
 
                   <button
                     onClick={() => handleCheckInToggle(g)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all border ${
+                    className={`min-h-[48px] min-w-[96px] px-4 py-2.5 rounded-xl text-xs font-bold transition-all border touch-manipulation active:scale-95 flex items-center justify-center gap-1 ${
                       isCheckedIn
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                        : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-indigo-600 hover:text-white'
+                        ? 'bg-emerald-500/25 text-emerald-300 border-emerald-500/50 shadow-sm shadow-emerald-500/20'
+                        : 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-indigo-600 hover:text-white'
                     }`}
                   >
-                    {isCheckedIn ? '✓ Arrived' : 'Check In'}
+                    <span>{isCheckedIn ? '✓ Arrived' : 'Check In'}</span>
                   </button>
                 </div>
               );

@@ -1,89 +1,87 @@
-# 🍸 GatherCraft — Purpose-First Party Planner
+# 🍸 GatherCraft — Bring People Together. On Purpose.
 
-> Transforming gatherings from generic events into meaningful, purpose-driven experiences.
+> The purpose-first operating system for hosting memorable, intentional gatherings.
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38bdf8?logo=tailwind-css)](https://tailwindcss.com/)
-[![Gemini AI](https://img.shields.io/badge/Google_Gemini-1.5_Flash-8e44ad?logo=google)](https://ai.google.dev/)
+[![Prisma](https://img.shields.io/badge/Prisma-5.20-2d3748?logo=prisma)](https://www.prisma.io/)
+[![Neon PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon_Cloud-00e599?logo=postgresql)](https://neon.tech/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-GatherCraft is a modern web application designed for purpose-first event planning, transforming generic gatherings into meaningful, intentional experiences.  
-
-Unlike generic party planners that focus only on logistics, GatherCraft treats **Purpose** as a first-class entity that drives every decision — from planning to day-of execution to post-event gratitude.
+GatherCraft is a purpose-first party and gathering planner. Unlike conventional tools that treat hosting as a spreadsheet chore of guest counts and logistics, GatherCraft centers every gathering around a clear, dispute-resolving reason for gathering: **Purpose first, logistics second.**
 
 ---
 
-## Current Status
+## 🧭 The Core Architecture
 
-**Active Production Release (v0.1 + v0.2 + v0.3 Completed)**
+```
+① PURPOSE  ──>  ② PEOPLE  ──>  ③ PLAN  ──>  ④ PREP  ──>  ⑤ HOST  ──>  ⑥ REFLECT
+Why are we       Who should     What should   What needs     What happens   Did it accomplish
+gathering?       be there?      happen?       to be ready?   right now?     its purpose?
+```
 
-| Phase | Status | Description |
-|-------|--------|-------------|
-| **v0.1** – Purpose & Core | 🟢 Completed | Purpose engine (Gemini AI), event basics, guest list, magic-link RSVP, dietary summary |
-| **v0.2** – Planning Depth | 🟢 Completed | Run-of-Show timeline, smart task checklist, budget tracker, headcount shopping list |
-| **v0.3** – Live & Aftermath | 🟢 Completed | Full-screen Day-of Live Mode, guest arrival check-in ticker, post-event closeout, AI thank-you generator |
-
-The project currently uses **LocalStorage** as the primary fast data store, with Firebase/Firestore integration prepared for cloud sync across devices.
-
----
-
-## Core Philosophy
-
-1. **Purpose first** — Every gathering starts with a clear, specific reason for existing.
-2. **Guided but flexible** — The app guides hosts through a proven workflow while allowing power users to jump around.
-3. **Host + Guest experience** — Beautiful planning tools for hosts and frictionless RSVP for guests.
-4. **Day-of reality** — Planning is only half the job. The app helps hosts when the party is actually happening.
+1. **Purpose**: Start with the *Why*. Transform vague ideas into clear, focused purpose statements and tangible success criteria.
+2. **People (Guest Circle)**: Share warm, emotional invitations via magic links with 1-tap conversational RSVP and dietary summaries.
+3. **Plan (Run-of-Show)**: Structure the gathering's rhythm with timed milestones, planned peak moments, and an intentional closing ritual.
+4. **Prep (Event Preparation Center)**: Consolidated workspace unifying supplies, host setup tasks, and budget targets without cognitive overload.
+5. **Host (Day-of Live Mode)**: Smartphone-optimized execution HUD acting as an external prefrontal cortex—featuring doorway duty check-ins, Now/Next activity countdowns, and timely guidance.
+6. **Reflect (Retrospective & Gratitude)**: Purpose fulfillment review and frictionless, personalized thank-you notes to consolidate lasting memories.
 
 ---
 
-## Features Roadmap
+## ✨ Key Features
 
-### v0.1 — Purpose Engine & MVP Core
-- [x] AI Purpose refinement (Google Gemini 1.5 Flash)
-- [x] Starter templates (Cocktail Party, Birthday Dinner, Casual Hang, Milestone)
-- [x] Event basics (date, hard end time, location, capacity, budget)
-- [x] Guest list + CSV import (`Name, Email, Phone, Role`)
-- [x] Magic-link public RSVP page (`/invite/[id]`) with confetti celebrations
-- [x] Dietary summary aggregation
-- [x] Google Calendar 1-click invitation generation
+### 🎯 Purpose Engine & Intelligent Blueprints
+* **Invisible Intelligence**: Conversational assistance (*"Help Me Articulate This"*) turns rough thoughts into three refined purpose statements without tech jargon.
+* **Balanced Blueprints**:
+  * **To Spark New Connections** • `Social Mixer` — *High-energy introductions & dynamic conversation*
+  * **To Deepen Friendships** • `Intimate Dinner` — *Seated dinner designed for meaningful conversation & toasts*
+  * **To Simply Unwind** • `Casual Hangout` — *Low-pressure drop-in format for friends*
+  * **To Celebrate a Milestone** • `Celebration` — *Memorable toasts, music & shared photos*
+* **Intentional Endings**: Encourages clear end times so gatherings finish on a high note while energy is high.
 
-### v0.2 — Planning Depth
-- [x] Run-of-show Timeline editor with timed offsets (`+0m`, `+30m`, `+90m`)
-- [x] Task manager with categories (*Setup*, *Food*, *Drinks*, *Decor*, *Cleanup*) & priorities
-- [x] Itemized budget tracker (planned vs actual spend with visual health meter)
-- [x] Headcount-aware auto-quantified shopping list
-- [x] Tabbed event management dashboard
+### 💌 Warm, Conversational Invitations
+* **Emotional Invitations**: Public invite pages (`/invite/[id]`) feel like personal invitations, not administrative CRM forms.
+* **1-Tap RSVP**: Fast responses with conversational options: *"I'll be there! ✨"*, *"Tentative ⏳"*, and *"Can’t make it 💌"*.
+* **Atomic Headcount Protection**: Server-side Prisma transactions ensure zero-race-condition overbooking against event capacity.
 
-### v0.3 — Live Mode & Aftermath
-- [x] Full-screen Day-of Live Mode mobile copilot (`/events/[id]/live`)
-- [x] Live guest arrival check-in ticker
-- [x] Active timeline step runner
-- [x] AI host coaching prompts & emergency venue reference
-- [x] Aftermath closeout (`/events/[id]/aftermath`) + AI thank-you generator (*Warm*, *Fun*, *Short*)
-- [x] 5-Star Host retrospective
+### 📋 Streamlined 3-Pillar Workspace
+Replaced the cluttered 5-tab "Jira for parties" experience with three natural host pillars:
+1. **Overview & Guest Circle**: Confirmed friends, dietary restrictions summary, co-hosts, and shareable invite links.
+2. **Run-of-Show Timeline**: Visual milestone planner with timed offsets (`+0m`, `+30m`, `+90m`).
+3. **Event Prep & Supplies**: A unified preparation hub integrating shopping checklists, host setup tasks, and budget tracking.
 
----
+### 📱 Smartphone-Optimized Live Mode HUD
+* **Doorway Duty**: Instant, glanceable arrival check-in with large thumb-friendly tap targets.
+* **Now / Next HUD**: High-contrast phase indicators and countdown timers so hosts never lose track of timing.
+* **Host Guidance & Generous Authority**: Timely suggestions factoring in success criteria, doorway greetings, and conversation pacing.
+* **Offline Resilience**: Local check-in queue ensures seamless operation even if venue Wi-Fi or cellular signal drops.
 
-## Tech Stack
-
-- **Framework**: Next.js 14 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS + custom glassmorphism system
-- **AI**: Google Gemini 1.5 Flash (`@google/generative-ai`)
-- **Persistence**: LocalStorage (client-fast) + Firebase/Firestore (prepared)
-- **UI**: Lucide React + canvas-confetti
+### 🥂 Gratitude & Retrospective
+* **Purpose Fulfillment Check**: Direct reflection on whether the gathering met its stated success criteria.
+* **Personalized Thank-You Notes**: 1-click personalized gratitude drafting across multiple tones (*Warm*, *Fun*, *Short*).
 
 ---
 
-## Getting Started
+## 🛠️ Tech Stack
+
+* **Framework**: Next.js 14 (App Router, Server Actions, API Route Handlers)
+* **Language**: TypeScript (Strict mode)
+* **Styling**: Tailwind CSS + custom glassmorphic design system
+* **Database & ORM**: Neon Cloud Serverless PostgreSQL + Prisma ORM
+* **Intelligence**: Google Gemini 1.5 Flash (graceful offline fallback)
+* **Testing**: Playwright End-to-End Suite (Multi-device sync & onboarding funnel)
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+
-- npm or yarn
-- (Optional) Google Gemini API key
+* Node.js 18.17+
+* npm or yarn
 
-### Installation
+### 1. Clone & Install
 
 ```bash
 git clone https://github.com/Alokkr00/GatherCraft.git
@@ -91,64 +89,61 @@ cd GatherCraft
 npm install
 ```
 
-### Environment Variables
+### 2. Configure Environment Variables
 
-Create a `.env.local` file:
+Create a `.env` file in the root directory:
 
 ```env
-GEMINI_API_KEY=your_google_gemini_api_key_here
+# Neon Cloud PostgreSQL Connection String
+DATABASE_URL="postgresql://username:password@ep-sample.us-east-2.aws.neon.tech/neondb?sslmode=require"
+
+# Optional: Google Gemini API Key for purpose articulation and coaching
+GEMINI_API_KEY="your_gemini_api_key"
 ```
 
-> If no API key is provided, the app falls back to local purpose suggestions automatically.
+> **Note**: If `GEMINI_API_KEY` is omitted, GatherCraft automatically falls back to curated built-in prompts.
 
-### Run
+### 3. Initialize Database & Seed
+
+```bash
+# Push schema to database
+npx prisma db push
+
+# Pre-populate sample gatherings
+npm run db:seed
+```
+
+### 4. Run Development Server
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ---
 
-## Project Structure
+## 🧪 Testing & Verification
 
-```
-app/
-├── api/refine-purpose/     # Gemini purpose refinement API
-├── events/
-│   ├── create/             # 3-Step Event creation wizard
-│   └── [id]/
-│       ├── live/           # Day-of host live mode copilot
-│       └── aftermath/      # Post-event closeout & AI thank-you generator
-├── invite/[id]/            # Mobile-first public guest RSVP page
-├── error.tsx               # Next.js App Router error boundary
-├── not-found.tsx           # Custom 404 page
-└── page.tsx                # Host dashboard
+GatherCraft includes comprehensive Playwright end-to-end tests covering the full host and guest lifecycles:
 
-components/
-├── TimelineEditor.tsx      # Run-of-Show timeline component
-├── TaskManager.tsx         # Logistics checklist component
-├── BudgetTracker.tsx       # Line-item budget tracker & health meter
-└── ShoppingList.tsx        # Headcount-aware shopping calculator
+```bash
+# Run production build
+npm run build
 
-lib/
-├── types.ts                # Core data models
-├── storage.ts              # Persistence layer
-├── templates.ts            # Starter blueprints
-└── firebase.ts             # Firebase cloud readiness
+# Run end-to-end test suite
+npx playwright test
 ```
 
+Test coverage includes:
+1. Dashboard loading and sample gatherings display.
+2. First-time host onboarding funnel (Landing page purpose prompt $\rightarrow$ wizard $\rightarrow$ workspace).
+3. 3-step creation wizard & cross-browser guest magic-link RSVP synchronization.
+4. Day-of Live Mode HUD & check-in mechanics.
+5. Post-event aftermath & gratitude note generation.
+
 ---
 
-## Contributing
+## 📄 License
 
-We welcome contributions! Please read the issue templates before opening new issues.
-
-**Good first issues** are labeled `good first issue`.
-
----
-
-## License
-
-MIT License — see [LICENSE](LICENSE)
+MIT License — see [LICENSE](LICENSE) for details.

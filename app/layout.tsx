@@ -1,10 +1,23 @@
 import './globals.css';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import Navbar from '@/components/Navbar';
 
 export const metadata: Metadata = {
   title: 'GatherCraft — Purpose-First Party Planning Platform',
   description: 'Design memorable social gatherings guided by intent, seamless guest management, and 1-click magic link RSVPs.',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'GatherCraft',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#020617',
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
