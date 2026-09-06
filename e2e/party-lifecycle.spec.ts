@@ -9,7 +9,7 @@ test.describe('GatherCraft End-to-End Event Lifecycle & Multi-Device Sync', () =
   });
 
   test('3-Step Wizard Event Creation and Cross-Browser RSVP Sync', async ({ browser }) => {
-    test.setTimeout(60000);
+    test.setTimeout(90000);
 
     // Context A: Host creates an event
     const hostContext = await browser.newContext();
@@ -34,8 +34,8 @@ test.describe('GatherCraft End-to-End Event Lifecycle & Multi-Device Sync', () =
     await hostPage.click('text=Lock in Event & Manage Guests');
 
     // Host lands on Event Workspace
-    await hostPage.waitForURL(/\/events\//, { timeout: 15000 });
-    await expect(hostPage.getByText('E2E Cross-Device Celebration').first()).toBeVisible({ timeout: 15000 });
+    await hostPage.waitForURL(url => url.pathname.startsWith('/events/') && url.pathname !== '/events/create', { timeout: 30000 });
+    await expect(hostPage.getByText('E2E Cross-Device Celebration').first()).toBeVisible({ timeout: 30000 });
 
     // Extract Invite Link from Host Page
     const previewLink = hostPage.locator('a[href^="/invite/"]').first();

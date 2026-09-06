@@ -23,7 +23,12 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const body = await req.json();
+    let body = {};
+    try {
+      body = await req.json();
+    } catch {
+      body = {};
+    }
     const parsed = LiveCoachingSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: 'Invalid input parameters' }, { status: 400 });
