@@ -1,26 +1,51 @@
 import { S3Client, PutObjectCommand, HeadObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
-const isR2Configured = Boolean(
-  process.env.CLOUDFLARE_R2_ACCOUNT_ID &&
-  process.env.CLOUDFLARE_R2_ACCESS_KEY_ID &&
-  process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY &&
-  process.env.CLOUDFLARE_R2_BUCKET_NAME
-);
+const endpoint =
+  process.env.S3_ENDPOINT ||
+  process.env.SUPABASE_STORAGE_ENDPOINT ||
+  (process.env.CLOUDFLARE_R2_ACCOUNT_ID
+    ? `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`
+    : undefined);
 
-const r2Client = isR2Configured
+const accessKeyId =
+  process.env.S3_ACCESS_KEY_ID ||
+  process.env.SUPABASE_S3_ACCESS_KEY_ID ||
+  process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
+
+const secretAccessKey =
+  process.env.S3_SECRET_ACCESS_KEY ||
+  process.env.SUPABASE_S3_SECRET_ACCESS_KEY ||
+  process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
+
+const region = process.env.S3_REGION || 'auto';
+
+const BUCKET_NAME =
+  process.env.S3_BUCKET_NAME ||
+  process.env.SUPABASE_BUCKET_NAME ||
+  process.env.CLOUDFLARE_R2_BUCKET_NAME ||
+  'gathercraft-media';
+
+const CDN_BASE_URL =
+  process.env.S3_PUBLIC_DOMAIN ||
+  process.env.SUPABASE_STORAGE_PUBLIC_URL ||
+  process.env.CLOUDFLARE_R2_PUBLIC_DOMAIN ||
+  process.env.CLOUDFLARE_R2_PUBLIC_URL ||
+  'https://media.gathercraft.io';
+
+const isStorageConfigured = Boolean(endpoint && accessKeyId && secretAccessKey);
+
+const s3Client = isStorageConfigured
   ? new S3Client({
-      region: 'auto',
-      endpoint: `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+      region,
+      endpoint: endpoint!,
       credentials: {
-        accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!,
+        accessKeyId: accessKeyId!,
+        secretAccessKey: secretAccessKey!,
       },
+      forcePathStyle: true,
     })
   : null;
-
-const BUCKET_NAME = process.env.CLOUDFLARE_R2_BUCKET_NAME || 'gathercraft-media';
-const CDN_BASE_URL = process.env.CLOUDFLARE_R2_PUBLIC_URL || 'https://media.gathercraft.io';
 
 export async function createPresignedUploadUrl({
   storageKey,
@@ -35,7 +60,7 @@ export async function createPresignedUploadUrl({
 }): Promise<{ uploadUrl: string; cdnUrl: string; isMock: boolean }> {
   const cdnUrl = `${CDN_BASE_URL.replace(/\/$/, '')}/${storageKey}`;
 
-  if (!isR2Configured || !r2Client) {
+  if (!isStorageConfigured || !s3Client) {
     // Development fallback mock mode - serves real uploaded files locally with zero card needed
     const mockUrl = `/api/mock-upload?key=${encodeURIComponent(storageKey)}`;
     return {
@@ -52,7 +77,7 @@ export async function createPresignedUploadUrl({
     ...(contentLength ? { ContentLength: contentLength } : {}),
   });
 
-  const uploadUrl = await getSignedUrl(r2Client, command, { expiresIn: expiresInSeconds });
+  const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: expiresInSeconds });
 
   return {
     uploadUrl,
@@ -62,7 +87,7 @@ export async function createPresignedUploadUrl({
 }
 
 export async function verifyObjectExists(storageKey: string): Promise<boolean> {
-  if (!isR2Configured || !r2Client) {
+  if (!isStorageConfigured || !s3Client) {
     return true; // Mock mode assumes success
   }
 
@@ -71,19 +96,19 @@ export async function verifyObjectExists(storageKey: string): Promise<boolean> {
       Bucket: BUCKET_NAME,
       Key: storageKey,
     });
-    await r2Client.send(command);
+    await s3Client.send(command);
     return true;
   } catch (err: any) {
     if (err.name === 'NotFound' || err.$metadata?.httpStatusCode === 404) {
       return false;
     }
-    console.warn(`R2 verifyObjectExists warning for ${storageKey}:`, err);
+    console.warn(`S3 verifyObjectExists warning for ${storageKey}:`, err);
     return true; // Graceful fallback
   }
 }
 
 export async function deleteObject(storageKey: string): Promise<boolean> {
-  if (!isR2Configured || !r2Client) {
+  if (!isStorageConfigured || !s3Client) {
     return true;
   }
 
@@ -92,10 +117,10 @@ export async function deleteObject(storageKey: string): Promise<boolean> {
       Bucket: BUCKET_NAME,
       Key: storageKey,
     });
-    await r2Client.send(command);
+    await s3Client.send(command);
     return true;
   } catch (err) {
-    console.error(`R2 deleteObject error for ${storageKey}:`, err);
+    console.error(`S3 deleteObject error for ${storageKey}:`, err);
     return false;
   }
 }
