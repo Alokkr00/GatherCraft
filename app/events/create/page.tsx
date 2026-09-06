@@ -20,6 +20,7 @@ function EventCreateWizard() {
   const searchParams = useSearchParams();
   const templateParam = searchParams.get('template');
   const purposeParam = searchParams.get('purpose');
+  const remixParam = searchParams.get('remixFrom');
 
   const [step, setStep] = useState<number>(1);
   const [selectedTemplate, setSelectedTemplate] = useState<StarterTemplate | null>(null);
@@ -56,9 +57,27 @@ function EventCreateWizard() {
   const [totalBudget, setTotalBudget] = useState<number>(200);
   const [currency, setCurrency] = useState('USD');
 
-  // Preload template or purpose if passed via URL
+  // Preload template, purpose, or remix blueprint if passed via URL
   useEffect(() => {
-    if (templateParam) {
+    if (remixParam) {
+      fetch(`/api/events/${remixParam}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.event) {
+            const ev = data.event;
+            setTitle(`${ev.title} (Remix)`);
+            const purpose = ev.purpose?.selectedStatement || ev.purpose?.rawInput || ev.purposeStatement || ev.rawPurpose || '';
+            if (purpose) {
+              setRawPurpose(purpose);
+              setSelectedStatement(purpose);
+            }
+            if (ev.capacity) setCapacity(ev.capacity);
+            if (ev.totalBudget) setTotalBudget(ev.totalBudget);
+            setStep(2);
+          }
+        })
+        .catch(console.error);
+    } else if (templateParam) {
       const tmpl = STARTER_TEMPLATES.find(t => t.id === templateParam);
       if (tmpl) {
         applyTemplate(tmpl);
@@ -68,7 +87,7 @@ function EventCreateWizard() {
       setSelectedStatement(purposeParam);
       setStep(2);
     }
-  }, [templateParam, purposeParam]);
+  }, [templateParam, purposeParam, remixParam]);
 
   const applyTemplate = (tmpl: StarterTemplate) => {
     setSelectedTemplate(tmpl);

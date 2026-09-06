@@ -69,6 +69,7 @@ function prismaToGuest(g: any): Guest {
     accessibility: g.accessibility || undefined,
     notes: g.notes || undefined,
     checkInAt: g.checkInAt ? (g.checkInAt instanceof Date ? g.checkInAt.toISOString() : g.checkInAt) : undefined,
+    consentTier: g.consentTier || 'OPEN',
     updatedAt: g.updatedAt instanceof Date ? g.updatedAt.toISOString() : g.updatedAt,
   };
 }
@@ -352,6 +353,7 @@ export async function submitRsvpServer(params: {
   plusOnesActual?: number;
   dietary?: string;
   accessibility?: string;
+  consentTier?: string;
 }): Promise<{ success: boolean; guest?: Guest; waitlisted?: boolean; error?: string }> {
   try {
     const ev = await prisma.event.findFirst({
@@ -407,6 +409,8 @@ export async function submitRsvpServer(params: {
         plusOnesActual: plusOnes,
         dietary: params.dietary?.trim() || null,
         accessibility: params.accessibility?.trim() || null,
+        consentTier: (params.consentTier as any) || existing?.consentTier || 'OPEN',
+        consentUpdatedAt: new Date(),
       };
 
       if (existing) {

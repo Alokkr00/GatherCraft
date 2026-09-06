@@ -5,7 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { 
   PartyPopper, Sparkles, Heart, Copy, CheckCircle2, 
-  ArrowLeft, Star, Bookmark, Share2, MessageSquare, Check
+  ArrowLeft, Star, Bookmark, Share2, MessageSquare, Check,
+  Camera, ExternalLink
 } from 'lucide-react';
 import { PartyEvent, Guest, HostRetrospective } from '@/lib/types';
 import { 
@@ -14,6 +15,8 @@ import {
 } from '@/lib/storage';
 
 import SkeletonLoader from '@/components/SkeletonLoader';
+import StreamlinedEventChat from '@/components/StreamlinedEventChat';
+import EventMediaGallery from '@/components/EventMediaGallery';
 
 export default function AftermathPage() {
   const params = useParams();
@@ -30,6 +33,11 @@ export default function AftermathPage() {
   const [whatWorked, setWhatWorked] = useState('');
   const [whatToImprove, setWhatToImprove] = useState('');
   const [isRetroSaved, setIsRetroSaved] = useState(false);
+
+  // Memory Capsule State
+  const [capsule, setCapsule] = useState<any>(null);
+  const [isPublishingCapsule, setIsPublishingCapsule] = useState(false);
+  const [capsuleCopied, setCapsuleCopied] = useState(false);
 
   useEffect(() => {
     loadAftermathData();
@@ -50,6 +58,44 @@ export default function AftermathPage() {
       setWhatToImprove(ev.retrospective.whatToImprove || '');
       setIsRetroSaved(true);
     }
+
+    // Load capsule status
+    fetch(`/api/events/${eventId}/capsule`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.capsule) setCapsule(data.capsule);
+      })
+      .catch(() => {});
+  };
+
+  const handlePublishCapsule = async () => {
+    setIsPublishingCapsule(true);
+    try {
+      const res = await fetch(`/api/events/${eventId}/capsule`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          heroQuote: whatWorked || event?.purpose?.selectedStatement || 'Gathering on purpose',
+          summaryStory: whatWorked || 'A night of genuine connection and shared presence.',
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCapsule(data.capsule);
+      }
+    } catch (err) {
+      console.error('Publish capsule error:', err);
+    } finally {
+      setIsPublishingCapsule(false);
+    }
+  };
+
+  const handleCopyCapsuleLink = () => {
+    if (!capsule) return;
+    const fullUrl = `${window.location.origin}/capsule/${capsule.capsuleToken}`;
+    navigator.clipboard.writeText(fullUrl);
+    setCapsuleCopied(true);
+    setTimeout(() => setCapsuleCopied(false), 2500);
   };
 
   const handleCopyThankYou = async (guest: Guest) => {
@@ -157,6 +203,86 @@ export default function AftermathPage() {
         )}
       </div>
 
+      {/* Post-Event Memory Capsule (Viral Growth Loop) */}
+      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-950/25 via-slate-900 to-indigo-950/20 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-amber-400" />
+              <h2 className="text-xl font-bold text-white">Post-Event Memory Capsule</h2>
+            </div>
+            <p className="text-xs text-slate-300 mt-1">
+              Distill tonight's gathering into a beautiful storytelling capsule. Guests can relive memories and 1-click remix your blueprint to host their own.
+            </p>
+          </div>
+
+          {capsule ? (
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={handleCopyCapsuleLink}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors"
+              >
+                {capsuleCopied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="text-emerald-400">Link Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copy Link</span>
+                  </>
+                )}
+              </button>
+
+              <a
+                href={`/capsule/${capsule.capsuleToken}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-slate-950 bg-amber-400 hover:bg-amber-300 shadow-md shadow-amber-400/20 transition-all"
+              >
+                <span>View Capsule</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          ) : (
+            <button
+              onClick={handlePublishCapsule}
+              disabled={isPublishingCapsule}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-slate-950 bg-amber-400 hover:bg-amber-300 shadow-md shadow-amber-400/20 transition-all disabled:opacity-50 shrink-0"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>{isPublishingCapsule ? 'Generating Capsule...' : 'Publish Memory Capsule'}</span>
+            </button>
+          )}
+        </div>
+
+        {capsule && (
+          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 flex flex-wrap items-center justify-between gap-4 text-xs">
+            <div className="space-y-0.5">
+              <p className="font-semibold text-slate-200">Public Capsule Link Active</p>
+              <p className="text-slate-500 font-mono text-[11px]">/capsule/{capsule.capsuleToken}</p>
+            </div>
+            <div className="flex items-center gap-4 text-slate-400 text-xs">
+              <span>👁️ {capsule.viewsCount || 0} Views</span>
+              <span>⚡ {capsule.cloneCount || 0} Blueprint Remixes</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Captured Moments & Memory Vault */}
+      <div className="glass-panel p-6 sm:p-8 rounded-3xl space-y-4 border border-slate-800">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Camera className="w-5 h-5 text-amber-400" />
+            <h2 className="text-xl font-bold text-white">Captured Moments & Vault</h2>
+          </div>
+          <span className="text-xs text-slate-400">Preserved with guest consent</span>
+        </div>
+        <EventMediaGallery eventId={eventId} />
+      </div>
+
       {/* Personalized Gratitude & Thank-You Notes */}
       <div className="glass-panel p-6 sm:p-8 rounded-3xl space-y-6 border border-indigo-500/20">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -227,6 +353,30 @@ export default function AftermathPage() {
             })}
           </div>
         )}
+      </div>
+
+      {/* 72-Hour Post-Event Gratitude Chat Stream */}
+      <div className="glass-panel p-6 sm:p-8 rounded-3xl space-y-4 border border-indigo-500/20">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-indigo-400" />
+            <h2 className="text-xl font-bold text-white">72-Hour Gratitude Chat</h2>
+          </div>
+          <span className="text-[11px] font-semibold text-indigo-300 bg-indigo-500/15 px-2.5 py-1 rounded-full border border-indigo-500/30">
+            Gratitude Mode Active
+          </span>
+        </div>
+        <p className="text-xs text-slate-400">
+          Exchange final memories, laughs, and thank-yous. This thread automatically sunsets into a read-only memory archive after 72 hours.
+        </p>
+        <StreamlinedEventChat
+          eventId={eventId}
+          isHost={true}
+          currentPhase="completed"
+          currentUserName="Host"
+          currentUserRole="host"
+          purposeStatement={event.purpose?.selectedStatement || event.purpose?.rawInput}
+        />
       </div>
 
       {/* Host Retrospective Section */}

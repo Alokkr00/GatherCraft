@@ -100,13 +100,17 @@ test.describe('GatherCraft End-to-End Event Lifecycle & Multi-Device Sync', () =
     await guestContext.close();
   });
 
-  test('Live Copilot Mode', async ({ page }) => {
+  test('Live Copilot Mode with Megaphone Chat & Memory Vault', async ({ page }) => {
     await page.goto('/events/sample-cocktail-party/live');
     await expect(page.getByText(/LIVE MODE ACTIVE/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Live Megaphone & Guest Chat/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Shared Memory Vault/i })).toBeVisible();
   });
 
-  test('Post-Event Aftermath & Retrospective', async ({ page }) => {
+  test('Post-Event Aftermath, Retrospective & Memory Capsule', async ({ page }) => {
     await page.goto('/events/sample-cocktail-party/aftermath');
     await expect(page.getByText(/Post-Event Recap & Gratitude/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Post-Event Memory Capsule/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /72-Hour Gratitude Chat/i })).toBeVisible();
   });
 });

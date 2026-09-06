@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { 
   PartyPopper, Clock, Users, CheckCircle2, Circle, 
   MapPin, Sparkles, AlertCircle, ArrowLeft, ArrowRight, 
-  Phone, UserCheck, ShieldCheck, Flag, Wifi, WifiOff
+  Phone, UserCheck, ShieldCheck, Flag, Wifi, WifiOff,
+  Volume2, Camera
 } from 'lucide-react';
 import { PartyEvent, Guest, TimelineItem } from '@/lib/types';
 import { 
@@ -18,6 +19,9 @@ import { queueOfflineCheckIn, flushOfflineQueue, getPendingQueueCount } from '@/
 
 import SkeletonLoader from '@/components/SkeletonLoader';
 import ConfirmModal from '@/components/ConfirmModal';
+import StreamlinedEventChat from '@/components/StreamlinedEventChat';
+import MobileMediaUploadDrawer from '@/components/MobileMediaUploadDrawer';
+import EventMediaGallery from '@/components/EventMediaGallery';
 
 export default function LiveModePage() {
   const params = useParams();
@@ -36,6 +40,7 @@ export default function LiveModePage() {
 
   const [aiTip, setAiTip] = useState<string>('');
   const [aiTipLoading, setAiTipLoading] = useState<boolean>(false);
+  const [mediaRefreshKey, setMediaRefreshKey] = useState(0);
 
   const confirmedGuests = guests.filter(g => g.rsvpStatus === 'yes');
   const checkedInGuests = guests.filter(g => Boolean(g.checkInAt));
@@ -393,9 +398,24 @@ export default function LiveModePage() {
               return (
                 <div key={g.id} className="py-3 flex items-center justify-between gap-3">
                   <div>
-                    <p className={`font-bold text-sm ${isCheckedIn ? 'text-emerald-300' : 'text-white'}`}>
-                      {g.name} {g.plusOnesActual > 0 ? `(+${g.plusOnesActual})` : ''}
-                    </p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className={`font-bold text-sm ${isCheckedIn ? 'text-emerald-300' : 'text-white'}`}>
+                        {g.name} {g.plusOnesActual > 0 ? `(+${g.plusOnesActual})` : ''}
+                      </p>
+                      {g.consentTier === 'GHOST_MODE' ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40" title="Ghost Mode: Do not photograph or record">
+                          🔴 No Photos
+                        </span>
+                      ) : g.consentTier === 'CIRCLE_ONLY' ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30" title="Circle Only: Event guests only">
+                          🟡 Circle Only
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" title="Open: Happy to be photographed">
+                          🟢 Open
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[11px] text-slate-400">
                       {g.role} • {g.rsvpStatus} {g.dietary ? `• ${g.dietary}` : ''}
                     </p>
@@ -416,6 +436,54 @@ export default function LiveModePage() {
             })
           )}
         </div>
+      </div>
+
+      {/* Live Host Megaphone & Streamlined Chat */}
+      <div className="glass-panel p-6 rounded-3xl space-y-4 border border-indigo-500/30">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Volume2 className="w-5 h-5 text-indigo-400" />
+            <h2 className="text-lg font-bold text-white">Live Megaphone & Guest Chat</h2>
+          </div>
+          <span className="text-[11px] font-semibold text-indigo-300 bg-indigo-500/15 px-2.5 py-1 rounded-full border border-indigo-500/30">
+            Host Broadcast Available
+          </span>
+        </div>
+        <p className="text-xs text-slate-400">
+          Send high-priority megaphone announcements or chat with guests in real-time.
+        </p>
+        <StreamlinedEventChat
+          eventId={eventId}
+          isHost={true}
+          currentPhase="live"
+          currentUserName="Host"
+          currentUserRole="host"
+          purposeStatement={event.purpose?.selectedStatement || event.purpose?.rawInput}
+        />
+      </div>
+
+      {/* Shared Memory Vault */}
+      <div className="glass-panel p-6 rounded-3xl space-y-4 border border-slate-800">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Camera className="w-5 h-5 text-amber-400" />
+            <h2 className="text-lg font-bold text-white">Shared Memory Vault</h2>
+          </div>
+          <span className="text-[11px] font-semibold text-amber-300 bg-amber-500/15 px-2.5 py-1 rounded-full border border-amber-500/30">
+            Zero-App Uploads
+          </span>
+        </div>
+        <p className="text-xs text-slate-400">
+          Live candid photos anchored to tonight's purpose. Guests can 1-tap remove themselves anytime.
+        </p>
+        <EventMediaGallery eventId={eventId} refreshTrigger={mediaRefreshKey} />
+        
+        <MobileMediaUploadDrawer
+          eventId={eventId}
+          uploaderName="Host"
+          purposeStatement={event.purpose?.selectedStatement || event.purpose?.rawInput}
+          onMediaUploaded={() => setMediaRefreshKey((k) => k + 1)}
+        />
       </div>
 
       {/* Venue & Emergency Quick Card */}

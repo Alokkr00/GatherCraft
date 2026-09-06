@@ -36,6 +36,7 @@ function InviteContent() {
   const [plusOnesActual, setPlusOnesActual] = useState(0);
   const [dietary, setDietary] = useState('');
   const [accessibility, setAccessibility] = useState('');
+  const [consentTier, setConsentTier] = useState<'OPEN' | 'CIRCLE_ONLY' | 'GHOST_MODE'>('OPEN');
 
   useEffect(() => {
     let isMounted = true;
@@ -80,6 +81,7 @@ function InviteContent() {
           setPlusOnesActual(existing.plusOnesActual || 0);
           setDietary(existing.dietary || '');
           setAccessibility(existing.accessibility || '');
+          if (existing.consentTier) setConsentTier(existing.consentTier);
         }
       }
 
@@ -122,7 +124,8 @@ function InviteContent() {
           rsvpStatus,
           plusOnesActual: Number(plusOnesActual) || 0,
           dietary: dietary.trim() || undefined,
-          accessibility: accessibility.trim() || undefined
+          accessibility: accessibility.trim() || undefined,
+          consentTier,
         })
       });
 
@@ -503,6 +506,37 @@ function InviteContent() {
                     placeholder="e.g. Wheelchair access, step-free..."
                     className="w-full p-3 rounded-xl glass-input text-xs"
                   />
+                </div>
+              </div>
+
+              {/* Visual Consent Spectrum Selector */}
+              <div className="space-y-1.5 pt-1">
+                <label className="block text-xs font-semibold text-slate-300">
+                  Photo Comfort & Memory Privacy
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'OPEN', label: 'All Photos', desc: 'Album & highlights', icon: '🟢' },
+                    { id: 'CIRCLE_ONLY', label: 'Circle Only', desc: 'Attendees only', icon: '🟡' },
+                    { id: 'GHOST_MODE', label: 'Ghost Mode', desc: 'No photos please', icon: '🔴' },
+                  ].map((tier) => (
+                    <button
+                      key={tier.id}
+                      type="button"
+                      onClick={() => setConsentTier(tier.id as any)}
+                      className={`p-2.5 rounded-xl border text-left transition-all ${
+                        consentTier === tier.id
+                          ? 'bg-slate-800 border-indigo-500 shadow-sm shadow-indigo-500/20 text-white'
+                          : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 text-xs font-bold">
+                        <span>{tier.icon}</span>
+                        <span>{tier.label}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">{tier.desc}</p>
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>

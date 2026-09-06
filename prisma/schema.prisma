@@ -64,6 +64,9 @@ model Event {
   budget           BudgetItem[]
   shopping         ShoppingItem[]
   retrospective    Retrospective?
+  mediaAssets      MediaAsset[]
+  chatMessages     ChatMessage[]
+  memoryCapsule    MemoryCapsule?
 }
 
 model Guest {
@@ -82,6 +85,10 @@ model Guest {
   notes           String?
   checkInAt       DateTime?
   inviteToken     String?   @unique
+  consentTier     ConsentSpectrum @default(OPEN)
+  consentUpdatedAt DateTime?
+  mediaAssets     MediaAsset[]
+  chatMessages    ChatMessage[]
   updatedAt       DateTime  @updatedAt
 
   @@index([eventId])
@@ -100,6 +107,7 @@ model TimelineItem {
   assigneeId      String?
   assignee        User?    @relation(fields: [assigneeId], references: [id])
   order           Int      @default(0)
+  mediaAssets     MediaAsset[]
   updatedAt       DateTime @updatedAt
 
   @@index([eventId])
@@ -155,4 +163,121 @@ model Retrospective {
   whatWorked    String?
   whatToImprove String?
   completedAt   DateTime?
+}
+
+// ==========================================
+// GROWTH ENGINE MODELS & ENUMS
+// ==========================================
+
+enum ConsentSpectrum {
+  OPEN
+  CIRCLE_ONLY
+  GHOST_MODE
+}
+
+enum MediaTier {
+  HOST_VAULT
+  SHARED_ALBUM
+  PUBLIC_REEL
+}
+
+enum MediaStatus {
+  PENDING_UPLOAD
+  READY
+  FLAGGED_HIDDEN
+}
+
+enum ChatPhase {
+  PLANNING
+  LIVE
+  GRATITUDE
+  ARCHIVED
+}
+
+model MediaAsset {
+  id              String         @id @default(cuid())
+  eventId         String
+  event           Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  uploaderGuestId String?
+  uploaderGuest   Guest?         @relation(fields: [uploaderGuestId], references: [id], onDelete: SetNull)
+  uploaderName    String
+  
+  storageKey      String         @unique
+  cdnUrl          String
+  thumbnailUrl    String?
+  blurHash        String?
+  
+  mimeType        String
+  sizeBytes       Int
+  width           Int?
+  height          Int?
+  
+  purposeTag      String?
+  caption         String?
+  visibilityTier  MediaTier      @default(SHARED_ALBUM)
+  status          MediaStatus    @default(PENDING_UPLOAD)
+  
+  isFlaggedHidden Boolean        @default(false)
+  timelineItemId  String?
+  timelineItem    TimelineItem?  @relation(fields: [timelineItemId], references: [id], onDelete: SetNull)
+  
+  // Moderation & Audit Trail
+  moderatedAt     DateTime?
+  moderationReason String?
+  selfRemovedAt   DateTime?
+  deletedAt       DateTime?
+  expiresAt       DateTime?
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([eventId, visibilityTier])
+  @@index([eventId, status])
+  @@index([expiresAt])
+}
+
+model ChatMessage {
+  id              String         @id @default(cuid())
+  eventId         String
+  event           Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  senderGuestId   String?
+  senderGuest     Guest?         @relation(fields: [senderGuestId], references: [id], onDelete: SetNull)
+  senderName      String
+  senderRole      String         @default("guest") // host | co-host | guest
+  
+  content         String
+  phase           ChatPhase      @default(PLANNING)
+  isBroadcast     Boolean        @default(false)
+  isPinned        Boolean        @default(false)
+  
+  // Rate limiting / Abuse prevention
+  clientIpHash    String?
+  flagCount       Int            @default(0)
+  isMuted         Boolean        @default(false)
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  deletedAt       DateTime?
+
+  @@index([eventId, phase, createdAt])
+}
+
+model MemoryCapsule {
+  id              String         @id @default(cuid())
+  eventId         String         @unique
+  event           Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  capsuleToken    String         @unique @default(cuid())
+  isPublished     Boolean        @default(false)
+  heroQuote       String?
+  summaryStory    String?
+  featuredMedia   Json?          // array of media asset IDs
+  
+  viewsCount      Int            @default(0)
+  cloneCount      Int            @default(0)
+  uniqueReferrers Json?          // analytics map: { [source]: count }
+  lastViewedAt    DateTime?
+  
+  publishedAt     DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }

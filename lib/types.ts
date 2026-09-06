@@ -82,6 +82,8 @@ export interface PublicInviteView {
   confirmedCount?: number;
 }
 
+export type ConsentTier = 'OPEN' | 'CIRCLE_ONLY' | 'GHOST_MODE';
+
 export interface Guest {
   id: string;
   eventId: string;
@@ -97,6 +99,7 @@ export interface Guest {
   notes?: string; // host-only
   relationshipTag?: string;
   checkInAt?: string; // ISO timestamp when checked in
+  consentTier?: ConsentTier;
   updatedAt: string;
 }
 
