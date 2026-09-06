@@ -12,6 +12,9 @@ const ChatMessageSchema = z.object({
   isBroadcast: z.boolean().default(false),
 });
 
+import crypto from 'crypto';
+import { getHostIdFromRequest, requireEventAccess } from '@/lib/server/guard';
+
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -22,6 +25,17 @@ export async function GET(
         eventId: params.id,
         isMuted: false,
         deletedAt: null,
+      },
+      select: {
+        id: true,
+        eventId: true,
+        senderGuestId: true,
+        senderName: true,
+        senderRole: true,
+        content: true,
+        phase: true,
+        isBroadcast: true,
+        createdAt: true,
       },
       orderBy: { createdAt: 'asc' },
       take: 150,
@@ -53,16 +67,46 @@ export async function POST(
 
     const { authorName, content, guestId, senderRole, phase, isBroadcast } = parsed.data;
 
+    // Verify host credentials for megaphone broadcasts or host role attribution
+    const hostId = getHostIdFromRequest(req);
+    let verifiedRole = senderRole;
+    let verifiedBroadcast = isBroadcast;
+
+    if (senderRole === 'host' || isBroadcast) {
+      try {
+        await requireEventAccess(params.id, hostId, 'owner');
+        verifiedRole = 'host';
+      } catch {
+        verifiedRole = 'guest';
+        verifiedBroadcast = false;
+      }
+    }
+
+    // Cryptographically hash client IP with salt (zero raw IP exposure)
+    const salt = process.env.IP_SALT || 'gathercraft_chat_privacy_salt';
+    const hashedIp = crypto.createHash('sha256').update(`${ip}:${salt}`).digest('hex');
+
     const message = await prisma.chatMessage.create({
       data: {
         eventId: params.id,
         senderGuestId: guestId || null,
         senderName: authorName,
-        senderRole,
+        senderRole: verifiedRole,
         content,
         phase,
-        isBroadcast,
-        clientIpHash: ip,
+        isBroadcast: verifiedBroadcast,
+        clientIpHash: hashedIp,
+      },
+      select: {
+        id: true,
+        eventId: true,
+        senderGuestId: true,
+        senderName: true,
+        senderRole: true,
+        content: true,
+        phase: true,
+        isBroadcast: true,
+        createdAt: true,
       },
     });
 

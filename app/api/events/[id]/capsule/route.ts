@@ -64,11 +64,16 @@ export async function GET(
   }
 }
 
+import { getHostIdFromRequest, requireEventAccess, ApiError } from '@/lib/server/guard';
+
 export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const hostId = getHostIdFromRequest(req);
+    await requireEventAccess(params.id, hostId, 'owner');
+
     const raw = await req.json();
     const parsed = PublishCapsuleSchema.safeParse(raw);
     if (!parsed.success) {
@@ -108,7 +113,10 @@ export async function POST(
     });
 
     return NextResponse.json({ capsule, shareUrl: `/capsule/${capsule.capsuleToken}` });
-  } catch (error) {
+  } catch (error: any) {
+    if (error instanceof ApiError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     console.error('Publish capsule error:', error);
     return NextResponse.json({ error: 'Failed to publish capsule' }, { status: 500 });
   }

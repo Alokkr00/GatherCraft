@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { checkRateLimit, getClientIp } from '@/lib/server/rateLimit';
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req.headers);
+    const rate = checkRateLimit(`refine_${ip}`, { limit: 25, windowMs: 60 * 1000 });
+    if (!rate.allowed) {
+      return NextResponse.json({ error: 'Too many requests. Please wait a minute.' }, { status: 429 });
+    }
+
     const body = await req.json();
     const { rawPurpose, title, category } = body;
 

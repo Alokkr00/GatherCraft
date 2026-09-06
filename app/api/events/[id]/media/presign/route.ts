@@ -2,12 +2,32 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { createPresignedUploadUrl } from '@/lib/server/s3';
-import crypto from 'crypto';
+import { checkRateLimit, getClientIp } from '@/lib/server/rateLimit';
+
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/heic',
+  'image/avif',
+  'video/mp4',
+  'video/quicktime',
+] as const;
+
+const MIME_TO_EXT: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/heic': 'heic',
+  'image/avif': 'avif',
+  'video/mp4': 'mp4',
+  'video/quicktime': 'mov',
+};
 
 const PresignSchema = z.object({
   fileName: z.string().min(1).max(255),
   fileSize: z.number().int().positive().max(52428800), // Max 50MB
-  mimeType: z.string().min(3).max(100),
+  mimeType: z.enum(ALLOWED_MIME_TYPES),
   uploaderName: z.string().trim().min(1).max(100).default('Guest'),
   guestToken: z.string().optional(),
   guestId: z.string().optional(),
@@ -24,6 +44,12 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
+    const ip = getClientIp(req.headers);
+    const rate = checkRateLimit(`presign_${params.id}_${ip}`, { limit: 60, windowMs: 60 * 1000 });
+    if (!rate.allowed) {
+      return NextResponse.json({ error: 'Too many upload requests. Please slow down.' }, { status: 429 });
+    }
+
     const event = await prisma.event.findUnique({
       where: { id: params.id },
       select: { id: true, status: true },
@@ -36,12 +62,12 @@ export async function POST(
     const raw = await req.json();
     const parsed = PresignSchema.safeParse(raw);
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Invalid payload', details: parsed.error.format() }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid payload: Unsupported media format or oversized file.', details: parsed.error.format() }, { status: 400 });
     }
 
     const data = parsed.data;
     const assetId = `med_${crypto.randomUUID()}`;
-    const ext = data.fileName.split('.').pop() || 'webp';
+    const ext = MIME_TO_EXT[data.mimeType] || 'webp';
     const storageKey = `events/${params.id}/${assetId}.${ext}`;
 
     const { uploadUrl, cdnUrl, isMock } = await createPresignedUploadUrl({

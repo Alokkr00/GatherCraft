@@ -335,10 +335,15 @@ export async function saveGuestServer(guestData: Partial<Guest> & { eventId: str
   return prismaToGuest(saved);
 }
 
-export async function deleteGuestServer(id: string): Promise<boolean> {
+export async function deleteGuestServer(id: string, eventId?: string): Promise<boolean> {
   try {
-    await prisma.guest.delete({ where: { id } });
-    return true;
+    const res = await prisma.guest.deleteMany({
+      where: {
+        id,
+        ...(eventId ? { eventId } : {}),
+      },
+    });
+    return res.count > 0;
   } catch {
     return false;
   }
@@ -473,10 +478,15 @@ export async function saveTimelineItemServer(itemData: Partial<TimelineItem> & {
   return prismaToTimeline(saved);
 }
 
-export async function deleteTimelineItemServer(id: string): Promise<boolean> {
+export async function deleteTimelineItemServer(id: string, eventId?: string): Promise<boolean> {
   try {
-    await prisma.timelineItem.delete({ where: { id } });
-    return true;
+    const res = await prisma.timelineItem.deleteMany({
+      where: {
+        id,
+        ...(eventId ? { eventId } : {}),
+      },
+    });
+    return res.count > 0;
   } catch {
     return false;
   }
@@ -516,10 +526,15 @@ export async function saveTaskServer(taskData: Partial<TaskItem> & { eventId: st
   return prismaToTask(saved);
 }
 
-export async function deleteTaskServer(id: string): Promise<boolean> {
+export async function deleteTaskServer(id: string, eventId?: string): Promise<boolean> {
   try {
-    await prisma.task.delete({ where: { id } });
-    return true;
+    const res = await prisma.task.deleteMany({
+      where: {
+        id,
+        ...(eventId ? { eventId } : {}),
+      },
+    });
+    return res.count > 0;
   } catch {
     return false;
   }
@@ -560,10 +575,15 @@ export async function saveBudgetItemServer(itemData: Partial<BudgetItem> & { eve
   return prismaToBudget(saved);
 }
 
-export async function deleteBudgetItemServer(id: string): Promise<boolean> {
+export async function deleteBudgetItemServer(id: string, eventId?: string): Promise<boolean> {
   try {
-    await prisma.budgetItem.delete({ where: { id } });
-    return true;
+    const res = await prisma.budgetItem.deleteMany({
+      where: {
+        id,
+        ...(eventId ? { eventId } : {}),
+      },
+    });
+    return res.count > 0;
   } catch {
     return false;
   }
@@ -602,10 +622,15 @@ export async function saveShoppingItemServer(itemData: Partial<ShoppingItem> & {
   return prismaToShopping(saved);
 }
 
-export async function deleteShoppingItemServer(id: string): Promise<boolean> {
+export async function deleteShoppingItemServer(id: string, eventId?: string): Promise<boolean> {
   try {
-    await prisma.shoppingItem.delete({ where: { id } });
-    return true;
+    const res = await prisma.shoppingItem.deleteMany({
+      where: {
+        id,
+        ...(eventId ? { eventId } : {}),
+      },
+    });
+    return res.count > 0;
   } catch {
     return false;
   }

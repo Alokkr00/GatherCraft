@@ -194,9 +194,14 @@ export const INITIAL_SAMPLE_SHOPPING: ShoppingItem[] = [
 async function syncToServer(url: string, method: string, data?: any) {
   if (!isClient) return null;
   try {
+    const hostId = getCurrentHostId();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(hostId ? { 'x-host-id': hostId } : {}),
+    };
     const res = await fetch(url, {
       method,
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: data ? JSON.stringify(data) : undefined
     });
     if (!res.ok) return null;

@@ -1,19 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { getGuestsServer, saveGuestServer, deleteGuestServer } from '@/lib/server/store';
+import { getHostIdFromRequest, requireEventAccess, ApiError } from '@/lib/server/guard';
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const hostId = getHostIdFromRequest(req);
+    let isAuthorizedHost = false;
+    try {
+      await requireEventAccess(params.id, hostId, 'cohost');
+      isAuthorizedHost = true;
+    } catch {
+      isAuthorizedHost = false;
+    }
+
     const guests = await getGuestsServer(params.id);
-    return NextResponse.json({ guests });
+
+    if (isAuthorizedHost) {
+      return NextResponse.json({ guests });
+    }
+
+    // Data minimization for unauthenticated attendees / viewers:
+    // Strip emails, phone numbers, host notes, and private dietary info
+    const publicGuests = guests.map((g) => ({
+      id: g.id,
+      eventId: g.eventId,
+      name: g.name,
+      role: g.role,
+      rsvpStatus: g.rsvpStatus,
+      plusOnesActual: g.plusOnesActual,
+      consentTier: g.consentTier || 'OPEN',
+      checkInAt: g.checkInAt,
+    }));
+
+    return NextResponse.json({ guests: publicGuests });
   } catch (error) {
+    console.error(`API GET /api/events/${params.id}/guests error:`, error);
     return NextResponse.json({ error: 'Failed to fetch guests' }, { status: 500 });
   }
 }
-
-import { z } from 'zod';
 
 const GuestSchema = z.object({
   id: z.string().optional(),
@@ -35,6 +63,9 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
+    const hostId = getHostIdFromRequest(req);
+    await requireEventAccess(params.id, hostId, 'cohost');
+
     const raw = await req.json();
     const parsed = GuestSchema.safeParse(raw);
     if (!parsed.success) {
@@ -46,7 +77,10 @@ export async function POST(
       checkInAt: parsed.data.checkInAt ?? undefined,
     });
     return NextResponse.json({ guest }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
+    if (error instanceof ApiError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     return NextResponse.json({ error: 'Failed to save guest' }, { status: 500 });
   }
 }
@@ -56,13 +90,19 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const hostId = getHostIdFromRequest(req);
+    await requireEventAccess(params.id, hostId, 'cohost');
+
     const { searchParams } = new URL(req.url);
     const guestId = searchParams.get('guestId');
     if (!guestId) return NextResponse.json({ error: 'Guest ID required' }, { status: 400 });
 
-    const deleted = await deleteGuestServer(guestId);
+    const deleted = await deleteGuestServer(guestId, params.id);
     return NextResponse.json({ success: deleted });
-  } catch (error) {
+  } catch (error: any) {
+    if (error instanceof ApiError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     return NextResponse.json({ error: 'Failed to delete guest' }, { status: 500 });
   }
 }

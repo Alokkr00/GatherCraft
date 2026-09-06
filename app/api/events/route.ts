@@ -37,10 +37,20 @@ const CreateEventSchema = z.object({
   themeColor: z.string().optional(),
 });
 
+import { getHostIdFromRequest } from '@/lib/server/guard';
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const ownerId = searchParams.get('ownerId') || undefined;
+    const queryOwnerId = searchParams.get('ownerId');
+    const headerHostId = getHostIdFromRequest(req);
+    
+    const ownerId = queryOwnerId || headerHostId;
+    if (!ownerId) {
+      // Prevent unauthenticated global database harvesting
+      return NextResponse.json({ events: [] });
+    }
+
     const events = await getEventsServer(ownerId);
     return NextResponse.json({ events });
   } catch (error) {
@@ -64,7 +74,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid event data', details: parsed.error.format() }, { status: 400 });
     }
 
-    const event = await saveEventServer(parsed.data as any);
+    const hostId = getHostIdFromRequest(req);
+    const eventData = {
+      ...parsed.data,
+      ownerId: parsed.data.ownerId || hostId || 'host_default',
+    };
+
+    const event = await saveEventServer(eventData as any);
     return NextResponse.json({ event }, { status: 201 });
   } catch (error) {
     console.error('API POST /api/events error:', error);

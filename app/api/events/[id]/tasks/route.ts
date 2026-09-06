@@ -13,15 +13,23 @@ export async function GET(
   }
 }
 
+import { getHostIdFromRequest, requireEventAccess, ApiError } from '@/lib/server/guard';
+
 export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    const hostId = getHostIdFromRequest(req);
+    await requireEventAccess(params.id, hostId, 'cohost');
+
     const body = await req.json();
     const task = await saveTaskServer({ ...body, eventId: params.id });
     return NextResponse.json({ task }, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
+    if (error instanceof ApiError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     return NextResponse.json({ error: 'Failed to save task' }, { status: 500 });
   }
 }
@@ -31,13 +39,19 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const hostId = getHostIdFromRequest(req);
+    await requireEventAccess(params.id, hostId, 'cohost');
+
     const { searchParams } = new URL(req.url);
     const taskId = searchParams.get('taskId');
     if (!taskId) return NextResponse.json({ error: 'Task ID required' }, { status: 400 });
 
-    const deleted = await deleteTaskServer(taskId);
+    const deleted = await deleteTaskServer(taskId, params.id);
     return NextResponse.json({ success: deleted });
-  } catch (error) {
+  } catch (error: any) {
+    if (error instanceof ApiError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     return NextResponse.json({ error: 'Failed to delete task' }, { status: 500 });
   }
 }
