@@ -36,10 +36,11 @@ export async function createPresignedUploadUrl({
   const cdnUrl = `${CDN_BASE_URL.replace(/\/$/, '')}/${storageKey}`;
 
   if (!isR2Configured || !r2Client) {
-    // Development fallback mock mode
+    // Development fallback mock mode - serves real uploaded files locally with zero card needed
+    const mockUrl = `/api/mock-upload?key=${encodeURIComponent(storageKey)}`;
     return {
-      uploadUrl: `/api/mock-upload?key=${encodeURIComponent(storageKey)}`,
-      cdnUrl,
+      uploadUrl: mockUrl,
+      cdnUrl: mockUrl,
       isMock: true,
     };
   }

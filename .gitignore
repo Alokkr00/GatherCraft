@@ -37,8 +37,9 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Database
+# Database & local data
 *.db
 *.db-journal
 *.db-shm
 *.db-wal
+/.data/uploads/
