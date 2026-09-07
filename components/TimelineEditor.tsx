@@ -185,8 +185,9 @@ export default function TimelineEditor({ eventId, startTime }: TimelineEditorPro
 
                       <button
                         onClick={() => handleDelete(item.id)}
-                        className="p-1 text-slate-500 hover:text-rose-400 transition-colors opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                        className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-400 focus:text-rose-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 transition-colors opacity-100 sm:opacity-70 sm:hover:opacity-100 sm:focus:opacity-100"
                         title="Delete step"
+                        aria-label={`Delete ${item.title}`}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -207,9 +208,14 @@ export default function TimelineEditor({ eventId, startTime }: TimelineEditorPro
 
       {/* Add Step Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="glass-panel max-w-md w-full p-6 rounded-3xl space-y-4 border border-indigo-500/30">
-            <h3 className="text-lg font-bold text-white">Add Timed Timeline Step</h3>
+        <div className="fixed inset-0 z-[110] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div 
+            role="dialog" 
+            aria-modal="true" 
+            aria-labelledby="timeline-modal-title"
+            className="glass-panel max-w-md w-full p-6 rounded-3xl space-y-4 border border-indigo-500/30"
+          >
+            <h3 id="timeline-modal-title" className="text-lg font-bold text-white">Add Timed Timeline Step</h3>
 
             <form onSubmit={handleAddItem} className="space-y-3">
               <div>

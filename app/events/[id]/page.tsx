@@ -10,7 +10,7 @@ import {
   DollarSign, ArrowLeft, Utensils, Sparkles, Filter, Check,
   CheckSquare, ShoppingCart, Layers
 } from 'lucide-react';
-import { PartyEvent, Guest, DietarySummary, RSVPStatus, GuestRole } from '@/lib/types';
+import { PartyEvent, Guest, DietarySummary, RSVPStatus, GuestRole, getCurrencySymbol } from '@/lib/types';
 import { 
   getEventById, saveEvent, getGuests, saveGuest, 
   saveGuestsBulk, deleteGuest, calculateDietarySummary 
@@ -307,32 +307,36 @@ export default function EventDetailPage() {
 
       {/* Main Event Header Banner */}
       <div className="glass-panel rounded-3xl overflow-hidden border border-slate-800/80 shadow-2xl">
-        <div className="h-56 relative overflow-hidden bg-slate-900">
+        <div className="relative min-h-[15rem] sm:min-h-[17rem] overflow-hidden bg-slate-900 flex flex-col justify-end p-6">
           <img
             src={event.coverAssetUrl || 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=1200&auto=format&fit=crop'}
             alt={event.title}
-            className="w-full h-full object-cover opacity-60"
+            className="absolute inset-0 w-full h-full object-cover opacity-60 pointer-events-none"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent pointer-events-none" />
 
-          <div className="absolute bottom-6 left-6 right-6 space-y-2">
-            <h1 className="text-3xl sm:text-4xl font-black text-white">{event.title}</h1>
-            <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-slate-300">
+          <div className="relative z-10 space-y-2">
+            <h1 className="text-2xl sm:text-4xl font-black text-white line-clamp-2 break-words leading-tight">
+              {event.title}
+            </h1>
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 text-xs font-medium text-slate-300">
               <span className="flex items-center gap-1 bg-slate-900/80 px-3 py-1 rounded-lg border border-slate-800">
-                <Calendar className="w-4 h-4 text-indigo-400" />
-                {event.date}
+                <Calendar className="w-4 h-4 text-indigo-400 shrink-0" />
+                <span>{event.date}</span>
               </span>
               <span className="flex items-center gap-1 bg-slate-900/80 px-3 py-1 rounded-lg border border-slate-800">
-                <Clock className="w-4 h-4 text-indigo-400" />
-                {event.startTime} - {event.endTime} ({event.timezone})
+                <Clock className="w-4 h-4 text-indigo-400 shrink-0" />
+                <span>{event.startTime} - {event.endTime} ({event.timezone})</span>
+              </span>
+              <span className="flex items-center gap-1 bg-slate-900/80 px-3 py-1 rounded-lg border border-slate-800 max-w-full">
+                <MapPin className="w-4 h-4 text-indigo-400 shrink-0" />
+                <span className="truncate max-w-[200px] sm:max-w-xs" title={event.location.isTBD ? 'Location TBD' : (event.location.name || event.location.address)}>
+                  {event.location.isTBD ? 'Location TBD' : (event.location.name || event.location.address)}
+                </span>
               </span>
               <span className="flex items-center gap-1 bg-slate-900/80 px-3 py-1 rounded-lg border border-slate-800">
-                <MapPin className="w-4 h-4 text-indigo-400" />
-                {event.location.isTBD ? 'Location TBD' : (event.location.name || event.location.address)}
-              </span>
-              <span className="flex items-center gap-1 bg-slate-900/80 px-3 py-1 rounded-lg border border-slate-800">
-                <DollarSign className="w-4 h-4 text-emerald-400" />
-                Budget: ${event.totalBudget} {event.currency}
+                <span className="text-emerald-400 font-bold text-xs">{getCurrencySymbol(event.currency)}</span>
+                <span>Budget: {getCurrencySymbol(event.currency)}{event.totalBudget}</span>
               </span>
             </div>
           </div>
@@ -432,6 +436,7 @@ export default function EventDetailPage() {
               <input
                 type="text"
                 readOnly
+                aria-label="Shareable invite URL"
                 value={inviteUrl}
                 className="flex-1 p-3 rounded-xl glass-input text-xs font-mono text-slate-300 select-all"
               />
@@ -513,31 +518,53 @@ export default function EventDetailPage() {
               {/* Guest List Table */}
               <div className="glass-panel rounded-2xl overflow-hidden border border-slate-800">
                 {filteredGuests.length === 0 ? (
-                  <div className="p-8 text-center text-slate-400 text-xs">
-                    No guests found matching this status filter.
+                  <div className="p-8 text-center space-y-3">
+                    <Users className="w-8 h-8 text-slate-500 mx-auto" />
+                    <p className="text-xs font-semibold text-slate-300">
+                      {rsvpFilter === 'all' ? 'No guests added yet' : `No guests found with status "${rsvpFilter}"`}
+                    </p>
+                    <div className="flex items-center justify-center gap-2 pt-1">
+                      {rsvpFilter !== 'all' ? (
+                        <button
+                          onClick={() => setRsvpFilter('all')}
+                          className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 transition-colors"
+                        >
+                          Clear Filter
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setShowAddGuest(true)}
+                          className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition-colors"
+                        >
+                          + Add First Guest
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ) : (
                   <div className="divide-y divide-slate-800/80">
                     {filteredGuests.map((g) => (
                       <div key={g.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-900/40 transition-colors">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-sm text-white">{g.name}</span>
+                        <div className="space-y-1 min-w-0 flex-1 pr-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-sm text-white truncate max-w-[180px] sm:max-w-[280px]">
+                              {g.name}
+                            </span>
                             {g.plusOnesActual > 0 && (
-                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shrink-0">
                                 +{g.plusOnesActual} Guest
                               </span>
                             )}
-                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold capitalize bg-slate-800 text-slate-400">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold capitalize bg-slate-800 text-slate-400 shrink-0">
                               {g.role}
                             </span>
                           </div>
 
                           <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
-                            {g.email && <span>{g.email}</span>}
-                            {g.phone && <span>{g.phone}</span>}
+                            {g.email && <span className="truncate max-w-[180px] sm:max-w-xs">{g.email}</span>}
+                            {g.phone && <span className="truncate max-w-[140px]">{g.phone}</span>}
                             {g.dietary && (
-                              <span className="text-amber-400 font-medium">Dietary: {g.dietary}</span>
+                              <span className="text-amber-400 font-medium truncate max-w-[200px]">Dietary: {g.dietary}</span>
                             )}
                           </div>
                         </div>
@@ -685,7 +712,7 @@ export default function EventDetailPage() {
 
       {/* Add Single Guest Modal */}
       {showAddGuest && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[110] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="glass-panel max-w-md w-full p-6 rounded-3xl space-y-4 border border-indigo-500/30">
             <h3 className="text-lg font-bold text-white">Add New Guest</h3>
 
@@ -773,7 +800,7 @@ export default function EventDetailPage() {
 
       {/* CSV Bulk Import Modal */}
       {showCsvImport && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[110] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="glass-panel max-w-lg w-full p-6 rounded-3xl space-y-4 border border-indigo-500/30">
             <h3 className="text-lg font-bold text-white">Bulk Import Guests via CSV</h3>
             <p className="text-xs text-slate-400">

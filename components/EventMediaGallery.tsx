@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Shield, Sparkles, Trash2, CheckCircle2, User, EyeOff } from 'lucide-react';
+import ConfirmModal from '@/components/ConfirmModal';
 
 export interface MediaItemView {
   id: string;
@@ -25,6 +26,7 @@ export default function EventMediaGallery({ eventId, media: initialMedia, onMedi
   const [loading, setLoading] = useState<boolean>(!initialMedia);
   const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   const fetchMedia = async () => {
     try {
@@ -48,11 +50,16 @@ export default function EventMediaGallery({ eventId, media: initialMedia, onMedi
     }
   }, [eventId, initialMedia, refreshTrigger]);
 
-  const handleSelfDelete = async (assetId: string) => {
-    const confirmed = window.confirm('Remove this photo from the shared party gallery? It will be removed immediately.');
-    if (!confirmed) return;
+  const handleSelfDelete = (assetId: string) => {
+    setDeleteTargetId(assetId);
+  };
 
+  const confirmExecuteSelfDelete = async () => {
+    if (!deleteTargetId) return;
+    const assetId = deleteTargetId;
+    setDeleteTargetId(null);
     setRemovingId(assetId);
+
     try {
       const res = await fetch(`/api/events/${eventId}/media/self-delete`, {
         method: 'POST',
@@ -63,12 +70,9 @@ export default function EventMediaGallery({ eventId, media: initialMedia, onMedi
       if (res.ok) {
         setRemovedIds((prev) => new Set([...Array.from(prev), assetId]));
         onMediaDeleted?.(assetId);
-      } else {
-        alert('Could not remove photo. Please try again.');
       }
     } catch (err) {
       console.error('Self-delete failed:', err);
-      alert('Network error while removing photo.');
     } finally {
       setRemovingId(null);
     }
@@ -123,13 +127,14 @@ export default function EventMediaGallery({ eventId, media: initialMedia, onMedi
           )}
 
           {/* Top Right: 1-Tap "Remove Me" Protocol */}
-          <div className="absolute top-2 right-2 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute top-2 right-2 opacity-90 sm:opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
             <button
               type="button"
               onClick={() => handleSelfDelete(item.id)}
               disabled={removingId === item.id}
-              className="p-1.5 rounded-full bg-slate-950/80 hover:bg-rose-950 text-slate-400 hover:text-rose-300 border border-slate-700/60 transition-colors"
+              className="min-h-[36px] min-w-[36px] flex items-center justify-center p-2 rounded-full bg-slate-950/80 hover:bg-rose-950 text-slate-400 hover:text-rose-300 focus-visible:ring-2 focus-visible:ring-rose-500 border border-slate-700/60 transition-colors"
               title="1-Tap Remove Me (Immediately hides photo from shared gallery)"
+              aria-label="1-Tap Remove Me (Hide photo from shared gallery)"
             >
               <Shield className="w-3.5 h-3.5" />
             </button>
@@ -149,6 +154,16 @@ export default function EventMediaGallery({ eventId, media: initialMedia, onMedi
           </div>
         </div>
       ))}
+
+      <ConfirmModal
+        isOpen={Boolean(deleteTargetId)}
+        title="Remove Photo from Vault"
+        message="Are you sure you want to remove this photo from the shared party gallery? It will be removed immediately."
+        confirmText="Remove Photo"
+        variant="danger"
+        onConfirm={confirmExecuteSelfDelete}
+        onCancel={() => setDeleteTargetId(null)}
+      />
     </div>
   );
 }

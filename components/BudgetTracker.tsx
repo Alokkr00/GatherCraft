@@ -5,7 +5,7 @@ import {
   DollarSign, Plus, Trash2, AlertTriangle, CheckCircle2, 
   ExternalLink, FileText, TrendingUp, TrendingDown
 } from 'lucide-react';
-import { BudgetItem } from '@/lib/types';
+import { BudgetItem, getCurrencySymbol } from '@/lib/types';
 import { getBudgetItems, saveBudgetItem, deleteBudgetItem } from '@/lib/storage';
 import { generatePrefixedId } from '@/lib/id';
 import CustomSelect from '@/components/CustomSelect';
@@ -87,7 +87,7 @@ export default function BudgetTracker({ eventId, totalBudgetLimit, currency }: B
   const isOverBudget = totalActual > limit;
   const isNearBudget = totalActual >= limit * 0.85 && !isOverBudget;
 
-  const symbol = currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '$';
+  const symbol = getCurrencySymbol(currency);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -219,8 +219,9 @@ export default function BudgetTracker({ eventId, totalBudgetLimit, currency }: B
 
                     <button
                       onClick={() => handleDelete(i.id)}
-                      className="p-1 text-slate-500 hover:text-rose-400 transition-colors"
+                      className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-400 focus:text-rose-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 transition-colors"
                       title="Delete item"
+                      aria-label={`Delete budget item ${i.name}`}
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -234,9 +235,14 @@ export default function BudgetTracker({ eventId, totalBudgetLimit, currency }: B
 
       {/* Add Item Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="glass-panel max-w-md w-full p-6 rounded-3xl space-y-4 border border-indigo-500/30">
-            <h3 className="text-lg font-bold text-white">Add Budget Line Item</h3>
+        <div className="fixed inset-0 z-[110] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div 
+            role="dialog" 
+            aria-modal="true" 
+            aria-labelledby="budget-modal-title"
+            className="glass-panel max-w-md w-full p-6 rounded-3xl space-y-4 border border-indigo-500/30"
+          >
+            <h3 id="budget-modal-title" className="text-lg font-bold text-white">Add Budget Line Item</h3>
 
             <form onSubmit={handleAddItem} className="space-y-3">
               <div>

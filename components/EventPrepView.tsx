@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ShoppingCart, CheckSquare, DollarSign, Sparkles } from 'lucide-react';
+import { ShoppingCart, CheckSquare, Wallet, Sparkles } from 'lucide-react';
 import TaskManager from '@/components/TaskManager';
 import ShoppingList from '@/components/ShoppingList';
 import BudgetTracker from '@/components/BudgetTracker';
@@ -70,7 +70,7 @@ export default function EventPrepView({
                 : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
             }`}
           >
-            <DollarSign className="w-3.5 h-3.5" />
+            <Wallet className="w-3.5 h-3.5" />
             <span>Budget Overview</span>
           </button>
         </div>

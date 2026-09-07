@@ -3,6 +3,29 @@ export type EventStatus = 'draft' | 'planning' | 'confirmed' | 'live' | 'complet
 export type GuestRole = 'guest' | 'co-host' | 'helper' | 'vip';
 export type RSVPStatus = 'yes' | 'no' | 'maybe' | 'pending' | 'waitlist';
 
+export const SUPPORTED_CURRENCIES = [
+  { value: 'USD', label: 'USD ($)', symbol: '$' },
+  { value: 'INR', label: 'INR (₹)', symbol: '₹' },
+  { value: 'EUR', label: 'EUR (€)', symbol: '€' },
+  { value: 'GBP', label: 'GBP (£)', symbol: '£' },
+  { value: 'CAD', label: 'CAD ($)', symbol: 'CA$' },
+  { value: 'AUD', label: 'AUD ($)', symbol: 'A$' },
+] as const;
+
+export function getCurrencySymbol(currency: string = 'USD'): string {
+  const c = currency?.toUpperCase();
+  switch (c) {
+    case 'INR': return '₹';
+    case 'EUR': return '€';
+    case 'GBP': return '£';
+    case 'CAD': return 'CA$';
+    case 'AUD': return 'A$';
+    case 'USD':
+    default:
+      return '$';
+  }
+}
+
 export interface PurposeStatement {
   rawInput: string;
   selectedStatement: string;

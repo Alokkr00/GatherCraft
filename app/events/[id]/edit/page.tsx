@@ -7,7 +7,7 @@ import {
   PartyPopper, Calendar, Clock, MapPin, DollarSign, Users, 
   ArrowLeft, CheckCircle2, Save, AlertCircle
 } from 'lucide-react';
-import { PartyEvent } from '@/lib/types';
+import { PartyEvent, SUPPORTED_CURRENCIES, getCurrencySymbol } from '@/lib/types';
 import { getEventById, saveEvent } from '@/lib/storage';
 import SkeletonLoader from '@/components/SkeletonLoader';
 import CustomDatePicker from '@/components/CustomDatePicker';
@@ -215,13 +215,19 @@ export default function EditEventPage() {
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">
                 Budget Target
               </label>
-              <input
-                type="number"
-                min={0}
-                value={totalBudget}
-                onChange={(e) => setTotalBudget(parseInt(e.target.value) || 0)}
-                className="w-full p-3 rounded-xl glass-input text-xs"
-              />
+              <div className="relative">
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={totalBudget}
+                  onChange={(e) => setTotalBudget(parseFloat(e.target.value) || 0)}
+                  className="w-full p-3 pl-10 rounded-xl glass-input text-xs font-bold"
+                />
+                <span className="w-5 text-center text-xs font-bold text-emerald-400 absolute left-3 top-3.5 pointer-events-none">
+                  {getCurrencySymbol(currency)}
+                </span>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -230,13 +236,7 @@ export default function EditEventPage() {
               </label>
               <CustomSelect
                 value={currency}
-                options={[
-                  { value: 'USD', label: 'USD ($)' },
-                  { value: 'EUR', label: 'EUR (€)' },
-                  { value: 'GBP', label: 'GBP (£)' },
-                  { value: 'CAD', label: 'CAD ($)' },
-                  { value: 'AUD', label: 'AUD ($)' },
-                ]}
+                options={SUPPORTED_CURRENCIES.map((c) => ({ value: c.value, label: c.label }))}
                 onChange={setCurrency}
                 direction="up"
               />
@@ -254,7 +254,8 @@ export default function EditEventPage() {
 
             <button
               type="submit"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-xs text-white bg-indigo-600 hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-600/30"
+              disabled={isSaved}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-xs text-white bg-indigo-600 hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-600/30 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isSaved ? (
                 <>

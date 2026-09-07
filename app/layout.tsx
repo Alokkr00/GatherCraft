@@ -1,6 +1,7 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://gathercraft.app';
 
@@ -92,22 +93,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+      <body className="bg-slate-950 text-slate-100 min-h-[100dvh] flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:font-bold focus:rounded-xl focus:shadow-xl focus:ring-2 focus:ring-white transition-all"
+        >
+          Skip to main content
+        </a>
         <Navbar />
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main id="main-content" tabIndex={-1} className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 outline-none">
           {children}
         </main>
-        <footer className="border-t border-slate-800/80 py-8 text-center text-xs text-slate-500 bg-slate-950/60">
-          <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p>© 2026 GatherCraft. Purpose-First Event Architecture.</p>
-            <div className="flex items-center gap-4 text-slate-400">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                System Active
-              </span>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       </body>
     </html>
   );

@@ -180,15 +180,15 @@ export default function LiveModePage() {
     .sort((a, b) => (a.checkInAt ? 1 : 0) - (b.checkInAt ? 1 : 0));
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 space-y-6 max-w-3xl mx-auto animate-fade-in pb-20">
+    <div className="min-h-[100dvh] bg-slate-950 text-slate-100 p-2 sm:p-6 space-y-4 sm:space-y-6 max-w-3xl mx-auto animate-fade-in pb-28">
       {/* Top Header Bar */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4 gap-2 flex-wrap">
+      <header className="sticky top-0 z-40 -mx-2 sm:-mx-6 px-3 sm:px-6 py-3 bg-slate-950/95 backdrop-blur-md border-b border-slate-800/80 flex items-center justify-between gap-2 shadow-lg">
         <button
           onClick={() => router.push(`/events/${eventId}`)}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Exit Live</span>
+          <span className="hidden xs:inline">Exit Live</span>
         </button>
 
         <div className="flex items-center gap-2">
@@ -196,7 +196,7 @@ export default function LiveModePage() {
           {!isOnline || pendingSync > 0 ? (
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 text-[10px] font-bold border border-amber-500/30 animate-pulse">
               <WifiOff className="w-3 h-3" />
-              <span>Offline ({pendingSync} queued)</span>
+              <span>Offline ({pendingSync})</span>
             </div>
           ) : (
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-semibold border border-emerald-500/20">
@@ -205,9 +205,9 @@ export default function LiveModePage() {
             </div>
           )}
 
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-xs font-bold border border-rose-500/40">
+          <div className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-xs font-bold border border-rose-500/40">
             <span className="w-2 h-2 rounded-full bg-rose-400 animate-ping"></span>
-            <span>LIVE MODE ACTIVE</span>
+            <span className="text-[11px] sm:text-xs">LIVE MODE ACTIVE</span>
           </div>
         </div>
 
@@ -218,11 +218,11 @@ export default function LiveModePage() {
           <Flag className="w-3.5 h-3.5" />
           <span>Close Event</span>
         </button>
-      </div>
+      </header>
 
       {/* Main Title Card */}
       <div className="text-center space-y-1">
-        <h1 className="text-2xl sm:text-3xl font-black text-white">{event.title}</h1>
+        <h1 className="text-xl sm:text-3xl font-black text-white line-clamp-2 break-words leading-tight">{event.title}</h1>
         <p className="text-xs text-slate-400">
           {event.date} • {event.startTime} - {event.endTime} ({event.timezone})
         </p>
@@ -281,6 +281,7 @@ export default function LiveModePage() {
 
           <input
             type="text"
+            aria-label="Quick search guest"
             value={guestSearch}
             onChange={(e) => setGuestSearch(e.target.value)}
             placeholder="Quick search guest..."
@@ -290,33 +291,44 @@ export default function LiveModePage() {
 
         <div className="divide-y divide-slate-800 pr-1">
           {filteredGuests.length === 0 ? (
-            <p className="text-xs text-slate-500 py-4 text-center">No guests found matching search.</p>
+            <div className="py-6 text-center space-y-2">
+              <p className="text-xs text-slate-400">No guests found matching search.</p>
+              {guestSearch && (
+                <button
+                  type="button"
+                  onClick={() => setGuestSearch('')}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 transition-colors"
+                >
+                  Clear Search
+                </button>
+              )}
+            </div>
           ) : (
             filteredGuests.map((g) => {
               const isCheckedIn = Boolean(g.checkInAt);
 
               return (
                 <div key={g.id} className="py-3 flex items-center justify-between gap-3">
-                  <div>
+                  <div className="min-w-0 flex-1 pr-2">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className={`font-bold text-sm ${isCheckedIn ? 'text-emerald-300 line-through opacity-75' : 'text-white'}`}>
+                      <p className={`font-bold text-sm truncate max-w-[140px] sm:max-w-[240px] ${isCheckedIn ? 'text-emerald-300 line-through opacity-75' : 'text-white'}`}>
                         {g.name} {g.plusOnesActual > 0 ? `(+${g.plusOnesActual})` : ''}
                       </p>
                       {g.consentTier === 'GHOST_MODE' ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40" title="Ghost Mode: Do not photograph or record">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 shrink-0" title="Ghost Mode: Do not photograph or record">
                           🔴 No Photos
                         </span>
                       ) : g.consentTier === 'CIRCLE_ONLY' ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30" title="Circle Only: Event guests only">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0" title="Circle Only: Event guests only">
                           🟡 Circle Only
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" title="Open: Happy to be photographed">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0" title="Open: Happy to be photographed">
                           🟢 Open
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-slate-400 truncate">
                       {g.role} • {g.rsvpStatus} {g.dietary ? `• 🥗 ${g.dietary}` : ''} {g.notes ? `• 💬 "${g.notes}"` : ''}
                     </p>
                   </div>

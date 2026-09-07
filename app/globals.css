@@ -245,3 +245,44 @@ select option {
   padding: 8px;
 }
 
+/* ─── Keyboard Focus Rings (WCAG 2.1 AA) ────────────────────────── */
+:focus-visible {
+  outline: 2px solid #818cf8 !important;
+  outline-offset: 2px !important;
+}
+
+/* ─── Mobile Safe Area Insets ───────────────────────────────────── */
+.safe-pb {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
+}
+.safe-bottom {
+  bottom: max(1.25rem, env(safe-area-inset-bottom, 1.25rem));
+}
+.safe-pt {
+  padding-top: max(1rem, env(safe-area-inset-top, 1rem));
+}
+
+/* ─── Motion Sensitivity (WCAG 2.2.2 / 2.3.3) ─────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-ping,
+  .animate-pulse,
+  .animate-bounce,
+  .animate-float,
+  .animate-pulse-glow {
+    animation: none !important;
+  }
+  .ambient-hero::before,
+  .ambient-hero::after {
+    animation: none !important;
+  }
+}
+
+

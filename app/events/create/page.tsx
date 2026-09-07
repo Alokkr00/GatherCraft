@@ -5,10 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { 
   Sparkles, Target, Calendar, Clock, MapPin, DollarSign, 
   Users, CheckCircle2, ArrowRight, ArrowLeft, Lock, Globe,
-  PartyPopper, Wand2, Shield, AlertCircle
+  PartyPopper, Wand2, Shield, AlertCircle, Loader2
 } from 'lucide-react';
 import { STARTER_TEMPLATES } from '@/lib/templates';
-import { PartyEvent, StarterTemplate } from '@/lib/types';
+import { PartyEvent, StarterTemplate, SUPPORTED_CURRENCIES, getCurrencySymbol } from '@/lib/types';
 import { saveEvent, saveEventAsync } from '@/lib/storage';
 import { getCurrentHostId } from '@/lib/host-session';
 import CustomSelect from '@/components/CustomSelect';
@@ -569,9 +569,9 @@ function EventCreateWizard() {
             </div>
 
             {/* Date & Time Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 relative z-40">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-40">
               <div className="space-y-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 h-5">
                   Event Date
                 </label>
                 <CustomDatePicker
@@ -581,7 +581,7 @@ function EventCreateWizard() {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 h-5">
                   Start Time
                 </label>
                 <CustomTimePicker
@@ -592,10 +592,14 @@ function EventCreateWizard() {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center justify-between">
-                  <span>When do we say goodnight?</span>
-                  <span className="text-[10px] text-amber-400 font-normal">A clear ending leaves people wanting more</span>
-                </label>
+                <div className="h-5 flex items-center justify-between">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">
+                    End Time
+                  </label>
+                  <span className="text-[10px] text-amber-400 font-normal truncate max-w-[130px]" title="A clear ending leaves people wanting more">
+                    Hard End Time ✨
+                  </span>
+                </div>
                 <CustomTimePicker
                   value={endTime}
                   onChange={(val) => setEndTime(val)}
@@ -657,7 +661,7 @@ function EventCreateWizard() {
             </div>
 
             {/* Capacity & Budget Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-800">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-slate-800">
               <div className="space-y-2">
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">
                   Capacity Soft Limit
@@ -693,7 +697,9 @@ function EventCreateWizard() {
                     }}
                     className="w-full p-3 pl-9 rounded-xl glass-input text-xs font-bold"
                   />
-                  <DollarSign className="w-4 h-4 text-emerald-400 absolute left-3 top-3.5" />
+                  <span className="w-5 text-center text-xs font-bold text-emerald-400 absolute left-3 top-3.5 pointer-events-none">
+                    {getCurrencySymbol(currency)}
+                  </span>
                 </div>
               </div>
 
@@ -703,13 +709,7 @@ function EventCreateWizard() {
                 </label>
                 <CustomSelect
                   value={currency}
-                  options={[
-                    { value: 'USD', label: 'USD ($)' },
-                    { value: 'EUR', label: 'EUR (€)' },
-                    { value: 'GBP', label: 'GBP (£)' },
-                    { value: 'CAD', label: 'CAD ($)' },
-                    { value: 'AUD', label: 'AUD ($)' },
-                  ]}
+                  options={SUPPORTED_CURRENCIES.map((c) => ({ value: c.value, label: c.label }))}
                   onChange={(val) => setCurrency(val)}
                   direction="up"
                 />
@@ -727,10 +727,20 @@ function EventCreateWizard() {
 
             <button
               onClick={handleFinalSubmit}
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-sm text-white bg-gradient-to-r from-emerald-500 via-indigo-600 to-violet-600 hover:from-emerald-400 hover:to-indigo-500 shadow-2xl shadow-indigo-600/30 transition-all hover:brightness-110 active:scale-98"
+              disabled={isSubmitting}
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-sm text-white bg-gradient-to-r from-emerald-500 via-indigo-600 to-violet-600 hover:from-emerald-400 hover:to-indigo-500 shadow-2xl shadow-indigo-600/30 transition-all hover:brightness-110 active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <PartyPopper className="w-5 h-5" />
-              <span>Lock in Event & Manage Guests</span>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Locking in Gathering...</span>
+                </>
+              ) : (
+                <>
+                  <PartyPopper className="w-5 h-5" />
+                  <span>Lock in Event & Manage Guests</span>
+                </>
+              )}
             </button>
           </div>
         </div>

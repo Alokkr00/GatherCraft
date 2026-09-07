@@ -53,6 +53,17 @@ export default function MobileMediaUploadDrawer({
     return () => window.removeEventListener('online', handleOnline);
   }, [eventId, onMediaUploaded]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
   const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -172,7 +183,7 @@ export default function MobileMediaUploadDrawer({
 
       {/* Non-Blocking Floating Upload Status Pill */}
       {uploadStatus && (
-        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-slate-900/95 text-white border border-indigo-500/40 shadow-2xl backdrop-blur-md flex items-center gap-2 text-xs font-semibold animate-fade-in">
+        <div className="fixed bottom-[max(1.25rem,env(safe-area-inset-bottom,1.25rem))] left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-slate-900/95 text-white border border-indigo-500/40 shadow-2xl backdrop-blur-md flex items-center gap-2 text-xs font-semibold animate-fade-in">
           <Upload className="w-3.5 h-3.5 text-indigo-400 animate-bounce" />
           <span>{uploadStatus}</span>
           {pendingCount > 1 && (
@@ -185,17 +196,23 @@ export default function MobileMediaUploadDrawer({
 
       {/* Purpose-Anchored Confirmation Sheet */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-0 sm:p-4 animate-fade-in">
-          <div className="w-full max-w-md bg-slate-950 border border-slate-800 rounded-t-3xl sm:rounded-3xl p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-0 sm:p-4 animate-fade-in">
+          <div 
+            role="dialog" 
+            aria-modal="true" 
+            aria-labelledby="drawer-title"
+            className="w-full max-w-md bg-slate-950 border border-slate-800 rounded-t-3xl sm:rounded-3xl p-5 space-y-4 max-h-[90dvh] safe-pb overflow-y-auto"
+          >
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-amber-400" />
-                <h3 className="text-sm font-bold text-white">Add to Memory Vault</h3>
+                <h3 id="drawer-title" className="text-sm font-bold text-white">Add to Memory Vault</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="p-1 rounded-full text-slate-400 hover:text-white"
+                aria-label="Close upload drawer"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full text-slate-400 hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>

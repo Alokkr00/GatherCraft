@@ -232,7 +232,7 @@ export default function StreamlinedEventChat({
                       {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
-                  <p className="text-xs font-semibold text-slate-100 leading-relaxed">
+                  <p className="text-xs font-semibold text-slate-100 leading-relaxed break-words [overflow-wrap:anywhere]">
                     {m.content}
                   </p>
                 </div>
@@ -258,7 +258,7 @@ export default function StreamlinedEventChat({
                     {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
-                <p className="leading-relaxed">{m.content}</p>
+                <p className="leading-relaxed break-words [overflow-wrap:anywhere]">{m.content}</p>
               </div>
             );
           })
@@ -271,6 +271,7 @@ export default function StreamlinedEventChat({
         <input
           type="text"
           maxLength={500}
+          aria-label="Type a message or announcement"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           placeholder={
@@ -286,7 +287,8 @@ export default function StreamlinedEventChat({
         <button
           type="submit"
           disabled={!inputText.trim() || isSending}
-          className={`p-2.5 rounded-xl transition-all disabled:opacity-40 min-h-[40px] min-w-[40px] flex items-center justify-center ${
+          aria-label={isMegaphoneActive ? 'Broadcast announcement' : 'Send message'}
+          className={`p-2.5 rounded-xl transition-all disabled:opacity-40 min-h-[44px] min-w-[44px] flex items-center justify-center ${
             isMegaphoneActive
               ? 'bg-amber-500 text-slate-950 font-bold'
               : 'bg-indigo-600 hover:bg-indigo-500 text-white'

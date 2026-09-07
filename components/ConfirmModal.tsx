@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 
 interface ConfirmModalProps {
@@ -24,6 +24,48 @@ export default function ConfirmModal({
   onConfirm,
   onCancel
 }: ConfirmModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const prevActiveElement = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    prevActiveElement.current = document.activeElement as HTMLElement;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onCancel();
+        return;
+      }
+      if (e.key === 'Tab' && modalRef.current) {
+        const focusables = modalRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusables.length) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    // Auto-focus the cancel button or first action button
+    const initialBtn = modalRef.current?.querySelector<HTMLButtonElement>('button:not([aria-label="Close confirmation dialog"])');
+    initialBtn?.focus();
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      prevActiveElement.current?.focus();
+    };
+  }, [isOpen, onCancel]);
+
   if (!isOpen) return null;
 
   const btnBg = variant === 'danger' 
@@ -33,8 +75,9 @@ export default function ConfirmModal({
   const iconColor = variant === 'danger' ? 'text-rose-400' : 'text-amber-400';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
       <div 
+        ref={modalRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-modal-title"
@@ -42,7 +85,8 @@ export default function ConfirmModal({
       >
         <button
           onClick={onCancel}
-          className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors"
+          aria-label="Close confirmation dialog"
+          className="absolute top-4 right-4 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-slate-800/60 focus-visible:ring-2 focus-visible:ring-indigo-500 transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
@@ -60,13 +104,13 @@ export default function ConfirmModal({
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800/80">
           <button
             onClick={onCancel}
-            className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-all"
+            className="px-4 py-2 min-h-[40px] rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-all"
           >
             {cancelText}
           </button>
           <button
             onClick={onConfirm}
-            className={`px-5 py-2 rounded-xl text-xs font-bold text-white shadow-md transition-all ${btnBg}`}
+            className={`px-5 py-2 min-h-[40px] rounded-xl text-xs font-bold text-white shadow-md transition-all ${btnBg}`}
           >
             {confirmText}
           </button>

@@ -106,13 +106,14 @@ export default function CustomDatePicker({
 
       {/* Glassmorphism Calendar Popover */}
       {isOpen && (
-        <div className="absolute left-0 mt-2 z-50 w-72 p-4 rounded-2xl bg-slate-900/95 border border-slate-800 backdrop-blur-xl shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute left-0 mt-2 z-[100] w-[min(18rem,calc(100vw-2rem))] p-4 rounded-2xl bg-slate-900/98 border border-slate-700 backdrop-blur-xl shadow-2xl animate-in fade-in zoom-in-95 duration-150">
           {/* Calendar Header */}
           <div className="flex items-center justify-between mb-3">
             <button
               type="button"
               onClick={handlePrevMonth}
-              className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+              aria-label="Previous month"
+              className="min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -122,7 +123,8 @@ export default function CustomDatePicker({
             <button
               type="button"
               onClick={handleNextMonth}
-              className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+              aria-label="Next month"
+              className="min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

@@ -22,6 +22,7 @@ export default function DashboardPage() {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Modal deletion state
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -31,14 +32,14 @@ export default function DashboardPage() {
   }, []);
 
   const loadData = async () => {
-    // 1. Instant local render from cache
-    const evs = getEvents();
-    const gsts = getGuests();
-    setEvents(evs);
-    setGuests(gsts);
-
-    // 2. Authoritative server sync from database
     try {
+      // 1. Instant local render from cache
+      const evs = getEvents();
+      const gsts = getGuests();
+      setEvents(evs);
+      setGuests(gsts);
+
+      // 2. Authoritative server sync from database
       const res = await fetch('/api/events');
       if (res.ok) {
         const data = await res.json();
@@ -49,6 +50,8 @@ export default function DashboardPage() {
       }
     } catch (err) {
       console.warn('Dashboard could not sync events with server:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -122,6 +125,7 @@ export default function DashboardPage() {
                 <Target className="w-5 h-5 text-indigo-400 shrink-0" />
                 <input
                   type="text"
+                  aria-label="Gathering purpose"
                   value={quickPurpose}
                   onChange={(e) => setQuickPurpose(e.target.value)}
                   placeholder="What are you gathering people for? (e.g. To celebrate Maya's promotion...)"
@@ -295,7 +299,18 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {filteredEvents.length === 0 ? (
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="glass-card rounded-2xl p-5 border border-slate-800 space-y-4 animate-pulse">
+                <div className="h-44 bg-slate-800/60 rounded-xl" />
+                <div className="h-5 bg-slate-800/80 rounded w-3/4" />
+                <div className="h-3 bg-slate-800/50 rounded w-1/2" />
+                <div className="h-10 bg-slate-800/40 rounded-xl" />
+              </div>
+            ))}
+          </div>
+        ) : filteredEvents.length === 0 ? (
           filterStatus === 'all' ? (
             <div className="ambient-hero glass-panel rounded-3xl p-12 text-center space-y-6 max-w-xl mx-auto border border-amber-500/20">
               <div className="space-y-2">
@@ -335,11 +350,17 @@ export default function DashboardPage() {
               </div>
               <h3 className="text-lg font-bold text-white">No {filterStatus} gatherings</h3>
               <p className="text-sm text-slate-400">Try changing the status filter above.</p>
+              <button
+                onClick={() => setFilterStatus('all')}
+                className="mt-2 px-4 py-2 rounded-xl text-xs font-semibold text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 transition-colors"
+              >
+                View All Gatherings
+              </button>
             </div>
           )
 
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredEvents.map((ev) => {
               const eventGuests = guests.filter(g => g.eventId === ev.id);
               const confirmedCount = eventGuests.filter(g => g.rsvpStatus === 'yes').length;
@@ -380,7 +401,8 @@ export default function DashboardPage() {
                       <button
                         onClick={(e) => handleDelete(ev.id, e)}
                         title="Delete Event"
-                        className="p-1.5 rounded-lg bg-slate-950/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-700/50 transition-colors"
+                        aria-label={`Delete event ${ev.title}`}
+                        className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg bg-slate-950/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-700/50 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
