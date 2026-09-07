@@ -359,6 +359,7 @@ export async function submitRsvpServer(params: {
   dietary?: string;
   accessibility?: string;
   consentTier?: string;
+  notes?: string;
 }): Promise<{ success: boolean; guest?: Guest; waitlisted?: boolean; error?: string }> {
   try {
     const ev = await prisma.event.findFirst({
@@ -423,6 +424,7 @@ export async function submitRsvpServer(params: {
         plusOnesActual: plusOnes,
         dietary: params.dietary?.trim() || null,
         accessibility: params.accessibility?.trim() || null,
+        notes: params.notes?.trim() || existing?.notes || null,
         consentTier: (params.consentTier as any) || existing?.consentTier || 'OPEN',
         consentUpdatedAt: new Date(),
       };

@@ -12,6 +12,7 @@ const RsvpSchema = z.object({
   plusOnesActual: z.coerce.number().int().min(0).max(5).default(0),
   dietary: z.string().trim().max(300).optional().or(z.literal('')),
   accessibility: z.string().trim().max(300).optional().or(z.literal('')),
+  notes: z.string().trim().max(1000).optional().or(z.literal('')),
   consentTier: z.enum(['OPEN', 'CIRCLE_ONLY', 'GHOST_MODE']).default('OPEN'),
 });
 
@@ -43,6 +44,7 @@ export async function POST(req: NextRequest) {
       dietary: parsed.data.dietary || undefined,
       accessibility: parsed.data.accessibility || undefined,
       consentTier: parsed.data.consentTier,
+      notes: parsed.data.notes || undefined,
     });
 
     if (!result.success) {

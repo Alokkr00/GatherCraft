@@ -145,79 +145,89 @@ export async function removeMediaItem(id: string): Promise<void> {
 /**
  * Flushes pending items in the IndexedDB queue
  */
+let isFlushingQueue = false;
+
 export async function flushMediaQueue(
   eventId: string,
   onItemUploaded?: (item: QueuedMediaItem) => void
 ): Promise<{ successCount: number; failureCount: number }> {
-  if (typeof window === 'undefined' || !navigator.onLine) {
+  if (typeof window === 'undefined' || !navigator.onLine || isFlushingQueue) {
     return { successCount: 0, failureCount: 0 };
   }
 
-  const items = await getPendingMediaItems(eventId);
-  const pending = items.filter((i) => i.status === 'queued' || i.status === 'failed');
+  isFlushingQueue = true;
+  try {
+    const items = await getPendingMediaItems(eventId);
+    const now = Date.now();
+    const pending = items.filter(
+      (i) => i.status === 'queued' || i.status === 'failed' || (i.status === 'uploading' && now - i.createdAt > 120000)
+    );
 
-  let successCount = 0;
-  let failureCount = 0;
+    let successCount = 0;
+    let failureCount = 0;
 
-  for (const item of pending) {
-    try {
-      await updateMediaItemStatus(item.id, 'uploading');
+    for (const item of pending) {
+      try {
+        await updateMediaItemStatus(item.id, 'uploading');
 
-      // 1. Request presigned upload URL from Next.js API
-      const presignRes = await fetch(`/api/events/${eventId}/media/presign`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileName: item.fileName,
-          fileSize: item.fileSize,
-          mimeType: item.mimeType,
-          uploaderName: item.uploaderName,
-          guestId: item.guestId,
-          guestToken: item.guestToken,
-          purposeTag: item.purposeTag,
-          caption: item.caption,
-          blurHash: item.thumbnailDataUrl,
-          width: item.width,
-          height: item.height,
-        }),
-      });
+        // 1. Request presigned upload URL from Next.js API
+        const presignRes = await fetch(`/api/events/${eventId}/media/presign`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileName: item.fileName,
+            fileSize: item.fileSize,
+            mimeType: item.mimeType,
+            uploaderName: item.uploaderName,
+            guestId: item.guestId,
+            guestToken: item.guestToken,
+            purposeTag: item.purposeTag,
+            caption: item.caption,
+            blurHash: item.thumbnailDataUrl,
+            width: item.width,
+            height: item.height,
+          }),
+        });
 
-      if (!presignRes.ok) {
-        throw new Error(`Presign failed: ${presignRes.status}`);
+        if (!presignRes.ok) {
+          throw new Error(`Presign failed: ${presignRes.status}`);
+        }
+
+        const { assetId, uploadUrl } = await presignRes.json();
+
+        // 2. Direct binary stream PUT to storage
+        const uploadRes = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': item.mimeType },
+          body: item.blob,
+        });
+
+        if (!uploadRes.ok && uploadRes.status !== 0) {
+          throw new Error(`Upload stream failed: ${uploadRes.status}`);
+        }
+
+        // 3. Mark completed on backend
+        await fetch(`/api/events/${eventId}/media/complete`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ assetId }),
+        });
+
+        await updateMediaItemStatus(item.id, 'synced');
+        // Clean up from local storage immediately to prevent quota bloat
+        await removeMediaItem(item.id);
+
+        successCount++;
+        onItemUploaded?.(item);
+      } catch (err: any) {
+        console.warn(`Failed to flush media item ${item.id}:`, err);
+        await updateMediaItemStatus(item.id, 'failed', err?.message || 'Network error');
+        failureCount++;
       }
-
-      const { assetId, uploadUrl } = await presignRes.json();
-
-      // 2. Direct binary stream PUT to storage
-      const uploadRes = await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': item.mimeType },
-        body: item.blob,
-      });
-
-      if (!uploadRes.ok && uploadRes.status !== 0) {
-        throw new Error(`Upload stream failed: ${uploadRes.status}`);
-      }
-
-      // 3. Mark completed on backend
-      await fetch(`/api/events/${eventId}/media/complete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assetId }),
-      });
-
-      await updateMediaItemStatus(item.id, 'synced');
-      // Clean up after 1 minute of successful sync
-      setTimeout(() => removeMediaItem(item.id), 60000);
-
-      successCount++;
-      onItemUploaded?.(item);
-    } catch (err: any) {
-      console.warn(`Failed to flush media item ${item.id}:`, err);
-      await updateMediaItemStatus(item.id, 'failed', err?.message || 'Network error');
-      failureCount++;
     }
-  }
 
-  return { successCount, failureCount };
+    return { successCount, failureCount };
+  } finally {
+    isFlushingQueue = false;
+  }
 }

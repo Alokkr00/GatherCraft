@@ -38,15 +38,34 @@ export default function StreamlinedEventChat({
   const [isMegaphoneActive, setIsMegaphoneActive] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const isUserScrolledUp = useRef(false);
 
   const mappedPhase = currentPhase === 'planning' ? 'PLANNING' : currentPhase === 'live' ? 'LIVE' : 'GRATITUDE';
+
+  const handleScroll = () => {
+    const el = chatContainerRef.current;
+    if (!el) return;
+    const distanceToBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    isUserScrolledUp.current = distanceToBottom > 60;
+  };
 
   const loadMessages = async () => {
     try {
       const res = await fetch(`/api/events/${eventId}/chat`);
       if (res.ok) {
         const data = await res.json();
-        setMessages(data.messages || []);
+        const incoming: ChatMessageItem[] = data.messages || [];
+        setMessages((prev) => {
+          if (prev.length === incoming.length && prev.length > 0) {
+            const lastPrev = prev[prev.length - 1];
+            const lastIncoming = incoming[incoming.length - 1];
+            if (lastPrev.id === lastIncoming.id) {
+              return prev;
+            }
+          }
+          return incoming;
+        });
       }
     } catch (err) {
       console.warn('Could not load chat messages:', err);
@@ -55,12 +74,18 @@ export default function StreamlinedEventChat({
 
   useEffect(() => {
     loadMessages();
-    const interval = setInterval(loadMessages, 8000); // 8-second polling
+    const interval = setInterval(() => {
+      if (typeof document === 'undefined' || document.visibilityState === 'visible') {
+        loadMessages();
+      }
+    }, 8000);
     return () => clearInterval(interval);
   }, [eventId]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (!isUserScrolledUp.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -173,7 +198,11 @@ export default function StreamlinedEventChat({
       )}
 
       {/* 3. Messages Stream */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div 
+        ref={chatContainerRef} 
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto p-4 space-y-3 overscroll-contain"
+      >
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-500">
             <Sparkles className="w-8 h-8 mb-2 opacity-40 text-amber-400" />

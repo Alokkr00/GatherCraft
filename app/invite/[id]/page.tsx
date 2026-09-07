@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { 
   PartyPopper, Calendar, Clock, MapPin, Target, CheckCircle2, 
   Users, Utensils, Heart, Plus, Sparkles, ArrowRight, ShieldCheck,
-  AlertCircle, Hourglass
+  AlertCircle, Hourglass, Download
 } from 'lucide-react';
 import { PartyEvent, Guest, RSVPStatus, PublicInviteView } from '@/lib/types';
 import { getEventById, getGuests, saveGuestLocalOnly } from '@/lib/storage';
@@ -37,6 +37,7 @@ function InviteContent() {
   const [dietary, setDietary] = useState('');
   const [accessibility, setAccessibility] = useState('');
   const [consentTier, setConsentTier] = useState<'OPEN' | 'CIRCLE_ONLY' | 'GHOST_MODE'>('OPEN');
+  const [notes, setNotes] = useState('');
 
   useEffect(() => {
     let isMounted = true;
@@ -81,6 +82,7 @@ function InviteContent() {
           setPlusOnesActual(existing.plusOnesActual || 0);
           setDietary(existing.dietary || '');
           setAccessibility(existing.accessibility || '');
+          if (existing.notes) setNotes(existing.notes);
           if (existing.consentTier) setConsentTier(existing.consentTier);
         }
       }
@@ -122,10 +124,11 @@ function InviteContent() {
           email: email.trim() || undefined,
           phone: phone.trim() || undefined,
           rsvpStatus,
-          plusOnesActual: Number(plusOnesActual) || 0,
-          dietary: dietary.trim() || undefined,
-          accessibility: accessibility.trim() || undefined,
-          consentTier,
+          plusOnesActual: rsvpStatus === 'no' ? 0 : (Number(plusOnesActual) || 0),
+          dietary: rsvpStatus === 'no' ? undefined : (dietary.trim() || undefined),
+          accessibility: rsvpStatus === 'no' ? undefined : (accessibility.trim() || undefined),
+          consentTier: rsvpStatus === 'no' ? 'GHOST_MODE' : consentTier,
+          notes: notes.trim() || undefined,
         })
       });
 
@@ -144,9 +147,11 @@ function InviteContent() {
         role: 'guest',
         rsvpStatus: data.waitlisted ? 'waitlist' : rsvpStatus,
         plusOnesAllowed: 1,
-        plusOnesActual: Number(plusOnesActual) || 0,
-        dietary: dietary.trim() || undefined,
-        accessibility: accessibility.trim() || undefined,
+        plusOnesActual: rsvpStatus === 'no' ? 0 : (Number(plusOnesActual) || 0),
+        dietary: rsvpStatus === 'no' ? undefined : (dietary.trim() || undefined),
+        accessibility: rsvpStatus === 'no' ? undefined : (accessibility.trim() || undefined),
+        notes: notes.trim() || undefined,
+        consentTier: rsvpStatus === 'no' ? 'GHOST_MODE' : consentTier,
         updatedAt: new Date().toISOString()
       };
 
@@ -208,6 +213,64 @@ function InviteContent() {
       return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ev.title)}&dates=${dates}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(loc)}`;
     } catch (err) {
       return 'https://calendar.google.com';
+    }
+  };
+
+  const downloadIcsFile = (ev: PublicInviteView | PartyEvent) => {
+    try {
+      const cleanStartTime = (ev.startTime || '19:00').split(' ')[0];
+      const cleanEndTime = (ev.endTime || '21:00').split(' ')[0];
+
+      let startDate = new Date(`${ev.date}T${cleanStartTime}:00`);
+      let endDate = new Date(`${ev.date}T${cleanEndTime}:00`);
+
+      if (isNaN(startDate.getTime())) startDate = new Date();
+      if (isNaN(endDate.getTime()) || endDate <= startDate) {
+        endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+      }
+
+      const fmtIcs = (d: Date) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      const startStr = fmtIcs(startDate);
+      const endStr = fmtIcs(endDate);
+      const nowStr = fmtIcs(new Date());
+
+      const purposeText = isPartyEvent(ev) ? ev.purpose?.selectedStatement : ev.publicPurpose;
+      const details = purposeText ? `Purpose: ${purposeText}` : 'GatherCraft Event';
+      const locName = isPartyEvent(ev) ? ev.location?.name : ev.locationName;
+      const locAddr = isPartyEvent(ev) ? ev.location?.address : ev.address;
+      const isTbd = isPartyEvent(ev) ? ev.location?.isTBD : ev.isTBD;
+      const loc = isTbd ? 'Location to be announced' : `${locName || ''} ${locAddr || ''}`.trim();
+
+      const icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//GatherCraft//Event//EN',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'BEGIN:VEVENT',
+        `UID:${ev.id}-${startDate.getTime()}@gathercraft.app`,
+        `DTSTAMP:${nowStr}`,
+        `DTSTART:${startStr}`,
+        `DTEND:${endStr}`,
+        `SUMMARY:${ev.title.replace(/\n/g, ' ')}`,
+        `DESCRIPTION:${details.replace(/\n/g, '\\n')}`,
+        `LOCATION:${loc.replace(/\n/g, ' ')}`,
+        'STATUS:CONFIRMED',
+        'END:VEVENT',
+        'END:VCALENDAR',
+      ].join('\r\n');
+
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${ev.title.replace(/[^a-zA-Z0-9_-]/g, '_')}.ics`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('ICS export error:', err);
     }
   };
 
@@ -361,16 +424,24 @@ function InviteContent() {
             </div>
 
             {rsvpStatus === 'yes' && !isWaitlisted && (
-              <div className="pt-2 flex justify-center">
+              <div className="pt-2 flex flex-wrap items-center justify-center gap-2.5">
                 <a
                   href={generateGoogleCalendarUrl(event)}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-xs text-white bg-indigo-600 hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-600/30"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs text-white bg-indigo-600 hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-600/30"
                 >
                   <Calendar className="w-4 h-4" />
                   <span>Add to Google Calendar</span>
                 </a>
+                <button
+                  type="button"
+                  onClick={() => downloadIcsFile(event)}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Add to Apple / Outlook (.ics)</span>
+                </button>
               </div>
             )}
 
@@ -423,25 +494,28 @@ function InviteContent() {
               })}
             </div>
 
-            {/* Guest Form Fields */}
-            <div className="space-y-3 pt-2">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Your Full Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Jordan Lee"
-                  className="w-full p-3 rounded-xl glass-input text-xs"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Guest Form Fields with Progressive Disclosure */}
+            {rsvpStatus === 'no' ? (
+              <div className="space-y-3 pt-2 animate-fade-in">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Email Address</label>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Your Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. Jordan Lee"
+                    className="w-full p-3 rounded-xl glass-input text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
+                    <span>Email Address</span>
+                    <span className="text-[10px] text-slate-400 font-normal">Optional</span>
+                  </label>
                   <input
                     type="email"
                     value={email}
@@ -452,103 +526,168 @@ function InviteContent() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">Plus-Ones</label>
-                  <CustomSelect
-                    value={String(plusOnesActual)}
-                    options={[
-                      { value: '0', label: 'Just me (0 plus-ones)' },
-                      { value: '1', label: 'Me + 1 Guest (+1)' },
-                      { value: '2', label: 'Me + 2 Guests (+2)' },
-                    ]}
-                    onChange={(val) => setPlusOnesActual(parseInt(val) || 0)}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
-                  <span>Dietary Restrictions / Allergies</span>
-                  <span className="text-[10px] text-slate-400 font-normal">Optional</span>
-                </label>
-                <input
-                  type="text"
-                  value={dietary}
-                  onChange={(e) => setDietary(e.target.value)}
-                  placeholder="e.g. Vegetarian, Gluten-Free, Nut allergy..."
-                  className="w-full p-3 rounded-xl glass-input text-xs"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
-                    <span>Phone Number</span>
+                    <span>Warm Note to Host</span>
                     <span className="text-[10px] text-slate-400 font-normal">Optional</span>
                   </label>
+                  <textarea
+                    rows={3}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Send warm wishes or let the host know why you can't make it..."
+                    className="w-full p-3 rounded-xl glass-input text-xs resize-none"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-4 rounded-2xl font-bold text-sm text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-4"
+                >
+                  <span>{isSubmitting ? 'Sending Regrets...' : 'Send Regrets to Host 💌'}</span>
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3 pt-2 animate-fade-in">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Your Full Name *
+                  </label>
                   <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+1 (555) 000-0000"
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. Jordan Lee"
                     className="w-full p-3 rounded-xl glass-input text-xs"
                   />
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="jordan@example.com"
+                      className="w-full p-3 rounded-xl glass-input text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">Plus-Ones</label>
+                    <CustomSelect
+                      value={String(plusOnesActual)}
+                      options={[
+                        { value: '0', label: 'Just me (0 plus-ones)' },
+                        { value: '1', label: 'Me + 1 Guest (+1)' },
+                        { value: '2', label: 'Me + 2 Guests (+2)' },
+                      ]}
+                      onChange={(val) => setPlusOnesActual(parseInt(val) || 0)}
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
-                    <span>Accessibility / Mobility Needs</span>
+                    <span>Dietary Restrictions / Allergies</span>
                     <span className="text-[10px] text-slate-400 font-normal">Optional</span>
                   </label>
                   <input
                     type="text"
-                    value={accessibility}
-                    onChange={(e) => setAccessibility(e.target.value)}
-                    placeholder="e.g. Wheelchair access, step-free..."
+                    value={dietary}
+                    onChange={(e) => setDietary(e.target.value)}
+                    placeholder="e.g. Vegetarian, Gluten-Free, Nut allergy..."
                     className="w-full p-3 rounded-xl glass-input text-xs"
                   />
                 </div>
-              </div>
 
-              {/* Visual Consent Spectrum Selector */}
-              <div className="space-y-1.5 pt-1">
-                <label className="block text-xs font-semibold text-slate-300">
-                  Photo Comfort & Memory Privacy
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { id: 'OPEN', label: 'All Photos', desc: 'Album & highlights', icon: '🟢' },
-                    { id: 'CIRCLE_ONLY', label: 'Circle Only', desc: 'Attendees only', icon: '🟡' },
-                    { id: 'GHOST_MODE', label: 'Ghost Mode', desc: 'No photos please', icon: '🔴' },
-                  ].map((tier) => (
-                    <button
-                      key={tier.id}
-                      type="button"
-                      onClick={() => setConsentTier(tier.id as any)}
-                      className={`p-2.5 rounded-xl border text-left transition-all ${
-                        consentTier === tier.id
-                          ? 'bg-slate-800 border-indigo-500 shadow-sm shadow-indigo-500/20 text-white'
-                          : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-300'
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5 text-xs font-bold">
-                        <span>{tier.icon}</span>
-                        <span>{tier.label}</span>
-                      </div>
-                      <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">{tier.desc}</p>
-                    </button>
-                  ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
+                      <span>Phone Number</span>
+                      <span className="text-[10px] text-slate-400 font-normal">Optional</span>
+                    </label>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+1 (555) 000-0000"
+                      className="w-full p-3 rounded-xl glass-input text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
+                      <span>Accessibility / Mobility Needs</span>
+                      <span className="text-[10px] text-slate-400 font-normal">Optional</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={accessibility}
+                      onChange={(e) => setAccessibility(e.target.value)}
+                      placeholder="e.g. Wheelchair access, step-free..."
+                      className="w-full p-3 rounded-xl glass-input text-xs"
+                    />
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full py-4 rounded-2xl font-black text-sm text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 shadow-xl shadow-indigo-600/30 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              <PartyPopper className="w-5 h-5" />
-              <span>{isSubmitting ? 'Submitting RSVP...' : 'Submit RSVP'}</span>
-            </button>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
+                    <span>Note for Host</span>
+                    <span className="text-[10px] text-slate-400 font-normal">Optional</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Excited to celebrate, music requests, questions..."
+                    className="w-full p-3 rounded-xl glass-input text-xs"
+                  />
+                </div>
+
+                {/* Visual Consent Spectrum Selector */}
+                <div className="space-y-1.5 pt-1">
+                  <label className="block text-xs font-semibold text-slate-300">
+                    Photo Comfort & Memory Privacy
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: 'OPEN', label: 'All Photos', desc: 'Album & highlights', icon: '🟢' },
+                      { id: 'CIRCLE_ONLY', label: 'Circle Only', desc: 'Attendees only', icon: '🟡' },
+                      { id: 'GHOST_MODE', label: 'Ghost Mode', desc: 'No photos please', icon: '🔴' },
+                    ].map((tier) => (
+                      <button
+                        key={tier.id}
+                        type="button"
+                        onClick={() => setConsentTier(tier.id as any)}
+                        className={`p-2.5 rounded-xl border text-left transition-all ${
+                          consentTier === tier.id
+                            ? 'bg-slate-800 border-indigo-500 shadow-sm shadow-indigo-500/20 text-white'
+                            : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-300'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 text-xs font-bold">
+                          <span>{tier.icon}</span>
+                          <span>{tier.label}</span>
+                        </div>
+                        <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">{tier.desc}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-4 rounded-2xl font-black text-sm text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 shadow-xl shadow-indigo-600/30 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-50 mt-4"
+                >
+                  <PartyPopper className="w-5 h-5" />
+                  <span>{isSubmitting ? 'Submitting RSVP...' : 'Submit RSVP ✨'}</span>
+                </button>
+              </div>
+            )}
           </form>
         )}
       </div>

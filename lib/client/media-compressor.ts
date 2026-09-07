@@ -32,61 +32,73 @@ export async function compressImageClient(
   }
 
   // 1. Decode with native orientation preservation
-  const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
-
-  let { width, height } = bitmap;
-  if (width > maxDimension || height > maxDimension) {
-    if (width > height) {
-      height = Math.round((height * maxDimension) / width);
-      width = maxDimension;
-    } else {
-      width = Math.round((width * maxDimension) / height);
-      height = maxDimension;
-    }
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  } catch {
+    bitmap = await createImageBitmap(file);
   }
 
-  // 2. High-res downscaled canvas
   const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext('2d', { alpha: false });
-  if (!ctx) {
-    bitmap.close();
-    throw new Error('Canvas 2D context creation failed');
-  }
-
-  ctx.drawImage(bitmap, 0, 0, width, height);
-
-  // 3. Compress to WebP (falls back to JPEG if WebP is unsupported)
-  const compressedBlob: Blob = await new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (b) => (b ? resolve(b) : reject(new Error('Canvas toBlob failed'))),
-      'image/webp',
-      quality
-    );
-  });
-
-  // 4. Generate 16x16 micro-thumbnail LQIP data URL (<200 bytes) for instant preview
   const thumbCanvas = document.createElement('canvas');
-  const thumbSize = 16;
-  thumbCanvas.width = thumbSize;
-  thumbCanvas.height = Math.max(1, Math.round((height * thumbSize) / width));
-  const thumbCtx = thumbCanvas.getContext('2d');
-  thumbCtx?.drawImage(canvas, 0, 0, thumbCanvas.width, thumbCanvas.height);
-  const thumbnailDataUrl = thumbCanvas.toDataURL('image/jpeg', 0.4);
 
-  bitmap.close();
+  try {
+    let { width, height } = bitmap;
+    if (width > maxDimension || height > maxDimension) {
+      if (width > height) {
+        height = Math.round((height * maxDimension) / width);
+        width = maxDimension;
+      } else {
+        width = Math.round((width * maxDimension) / height);
+        height = maxDimension;
+      }
+    }
 
-  const finalName = file.name.replace(/\.[^.]+$/, '') + '.webp';
-  const finalFile = new File([compressedBlob], finalName, { type: 'image/webp' });
+    // 2. High-res downscaled canvas
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d', { alpha: false });
+    if (!ctx) {
+      throw new Error('Canvas 2D context creation failed');
+    }
 
-  return {
-    file: finalFile,
-    blob: compressedBlob,
-    thumbnailDataUrl,
-    width,
-    height,
-    originalSize: file.size,
-    compressedSize: compressedBlob.size,
-  };
+    ctx.drawImage(bitmap, 0, 0, width, height);
+
+    // 3. Compress to WebP (falls back to JPEG if WebP is unsupported)
+    const compressedBlob: Blob = await new Promise((resolve, reject) => {
+      canvas.toBlob(
+        (b) => (b ? resolve(b) : reject(new Error('Canvas toBlob failed'))),
+        'image/webp',
+        quality
+      );
+    });
+
+    // 4. Generate 16x16 micro-thumbnail LQIP data URL (<200 bytes) for instant preview
+    const thumbSize = 16;
+    thumbCanvas.width = thumbSize;
+    thumbCanvas.height = Math.max(1, Math.round((height * thumbSize) / width));
+    const thumbCtx = thumbCanvas.getContext('2d');
+    thumbCtx?.drawImage(canvas, 0, 0, thumbCanvas.width, thumbCanvas.height);
+    const thumbnailDataUrl = thumbCanvas.toDataURL('image/jpeg', 0.4);
+
+    const finalName = file.name.replace(/\.[^.]+$/, '') + '.webp';
+    const finalFile = new File([compressedBlob], finalName, { type: 'image/webp' });
+
+    return {
+      file: finalFile,
+      blob: compressedBlob,
+      thumbnailDataUrl,
+      width,
+      height,
+      originalSize: file.size,
+      compressedSize: compressedBlob.size,
+    };
+  } finally {
+    bitmap.close();
+    // Zero dimensions to force immediate GPU texture deallocation in mobile WebKit
+    canvas.width = 0;
+    canvas.height = 0;
+    thumbCanvas.width = 0;
+    thumbCanvas.height = 0;
+  }
 }

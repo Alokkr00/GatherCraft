@@ -175,7 +175,9 @@ export default function LiveModePage() {
 
   if (!event) return <SkeletonLoader label="Loading Live Mode Copilot..." />;
 
-  const filteredGuests = guests.filter(g => g.name.toLowerCase().includes(guestSearch.toLowerCase()));
+  const filteredGuests = guests
+    .filter(g => g.name.toLowerCase().includes(guestSearch.toLowerCase()))
+    .sort((a, b) => (a.checkInAt ? 1 : 0) - (b.checkInAt ? 1 : 0));
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 space-y-6 max-w-3xl mx-auto animate-fade-in pb-20">
@@ -262,6 +264,78 @@ export default function LiveModePage() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Doorstep Guest Arrival Check-in (Promoted for mobile doorstep thumb zone) */}
+      <div className="glass-panel p-6 rounded-3xl space-y-4 border border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center justify-between sm:justify-start gap-2">
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <UserCheck className="w-5 h-5 text-indigo-400" />
+              Doorstep Check-in
+            </h2>
+            <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+              {guests.filter(g => !g.checkInAt).length} remaining
+            </span>
+          </div>
+
+          <input
+            type="text"
+            value={guestSearch}
+            onChange={(e) => setGuestSearch(e.target.value)}
+            placeholder="Quick search guest..."
+            className="p-2.5 rounded-xl glass-input text-xs w-full sm:w-48"
+          />
+        </div>
+
+        <div className="divide-y divide-slate-800 pr-1">
+          {filteredGuests.length === 0 ? (
+            <p className="text-xs text-slate-500 py-4 text-center">No guests found matching search.</p>
+          ) : (
+            filteredGuests.map((g) => {
+              const isCheckedIn = Boolean(g.checkInAt);
+
+              return (
+                <div key={g.id} className="py-3 flex items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className={`font-bold text-sm ${isCheckedIn ? 'text-emerald-300 line-through opacity-75' : 'text-white'}`}>
+                        {g.name} {g.plusOnesActual > 0 ? `(+${g.plusOnesActual})` : ''}
+                      </p>
+                      {g.consentTier === 'GHOST_MODE' ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40" title="Ghost Mode: Do not photograph or record">
+                          🔴 No Photos
+                        </span>
+                      ) : g.consentTier === 'CIRCLE_ONLY' ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30" title="Circle Only: Event guests only">
+                          🟡 Circle Only
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" title="Open: Happy to be photographed">
+                          🟢 Open
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-400">
+                      {g.role} • {g.rsvpStatus} {g.dietary ? `• 🥗 ${g.dietary}` : ''} {g.notes ? `• 💬 "${g.notes}"` : ''}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => handleCheckInToggle(g)}
+                    className={`min-h-[48px] min-w-[96px] px-4 py-2.5 rounded-xl text-xs font-bold transition-all border touch-manipulation active:scale-95 flex items-center justify-center gap-1 ${
+                      isCheckedIn
+                        ? 'bg-emerald-500/25 text-emerald-300 border-emerald-500/50 shadow-sm shadow-emerald-500/20'
+                        : 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-indigo-600 hover:text-white'
+                    }`}
+                  >
+                    <span>{isCheckedIn ? '✓ Arrived' : 'Check In'}</span>
+                  </button>
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
 
       {/* Glanceable Heads-Up Display: NOW & NEXT */}
@@ -369,73 +443,6 @@ export default function LiveModePage() {
             ? `Keep energy high! Introduce new arrivals to guests who share similar interests before starting "${activeStep.title}".`
             : "Great hosting! Hand out leftovers, capture final selfies, and send guests off with warm parting gratitude.")}"
         </p>
-      </div>
-
-      {/* Quick Guest Check-in List */}
-      <div className="glass-panel p-6 rounded-3xl space-y-4 border border-slate-800">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <UserCheck className="w-5 h-5 text-indigo-400" />
-            Guest Arrival Check-in
-          </h2>
-
-          <input
-            type="text"
-            value={guestSearch}
-            onChange={(e) => setGuestSearch(e.target.value)}
-            placeholder="Search guest name..."
-            className="p-2.5 rounded-xl glass-input text-xs w-full sm:w-48"
-          />
-        </div>
-
-        <div className="divide-y divide-slate-800 max-h-80 overflow-y-auto pr-1">
-          {filteredGuests.length === 0 ? (
-            <p className="text-xs text-slate-500 py-4 text-center">No guests found matching search.</p>
-          ) : (
-            filteredGuests.map((g) => {
-              const isCheckedIn = Boolean(g.checkInAt);
-
-              return (
-                <div key={g.id} className="py-3 flex items-center justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className={`font-bold text-sm ${isCheckedIn ? 'text-emerald-300' : 'text-white'}`}>
-                        {g.name} {g.plusOnesActual > 0 ? `(+${g.plusOnesActual})` : ''}
-                      </p>
-                      {g.consentTier === 'GHOST_MODE' ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40" title="Ghost Mode: Do not photograph or record">
-                          🔴 No Photos
-                        </span>
-                      ) : g.consentTier === 'CIRCLE_ONLY' ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30" title="Circle Only: Event guests only">
-                          🟡 Circle Only
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" title="Open: Happy to be photographed">
-                          🟢 Open
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[11px] text-slate-400">
-                      {g.role} • {g.rsvpStatus} {g.dietary ? `• ${g.dietary}` : ''}
-                    </p>
-                  </div>
-
-                  <button
-                    onClick={() => handleCheckInToggle(g)}
-                    className={`min-h-[48px] min-w-[96px] px-4 py-2.5 rounded-xl text-xs font-bold transition-all border touch-manipulation active:scale-95 flex items-center justify-center gap-1 ${
-                      isCheckedIn
-                        ? 'bg-emerald-500/25 text-emerald-300 border-emerald-500/50 shadow-sm shadow-emerald-500/20'
-                        : 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-indigo-600 hover:text-white'
-                    }`}
-                  >
-                    <span>{isCheckedIn ? '✓ Arrived' : 'Check In'}</span>
-                  </button>
-                </div>
-              );
-            })
-          )}
-        </div>
       </div>
 
       {/* Live Host Megaphone & Streamlined Chat */}
