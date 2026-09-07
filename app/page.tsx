@@ -11,6 +11,7 @@ import {
 import { PartyEvent, Guest } from '@/lib/types';
 import { STARTER_TEMPLATES } from '@/lib/templates';
 import { getEvents, getGuests, deleteEvent, saveEvent, saveEventsBulk } from '@/lib/storage';
+import { getCurrentHostId } from '@/lib/host-session';
 import { buildInviteUrl } from '@/lib/paths';
 
 import ConfirmModal from '@/components/ConfirmModal';
@@ -40,7 +41,10 @@ export default function DashboardPage() {
       setGuests(gsts);
 
       // 2. Authoritative server sync from database
-      const res = await fetch('/api/events');
+      const hostId = getCurrentHostId();
+      const res = await fetch(`/api/events?ownerId=${encodeURIComponent(hostId)}`, {
+        headers: { 'x-host-id': hostId }
+      });
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data.events) && data.events.length > 0) {
