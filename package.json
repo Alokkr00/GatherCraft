@@ -1,6 +1,30 @@
 {
-  "name": "party-planner",
+  "name": "gathercraft",
   "version": "0.1.0",
+  "description": "The purpose-first operating system for hosting memorable, intentional gatherings.",
+  "keywords": [
+    "gathering",
+    "event-planner",
+    "party-planner",
+    "rsvp",
+    "the-art-of-gathering",
+    "priya-parker",
+    "nextjs",
+    "typescript",
+    "tailwind",
+    "prisma",
+    "postgresql",
+    "neon",
+    "s3",
+    "cloudflare-r2"
+  ],
+  "author": "GatherCraft Team",
+  "homepage": "https://gathercraft.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Alokkr00/GatherCraft.git"
+  },
+  "license": "MIT",
   "private": true,
   "scripts": {
     "dev": "next dev",

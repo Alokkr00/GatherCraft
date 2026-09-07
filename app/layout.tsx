@@ -2,9 +2,74 @@ import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import Navbar from '@/components/Navbar';
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://gathercraft.app';
+
 export const metadata: Metadata = {
-  title: 'GatherCraft — Purpose-First Party Planning Platform',
-  description: 'Design memorable social gatherings guided by intent, seamless guest management, and 1-click magic link RSVPs.',
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: 'GatherCraft — Bring People Together. On Purpose.',
+    template: '%s | GatherCraft',
+  },
+  description: 'The purpose-first operating system for hosting memorable, intentional gatherings. Inspired by Priya Parker\'s The Art of Gathering—with 1-click magic-link RSVPs, live copilot HUD, and viral memory capsules.',
+  keywords: [
+    'gathering planner',
+    'party planner',
+    'purpose-first gathering',
+    'The Art of Gathering',
+    'Priya Parker',
+    'magic link RSVP',
+    'event host copilot',
+    'live mode party HUD',
+    'memory capsule',
+    'social gathering app',
+    'intentional hosting',
+    'event run-of-show',
+  ],
+  authors: [{ name: 'GatherCraft Team', url: siteUrl }],
+  creator: 'GatherCraft',
+  publisher: 'GatherCraft',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: siteUrl,
+    siteName: 'GatherCraft',
+    title: 'GatherCraft — Bring People Together. On Purpose.',
+    description: 'Stop planning parties with spreadsheets. GatherCraft helps you design, host, and reflect on meaningful gatherings with purpose at the center.',
+    images: [
+      {
+        url: '/api/og?title=GatherCraft&purpose=Bring+People+Together.+On+Purpose.',
+        width: 1200,
+        height: 630,
+        alt: 'GatherCraft — Purpose-First Event Architecture',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'GatherCraft — Bring People Together. On Purpose.',
+    description: 'The purpose-first operating system for hosting intentional gatherings. 1-click RSVPs, live copilot HUD, and post-event memory capsules.',
+    images: ['/api/og?title=GatherCraft&purpose=Bring+People+Together.+On+Purpose.'],
+    creator: '@gathercraft',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
