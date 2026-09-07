@@ -160,37 +160,39 @@ export default function AftermathPage() {
           <span>Back to Event Hub</span>
         </button>
 
-        <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-          Post-Event Recap & Gratitude
-        </span>
+        <div className="purpose-badge">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Post-Event Recap & Gratitude</span>
+        </div>
       </div>
 
-      {/* Hero Completion Banner */}
-      <div className="glass-panel p-8 sm:p-10 rounded-3xl border border-indigo-500/30 text-center space-y-4 bg-gradient-to-b from-indigo-950/40 via-slate-900 to-slate-950">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-indigo-600 flex items-center justify-center mx-auto text-white shadow-xl shadow-indigo-500/30">
-          <PartyPopper className="w-8 h-8" />
+      {/* Hero Completion Banner — warm amber ambient */}
+      <div className="ambient-hero glass-panel p-8 sm:p-10 rounded-3xl border border-amber-500/25 text-center space-y-5 bg-gradient-to-b from-amber-950/30 via-slate-900 to-slate-950">
+        <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-amber-400 via-rose-500 to-indigo-600 flex items-center justify-center mx-auto text-white shadow-xl shadow-amber-500/25">
+          <PartyPopper className="w-10 h-10" />
         </div>
 
-        <div className="space-y-1">
-          <h1 className="text-3xl font-black text-white">Event Closed: {event.title}</h1>
-          <p className="text-sm text-slate-300">
-            Congratulations on hosting an intentional gathering! Send appreciation notes and reflect on your evening.
+        <div className="space-y-2">
+          <p className="text-xs text-amber-400 font-bold uppercase tracking-wider">The gathering has ended</p>
+          <h1 className="text-3xl sm:text-4xl font-black text-white">{event.title}</h1>
+          <p className="text-sm sm:text-base text-slate-300 max-w-lg mx-auto">
+            You hosted something meaningful. Take a breath, send your gratitude, and capture what made tonight matter.
           </p>
         </div>
       </div>
 
       {/* Purpose Fulfillment Reflection Banner */}
-      <div className="glass-panel p-6 rounded-3xl border border-amber-500/30 bg-gradient-to-r from-amber-950/20 via-slate-900 to-indigo-950/20 space-y-3">
-        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400">
-          <Sparkles className="w-4 h-4" />
-          <span>Purpose Fulfillment Check</span>
+      <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-amber-500/25 bg-gradient-to-br from-amber-950/25 via-slate-900 to-indigo-950/20 space-y-4">
+        <div className="purpose-badge">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Did we fulfill our purpose?</span>
         </div>
-        <p className="text-base sm:text-lg font-serif italic text-slate-100 font-medium">
+        <p className="purpose-quote text-lg sm:text-2xl">
           "{event.purpose?.selectedStatement || event.purpose?.rawInput || 'Bringing people together'}"
         </p>
         {event.purpose?.successCriteria && event.purpose.successCriteria.length > 0 && (
-          <div className="pt-2 space-y-1.5">
-            <p className="text-xs font-semibold text-slate-400">Tonight's Intended Outcomes:</p>
+          <div className="pt-2 space-y-2">
+            <p className="text-xs font-semibold text-slate-400">Intended outcomes tonight:</p>
             <div className="flex flex-wrap gap-2">
               {event.purpose.successCriteria.map((crit, i) => (
                 <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-medium bg-slate-800 text-amber-200 border border-amber-500/20">
@@ -264,8 +266,13 @@ export default function AftermathPage() {
               <p className="text-slate-500 font-mono text-[11px]">/capsule/{capsule.capsuleToken}</p>
             </div>
             <div className="flex items-center gap-4 text-slate-400 text-xs">
-              <span>👁️ {capsule.viewsCount || 0} Views</span>
-              <span>⚡ {capsule.cloneCount || 0} Blueprint Remixes</span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800">
+                <span className="text-indigo-300 font-bold">{capsule.viewsCount || 0}</span> Views
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-amber-500/20 text-amber-300">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span className="font-bold">{capsule.cloneCount || 0}</span> Blueprint Remixes
+              </span>
             </div>
           </div>
         )}
@@ -380,19 +387,19 @@ export default function AftermathPage() {
       </div>
 
       {/* Host Retrospective Section */}
-      <div className="glass-panel p-6 sm:p-8 rounded-3xl space-y-6 border border-slate-800">
+      <div className="glass-panel p-6 sm:p-8 rounded-3xl space-y-6 border border-rose-500/15 bg-gradient-to-br from-rose-950/10 via-slate-900 to-slate-950">
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <Heart className="w-5 h-5 text-rose-400" />
-            Host Retrospective & Reflection
+            Reflection & Retrospective
           </h2>
-          <p className="text-xs text-slate-400">Record insights to make your next party even smoother.</p>
+          <p className="text-xs text-slate-400 mt-1">Capture what made tonight matter—so you can recreate it.</p>
         </div>
 
-        <form onSubmit={handleSaveRetro} className="space-y-4">
+        <form onSubmit={handleSaveRetro} className="space-y-5">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
-              Overall Host Rating
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-3">
+              How did tonight feel?
             </label>
             <div className="flex items-center gap-2">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -400,38 +407,41 @@ export default function AftermathPage() {
                   key={star}
                   type="button"
                   onClick={() => setRating(star)}
-                  className={`p-2 rounded-xl transition-all ${
-                    star <= rating ? 'text-amber-400 bg-amber-500/10' : 'text-slate-600 bg-slate-900'
+                  className={`p-2 rounded-xl transition-all hover:scale-110 ${
+                    star <= rating ? 'text-amber-400 bg-amber-500/15 border border-amber-500/30' : 'text-slate-600 bg-slate-900 border border-slate-800'
                   }`}
                 >
                   <Star className="w-6 h-6 fill-current" />
                 </button>
               ))}
+              <span className="text-xs text-slate-400 ml-2">
+                {rating === 5 ? 'Magical ✨' : rating === 4 ? 'Really good' : rating === 3 ? 'Decent' : rating === 2 ? 'Room to grow' : 'Tough night'}
+              </span>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              What worked really well?
+            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              What made tonight feel alive?
             </label>
             <textarea
               rows={3}
               value={whatWorked}
               onChange={(e) => setWhatWorked(e.target.value)}
-              placeholder="e.g. Enforcing the 2-hour hard end time left guests wanting more! The icebreaker started strong..."
+              placeholder="e.g. Enforcing the hard end time left guests wanting more. The icebreaker opened the room in 5 minutes..."
               className="w-full p-3 rounded-xl glass-input text-xs resize-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              What to improve next time?
+            <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+              What would you do differently?
             </label>
             <textarea
               rows={3}
               value={whatToImprove}
               onChange={(e) => setWhatToImprove(e.target.value)}
-              placeholder="e.g. Buy 1 more bag of ice next time; chill drinks 2 hours earlier..."
+              placeholder="e.g. Buy 1 more bag of ice next time; chill drinks 2 hours earlier. Arrive 30 min before guests..."
               className="w-full p-3 rounded-xl glass-input text-xs resize-none"
             />
           </div>
@@ -440,15 +450,15 @@ export default function AftermathPage() {
             {isRetroSaved ? (
               <span className="inline-flex items-center gap-1.5 text-xs text-emerald-400 font-semibold">
                 <CheckCircle2 className="w-4 h-4" />
-                Retrospective Saved!
+                Reflection saved!
               </span>
             ) : <span />}
 
             <button
               type="submit"
-              className="px-6 py-3 rounded-2xl font-bold text-xs text-white bg-indigo-600 hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition-all"
+              className="px-6 py-3 rounded-2xl font-bold text-xs text-white bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 shadow-md shadow-rose-600/20 transition-all"
             >
-              Save Retrospective
+              Save Reflection
             </button>
           </div>
         </form>

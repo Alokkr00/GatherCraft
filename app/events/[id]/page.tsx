@@ -339,14 +339,16 @@ export default function EventDetailPage() {
         </div>
 
         {/* Purpose Highlight Banner */}
-        <div className="p-6 sm:p-8 bg-slate-900/60 border-t border-slate-800/80 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400">
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            <span>Tonight's purpose</span>
-            <span className="text-slate-500 font-normal">({event.purpose?.isPrivate ? 'Private to host' : 'Shared on invite'})</span>
+        <div className="p-6 sm:p-8 bg-gradient-to-br from-amber-950/30 via-slate-900/60 to-indigo-950/30 border-t border-amber-500/15 space-y-4">
+          <div className="purpose-badge">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Tonight's Purpose</span>
+            <span className="text-amber-500/60 font-normal normal-case tracking-normal">
+              · {event.purpose?.isPrivate ? 'Private to host' : 'Shared on invite'}
+            </span>
           </div>
 
-          <p className="text-base sm:text-xl text-slate-100 font-serif font-medium italic bg-gradient-to-r from-amber-950/25 via-indigo-950/30 to-slate-900/50 p-4 sm:p-5 rounded-2xl border border-amber-500/25 leading-relaxed">
+          <p className="purpose-quote text-lg sm:text-2xl bg-gradient-to-br from-amber-950/20 via-indigo-950/30 to-slate-900/50 p-5 sm:p-6 rounded-2xl border border-amber-500/20 shadow-inner">
             "{event.purpose?.selectedStatement || event.purpose?.rawInput || 'No purpose statement specified'}"
           </p>
 

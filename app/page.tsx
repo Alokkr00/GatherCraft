@@ -87,14 +87,12 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-10 animate-fade-in">
-      {/* Hero Welcome Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900/60 via-slate-900/80 to-purple-900/40 p-8 sm:p-10 border border-indigo-500/20 shadow-2xl space-y-8">
-        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none animate-pulse-glow" />
-        <div className="absolute bottom-0 left-1/3 -mb-10 w-80 h-80 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
+      {/* Hero Welcome Banner — Champagne Nocturne ambient layer */}
+      <div className="ambient-hero rounded-3xl bg-gradient-to-br from-indigo-900/60 via-slate-900/80 to-purple-900/40 p-8 sm:p-10 border border-indigo-500/20 shadow-2xl space-y-8">
 
         <div className="relative z-10 max-w-3xl space-y-5">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-semibold">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+          <div className="purpose-badge">
+            <Sparkles className="w-3.5 h-3.5" />
             <span>Purpose-First Gathering Architecture</span>
           </div>
 
@@ -149,20 +147,20 @@ export default function DashboardPage() {
               className="inline-flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-white transition-colors"
             >
               <Bookmark className="w-4 h-4 text-amber-400" />
-              <span>Or choose from purpose-driven blueprints below</span>
+              <span>Or choose a purpose blueprint below</span>
             </button>
           </div>
         </div>
 
         {/* 3-Step "How It Works" Strip */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-slate-800/80">
+        <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-4 pt-6 border-t border-slate-800/80">
           <div className="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-1.5">
             <div className="flex items-center gap-2">
               <span className="w-5 h-5 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-extrabold flex items-center justify-center border border-indigo-500/30">1</span>
               <h3 className="font-bold text-xs text-white uppercase tracking-wider">Define the Purpose</h3>
             </div>
             <p className="text-xs text-slate-300">
-              Transform vague ideas into a clear, disputed reason for gathering and connection.
+              Transform vague ideas into a clear, shared reason for gathering—and let it guide everything.
             </p>
           </div>
 
@@ -172,7 +170,7 @@ export default function DashboardPage() {
               <h3 className="font-bold text-xs text-white uppercase tracking-wider">Lock Basics & Invite</h3>
             </div>
             <p className="text-xs text-slate-300">
-              Set hard end times, capacity limits, and share conversational, frictionless invitations.
+              Set hard end times, capacity limits, and share frictionless, one-tap invitations.
             </p>
           </div>
 
@@ -189,7 +187,7 @@ export default function DashboardPage() {
 
         {/* Global Key Metrics Grid - Only shown when active gatherings exist */}
         {activeEventsCount > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-8 border-t border-slate-800/80">
+          <div className="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pt-8 border-t border-slate-800/80">
             <div className="space-y-1">
               <p className="text-xs text-slate-400 font-medium">Gatherings in Motion</p>
               <p className="text-2xl font-bold text-white">{activeEventsCount}</p>
@@ -212,15 +210,15 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Starter Templates Carousel / Grid Section */}
+      {/* Purpose-First Blueprint Gallery */}
       <div id="templates-section" className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-amber-400" />
-              Starter Event Formats
+              Purpose Blueprints
             </h2>
-            <p className="text-sm text-slate-400">Proven frameworks inspired by high-impact gathering guides.</p>
+            <p className="text-sm text-slate-400">Each format is designed around a why, not just a what.</p>
           </div>
         </div>
 
@@ -298,24 +296,48 @@ export default function DashboardPage() {
         </div>
 
         {filteredEvents.length === 0 ? (
-          <div className="glass-panel rounded-3xl p-12 text-center space-y-4 max-w-lg mx-auto">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mx-auto border border-indigo-500/20">
-              <PartyPopper className="w-8 h-8" />
+          filterStatus === 'all' ? (
+            <div className="ambient-hero glass-panel rounded-3xl p-12 text-center space-y-6 max-w-xl mx-auto border border-amber-500/20">
+              <div className="space-y-2">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500/20 to-indigo-500/20 text-amber-300 flex items-center justify-center mx-auto border border-amber-500/20 shadow-lg">
+                  <PartyPopper className="w-10 h-10" />
+                </div>
+                <p className="text-xs text-amber-400 font-bold uppercase tracking-wider pt-2">Your first gathering awaits</p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-black text-white">What are you gathering for?</h3>
+                <p className="purpose-quote text-base text-slate-300 max-w-sm mx-auto">
+                  "Every gathering is an opportunity to be more intentional about how we bring people together."
+                </p>
+                <p className="text-xs text-slate-500">— Priya Parker, The Art of Gathering</p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+                <Link
+                  href="/events/create"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 transition-all shadow-lg shadow-indigo-600/25"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Start with a Purpose</span>
+                </Link>
+                <button
+                  onClick={() => { const el = document.getElementById('templates-section'); el?.scrollIntoView({ behavior: 'smooth' }); }}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors"
+                >
+                  <Bookmark className="w-4 h-4 text-amber-400" />
+                  <span>Browse Blueprints</span>
+                </button>
+              </div>
             </div>
-            <h3 className="text-xl font-bold text-white">No gatherings found</h3>
-            <p className="text-sm text-slate-400">
-              {filterStatus === 'all'
-                ? "You haven't created any events yet. Start with a purpose statement or choose a starter template above!"
-                : `No events currently match the "${filterStatus}" status filter.`}
-            </p>
-            <Link
-              href="/events/create"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-white bg-indigo-600 hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-600/25"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Create Your First Event</span>
-            </Link>
-          </div>
+          ) : (
+            <div className="glass-panel rounded-3xl p-10 text-center space-y-3 max-w-lg mx-auto">
+              <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center mx-auto">
+                <Calendar className="w-6 h-6 text-slate-400" />
+              </div>
+              <h3 className="text-lg font-bold text-white">No {filterStatus} gatherings</h3>
+              <p className="text-sm text-slate-400">Try changing the status filter above.</p>
+            </div>
+          )
+
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredEvents.map((ev) => {

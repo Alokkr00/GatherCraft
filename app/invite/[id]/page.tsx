@@ -330,12 +330,12 @@ function InviteContent() {
 
         {/* Purpose Statement (if public) */}
         {publicPurpose && (
-          <div className="p-6 bg-slate-900/60 border-t border-slate-800 space-y-2">
-            <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-amber-400">
+          <div className="p-6 bg-gradient-to-br from-amber-950/20 via-slate-900/60 to-indigo-950/20 border-t border-amber-500/15 space-y-2">
+            <div className="purpose-badge">
               <Target className="w-3.5 h-3.5" />
               <span>Why We're Gathering</span>
             </div>
-            <p className="text-sm text-slate-200 font-medium italic bg-indigo-950/30 p-3.5 rounded-2xl border border-indigo-500/20">
+            <p className="purpose-quote text-base">
               "{publicPurpose}"
             </p>
           </div>
@@ -654,9 +654,9 @@ function InviteContent() {
                   </label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
-                      { id: 'OPEN', label: 'All Photos', desc: 'Album & highlights', icon: '🟢' },
-                      { id: 'CIRCLE_ONLY', label: 'Circle Only', desc: 'Attendees only', icon: '🟡' },
-                      { id: 'GHOST_MODE', label: 'Ghost Mode', desc: 'No photos please', icon: '🔴' },
+                      { id: 'OPEN',        label: 'All Photos',  desc: 'Album & highlights', badgeClass: 'consent-open' },
+                      { id: 'CIRCLE_ONLY', label: 'Circle Only', desc: 'Attendees only',     badgeClass: 'consent-circle' },
+                      { id: 'GHOST_MODE',  label: 'Ghost Mode',  desc: 'No photos please',   badgeClass: 'consent-ghost' },
                     ].map((tier) => (
                       <button
                         key={tier.id}
@@ -668,11 +668,10 @@ function InviteContent() {
                             : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-300'
                         }`}
                       >
-                        <div className="flex items-center gap-1.5 text-xs font-bold">
-                          <span>{tier.icon}</span>
-                          <span>{tier.label}</span>
+                        <div className="flex flex-col gap-1.5">
+                          <span className={tier.badgeClass}>{tier.label}</span>
+                          <p className="text-[10px] text-slate-500 leading-tight">{tier.desc}</p>
                         </div>
-                        <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">{tier.desc}</p>
                       </button>
                     ))}
                   </div>
