@@ -1,181 +1,130 @@
-﻿# 🍸 GatherCraft — Bring People Together. On Purpose.
+﻿# 🍸 GatherCraft
 
-> The purpose-first operating system for hosting memorable, intentional gatherings. Inspired by Priya Parker's *The Art of Gathering* ("Intent → Presence → Memory"). Built with Next.js 14 App Router, TypeScript, Tailwind CSS, Prisma ORM, Neon Serverless PostgreSQL, and Cloudflare R2 / S3 Storage.
+> A purpose-first web app for planning, hosting, and remembering social gatherings.
 
-[![Next.js](https://img.shields.io/badge/Next.js-14.2.5_App_Router-black?logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.5_Strict-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4_Champagne_Nocturne-38bdf8?logo=tailwind-css)](https://tailwindcss.com/)
-[![Prisma ORM](https://img.shields.io/badge/Prisma-5.20_ACID-2d3748?logo=prisma)](https://www.prisma.io/)
-[![Neon PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon_Cloud_Pooled-00e599?logo=postgresql)](https://neon.tech/)
-[![Cloud Storage](https://img.shields.io/badge/Storage-S3_%2F_Cloudflare_R2-f38020?logo=cloudflare)](https://developers.cloudflare.com/r2/)
-[![SEO & OpenGraph](https://img.shields.io/badge/SEO-Dynamic_Edge_OG_%2B_Sitemap-8b5cf6)](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/opengraph-image)
+[![Next.js](https://img.shields.io/badge/Next.js-14.2-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38bdf8?logo=tailwind-css)](https://tailwindcss.com/)
+[![Prisma ORM](https://img.shields.io/badge/Prisma-5.20-2d3748?logo=prisma)](https://www.prisma.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon_Cloud-00e599?logo=postgresql)](https://neon.tech/)
 [![Playwright Tests](https://img.shields.io/badge/Playwright-5%2F5_Passing-45ba4b?logo=playwright)](https://playwright.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
 
-## 💡 The Core Philosophy: Purpose First, Logistics Second
+## What is GatherCraft?
 
-Conventional event planning tools treat hosting as an administrative chore: spreadsheets, headcount tallies, and receipt tracking. They answer **what** to buy, but never **why** anyone should care.
+Most event tools focus purely on logistics—spreadsheets, budgets, and headcount tallies. They tell you what to buy, but never ask **why** you're gathering.
 
-GatherCraft is built on a different thesis: **Every gathering should have a clear, dispute-resolving purpose.**
-
-> *"A gathering begins when you define its purpose. If you cannot articulate why you are meeting, you will inevitably default to the conventional forms."*
-> — Priya Parker, *The Art of Gathering*
-
-GatherCraft replaces sterile dashboards with an intentional, 6-phase journey that reduces host cognitive overload while protecting host presence.
+Inspired by Priya Parker's book *The Art of Gathering*, GatherCraft centers event planning around a clear **purpose statement**. When a host knows *why* they're bringing people together, decisions about who to invite, what to do, and when to end become much simpler.
 
 ---
 
-## 🧭 The 6-Phase Gathering Lifecycle
+## Features
 
-```
-① PURPOSE  ──>  ② PEOPLE  ──>  ③ PLAN  ──>  ④ PREP  ──>  ⑤ HOST  ──>  ⑥ REFLECT
-Why are we       Who should     What should   What needs     What happens   Did it accomplish
-gathering?       be there?      happen?       to be ready?   right now?     its purpose?
-```
+### 1. Purpose-First Event Creation
+- **Intention Prompt**: Start by describing why you want to gather (e.g. *"To celebrate Maya's promotion and bring close friends together"*).
+- **Optional AI Polish**: Uses Google Gemini (with an offline fallback) to refine rough ideas into distinct purpose statements and concrete success criteria.
+- **Starter Blueprints**: Pre-built templates for common formats (Social Mixer, Intimate Dinner, Casual Hangout, Milestone Celebration).
 
-1. **Purpose Engine**: Transform vague party ideas into a crisp, disputable purpose statement with measurable success criteria. Conversational AI (*"Help Me Articulate This"*) assists when you need guidance.
-2. **People & Guest Circle**: Warm, emotional invitations delivered via magic links (`/invite/[id]`). Progressive 2-step RSVP disclosure collapses on decline; full disclosure captures dietary needs, plus-ones, and photo comfort.
-3. **Plan (Run-of-Show)**: Visual timeline with timed offsets (`+0m`, `+45m`, `+90m`), sociopetal conversation cues, and an intentional closing ritual.
-4. **Prep (Event Preparation Center)**: Consolidated workspace unifying supplies, host setup tasks, and budget targets without cognitive overload.
-5. **Host (Day-of Live Mode)**: Smartphone-optimized execution HUD acting as an external prefrontal cortex—featuring doorstep thumb-zone check-ins, Now/Next activity countdowns, and host guidance.
-6. **Reflect (Aftermath & Memory Capsule)**: Purpose fulfillment check, personalized 1-tap gratitude texts, and a public post-event Memory Capsule (`/capsule/[token]`) with 1-click blueprint remixing.
+### 2. Guest Invitations & RSVP (`/invite/[id]`)
+- **Magic-Link Invites**: Shareable links where guests can RSVP with no account required.
+- **Progressive RSVP**: Selecting "Can't make it" collapses the form to a simple note for the host. Selecting "I'll be there" opens fields for dietary restrictions, plus-ones, and contact info.
+- **Calendar Integration**: 1-click download of `.ics` files for Apple Calendar / Outlook, plus a direct Add to Google Calendar link.
+- **Photo Privacy Selection**: Guests can choose their photo comfort level (Open, Circle Only, or Ghost Mode).
+- **Overbooking Protection**: Uses database row locking (`SELECT FOR UPDATE`) to prevent capacity race conditions during concurrent RSVPs.
 
----
+### 3. Event Workspace (`/events/[id]`)
+- **Guest Circle**: View confirmed guests, pending invites, plus-ones, and an aggregated summary of dietary requirements.
+- **Run-of-Show Timeline**: Drag-and-drop schedule with milestone offsets (`+0m`, `+30m`, `+60m`) to plan the flow of the evening and set a clear end time.
+- **Prep & Supplies**: Checklists for shopping items, setup tasks, and budget tracking.
 
-## 🏗️ System Architecture
+### 4. Day-of Live Mode (`/events/[id]/live`)
+- **Mobile-Optimized Screen**: Designed for the host's phone during the party.
+- **Doorstep Check-In**: 1-tap check-in buttons with unchecked guests sorted to the top. Works offline and syncs when connection returns.
+- **Run-of-Show HUD**: Visual indicator showing current phase and time remaining.
+- **Host Megaphone & Chat**: Single-thread group chat with a host announcement toggle (`📢 HOST BROADCAST`).
+- **Ambient Wall (`/events/[id]/wall`)**: Fullscreen photo slideshow designed for a TV or tablet in the living room.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Client Tier (Browser & PWA)              │
-│  - Next.js 14 App Router UI (React Server & Client Components)│
-│  - Standalone Mobile PWA (Manifest + iOS 100dvh cover)      │
-│  - Client-Side Compressor (2048px WebP @ 82% + 16px LQIP)   │
-│  - Offline Check-In & Media Queues (IndexedDB + LocalStorage)│
-└──────────────┬──────────────────────────────┬───────────────┘
-               │ HTTP / JSON API              │ Direct Presigned PUT
-               ▼                              ▼
-┌──────────────────────────────────────────┐  ┌───────────────┐
-│   Application Tier (Next.js App Router)  │  │ Storage Tier  │
-│  - Routes: /api/events, /api/rsvp, etc.  │  │ (Cloudflare   │
-│  - Dynamic Edge OpenGraph: /api/og       │  │  R2 / S3)     │
-│  - Robots & Sitemap: /robots.txt, etc.   │  │               │
-│  - 3-Phase State Machine Chat            │  │ - $0 Egress   │
-│  - Privacy Shield: 1-Tap "Remove Me" API │  │ - Direct PUT  │
-│  - Viral Loop: /capsule/[token] remix    │  │ - Instant CDN │
-└──────────────────────┬───────────────────┘  └───────────────┘
-                       │ Prisma Client (Type-Safe)
-                       ▼
-┌─────────────────────────────────────────────────────────────┐
-│             Persistence Tier (Authoritative ACID)           │
-│  - Neon Serverless PostgreSQL with PgBouncer Connection Pool │
-│  - Row-Level Pessimistic Locking (`SELECT FOR UPDATE`)      │
-│  - Atomic Multi-Row Transactions (prisma.$transaction)      │
-│  - Foreign Key Constraints & Cascade Delete Guarantees       │
-└─────────────────────────────────────────────────────────────┘
-```
+### 5. Post-Event Aftermath (`/events/[id]/aftermath`)
+- **Retrospective**: Reflect on whether the gathering met its purpose (*"What worked well?"*, *"What to improve next time?"*).
+- **Thank-You Note Generator**: 1-click personalized thank-you message drafts for each guest based on selected tone (Warm, Fun, Short).
+- **Memory Capsule (`/capsule/[token]`)**: A public summary page with the host's reflection quote, photo gallery, and guest circle. Guests can click "Remix Blueprint" to start planning their own gathering using the same format.
+
+### 6. Media Storage & Privacy
+- **S3-Compatible Storage**: Supports Supabase Storage, Cloudflare R2, or AWS S3 via presigned upload URLs.
+- **Local Fallback**: If cloud storage credentials are not provided, an automatic local mock handler (`/api/mock-upload`) is used so uploads work out of the box in development.
+- **Self-Delete**: Guests can soft-delete any photo they appear in with 1 tap.
+
+### 7. SEO & Link Sharing
+- **Dynamic OpenGraph Images (`/api/og`)**: Generates custom 1200×630 preview images on the fly with event title, date, and purpose when links are shared on WhatsApp, iMessage, Slack, or Twitter.
+- **Sitemap & Robots**: Includes `/sitemap.xml` and `/robots.txt` for search engine indexing.
 
 ---
 
-## 🛡️ Production Hardening & Engineering Highlights
+## Tech Stack
 
-### 1. Atomic RSVP Row Locking (Anti-Overbooking)
-In high-concurrency scenarios (e.g. a popular party link shared in a group chat), multiple guests might submit RSVPs simultaneously. GatherCraft executes capacity checks within a PostgreSQL transaction with row-level pessimistic locking:
-```sql
-SELECT id FROM "Event" WHERE id = $1 FOR UPDATE;
-```
-Direct database aggregation (`_count` + `_sum.plusOnesActual`) guarantees that if capacity is exceeded, subsequent attendees are atomically placed on the waitlist without race conditions.
-
-### 2. Strict Host Authorization Guards
-Every mutation (`/api/events/[id]/*`) validates identity through `requireEventAccess(eventId, userId, role)`, checking event ownership and cryptographic co-host tokens. No master backdoors or unauthenticated sample bypasses exist.
-
-### 3. Offline-Resilient Doorstep Arrival Sync
-Doorstep check-in is the critical moment of any gathering. GatherCraft features a dedicated arrival check-in endpoint (`PATCH /api/events/[id]/guests/[guestId]/checkin`) that requires zero redundant payload data. If the venue loses Wi-Fi, check-ins are queued locally and flushed automatically upon reconnection.
-
-### 4. Mobile Safari & iOS Ergonomics
-- **No Virtual Keyboard Auto-Zoom**: Enforces `font-size: 16px !important` on inputs below 640px viewport to prevent iOS Safari auto-zoom shifts.
-- **Dynamic Viewport Units**: Built with `min-height: 100dvh` to handle mobile browser address bar retraction.
-- **Doorstep Thumb Zone**: The check-in roster sits at the very top of the screen with `touch-manipulation` and minimum 48px touch targets for effortless one-handed use.
-- **GPU Texture Recycling**: Media compression uses explicit `try/finally` blocks with `createImageBitmap.close()` and canvas dimension resets to deallocate WebKit GPU memory.
-
----
-
-## 🎨 Champagne Nocturne Design System
-
-GatherCraft uses a bespoke design aesthetic crafted for social celebration:
-- **Editorial Typography**: Uses **Newsreader** (Google Fonts editorial serif) for the signature `.purpose-quote` class paired with **Outfit** and **Plus Jakarta Sans** for clean readability.
-- **Atmospheric Glow**: Ambient background gradients (`var(--champagne-*)`, `var(--indigo-glow)`, `var(--amber-glow)`) create depth without distracting from content.
-- **Bespoke Micro-Badges**: Structured CSS badges replace raw emojis for accessibility and visual elegance:
-  - `.purpose-badge`: Pinned intent eyebrow indicator.
-  - `.consent-open`, `.consent-circle`, `.consent-ghost`: Visual Consent spectrum tags.
-
----
-
-## 🌐 Search Engine Optimization (SEO) & Social Graph
-
-- **Edge Dynamic OpenGraph (`/api/og`)**: Generates high-resolution (1200×630px) dynamic social preview cards on edge runtime, rendering custom event titles, purposes, and dates when links are shared on iMessage, WhatsApp, Slack, and Twitter.
-- **Dynamic Invite Metadata (`/invite/[id]`)**: Automatically extracts the gathering's title and public purpose for contextual link unfurling.
-- **Dynamic Capsule Metadata (`/capsule/[token]`)**: Displays post-event retrospective hero quotes in rich previews.
-- **Search Engine Discovery**: Includes automatic `/robots.txt` (`app/robots.ts`) and `/sitemap.xml` (`app/sitemap.ts`).
-- **Comprehensive Root Metadata**: Fully configured `metadataBase`, title templates, canonical alternates, keywords, and Googlebot directives.
-
----
-
-## ✨ Feature Tour
-
-### 🎯 Purpose Blueprints
-- **To Spark New Connections** • `Social Mixer` — High-energy introductions, curated icebreakers, and signature welcome drinks.
-- **To Deepen Friendships** • `Intimate Dinner` — Seated dinner designed for heartfelt stories, toasts, and sociopetal seating.
-- **To Simply Unwind** • `Casual Hangout` — Low-pressure drop-in format with continuous snacks and zero expectations.
-- **To Celebrate a Milestone** • `Celebration` — Memorable toasts, music, and shared photos.
-
-### 💌 Progressive RSVP & Universal Calendar Sync
-- **Progressive Funnel**: Selecting *"Can't make it 💌"* collapses the form to a simple Name + Email + warm note field, minimizing friction.
-- **Universal .ics & Google Calendar**: 1-click download of RFC 5545 `.ics` calendar files for Apple Calendar, Outlook, and direct Google Calendar sync.
-- **Visual Consent Spectrum**: Guests declare photo boundaries upfront (Open, Circle Only, or Ghost Mode).
-
-### 📱 Live Copilot HUD & Host Megaphone
-- **Doorway Duty**: Glanceable arrival check-in with unchecked guests sorted to the top for instant thumb-reach.
-- **Now / Next Countdown**: High-contrast phase indicators ensure the host never loses track of the night's rhythm.
-- **Host Megaphone**: Phase-aware chat transitions from collaborative planning to high-priority host broadcasts (`📢 HOST BROADCAST`).
-- **Ambient TV Slideshow Wall (`/events/[id]/wall`)**: Living-room TV slideshow cycling through purpose tags and guest memories during the party.
-
-### 📸 Smart Media Vault & 1-Tap Privacy Protocol
-- **Direct-to-Cloud Uploads**: Direct browser-to-storage presigned PUTs bypass serverless payload limits.
-- **Zero-App Camera Capture**: Native browser capture (`<input capture="environment">`) lets guests snap photos without downloading an app.
-- **Non-Confrontational "Remove Me" Protocol**: Any guest can soft-delete their photo with 1 tap, avoiding social awkwardness.
-
-### ⚡ Viral Memory Capsules ($K > 1.08$)
-- Public retrospective showcase at `/capsule/[token]` featuring hero quotes, photo vault highlights, and guest circle recaps.
-- **1-Click Blueprint Remixing**: Inspired attendees can tap **`[ ⚡ Host Your Own Gathering: Remix This Blueprint ]`** to clone the structure and create their own event.
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technologies |
+| Component | Technology |
 |---|---|
-| **Frontend** | Next.js 14.2.5 (App Router), React 18, TypeScript 5.5, Tailwind CSS 3.4 |
-| **Typography** | Newsreader (Editorial Serif), Outfit, Plus Jakarta Sans |
-| **Database** | Neon Cloud Serverless PostgreSQL with PgBouncer connection pooling |
-| **ORM** | Prisma ORM 5.20 (ACID transactions, pessimistic row locks) |
-| **Object Storage** | S3-Compatible / Cloudflare R2 via `@aws-sdk/client-s3` & presigned URLs |
-| **Offline Sync** | HTML5 Canvas, IndexedDB (`gathercraft_media_db`), LocalStorage queue |
-| **AI Intelligence** | Google Gemini 1.5 Flash (with built-in heuristic offline fallbacks) |
-| **Validation** | Zod schema validation on all API route boundaries |
-| **Testing** | Playwright End-to-End Suite (Chromium headless testing) |
+| **Framework** | Next.js 14.2.5 (App Router, Server & Client Components) |
+| **Language** | TypeScript 5 |
+| **Styling** | Tailwind CSS 3.4 |
+| **Database** | PostgreSQL (hosted on Neon Serverless) |
+| **ORM** | Prisma ORM 5.20 |
+| **Storage** | S3-compatible (Supabase S3 / Cloudflare R2 / AWS S3) via `@aws-sdk/client-s3` |
+| **Testing** | Playwright (End-to-End browser tests) |
+| **Icons** | Lucide React |
 
 ---
 
-## 🚀 Getting Started
+## Project Structure
+
+```
+├── app/
+│   ├── api/                   # Route handlers (events, rsvp, chat, media, og)
+│   │   ├── events/            # CRUD operations for gatherings
+│   │   ├── rsvp/              # Atomic RSVP submission & capacity check
+│   │   ├── mock-upload/       # Local development storage fallback
+│   │   └── og/                # Dynamic edge OpenGraph image generator
+│   ├── events/
+│   │   ├── create/            # Event creation wizard
+│   │   └── [id]/              # Event workspace (tabs: overview, timeline, prep)
+│   │       ├── live/          # Day-of host HUD & check-in
+│   │       ├── aftermath/     # Post-event retrospective & thank-you notes
+│   │       ├── edit/          # Event settings editor
+│   │       └── wall/          # Ambient slideshow for TV displays
+│   ├── invite/[id]/           # Public guest invitation & RSVP page
+│   ├── capsule/[token]/       # Public post-event memory capsule
+│   ├── layout.tsx             # Root layout with SEO metadata
+│   ├── robots.ts              # /robots.txt generator
+│   └── sitemap.ts             # /sitemap.xml generator
+├── components/                # Shared React UI components
+├── lib/
+│   ├── prisma.ts              # Prisma database client
+│   ├── storage.ts             # Local storage caching & helpers
+│   ├── templates.ts           # Starter gathering blueprints
+│   ├── types.ts               # Core TypeScript data models
+│   └── server/
+│       ├── store.ts           # Database query functions & transactions
+│       ├── guard.ts           # Host & co-host authorization checks
+│       ├── s3.ts              # S3 presigned URL generation & verification
+│       └── rateLimit.ts       # In-memory IP rate limiter
+├── prisma/
+│   ├── schema.prisma          # Database schema (User, Event, Guest, etc.)
+│   └── seed.ts                # Sample events seed script
+└── e2e/
+    └── party-lifecycle.spec.ts # Playwright end-to-end test suite
+```
+
+---
+
+## Getting Started
 
 ### Prerequisites
-- Node.js 18.17+
-- npm or yarn
-- A Neon PostgreSQL database (or standard PostgreSQL instance)
+- Node.js 18.17 or higher
+- A PostgreSQL database (e.g. free tier on [Neon](https://neon.tech) or local Postgres)
 
-### 1. Clone & Install
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/Alokkr00/GatherCraft.git
@@ -183,78 +132,74 @@ cd GatherCraft
 npm install
 ```
 
-### 2. Configure Environment Variables
+### 2. Configure environment variables
 
-Create a `.env` file in the root directory:
+Create a `.env` file in the project root:
 
 ```env
-# Neon Cloud PostgreSQL Connection String (with pooling & SSL)
-DATABASE_URL="postgresql://username:password@ep-sample-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require"
+# PostgreSQL connection string
+DATABASE_URL="postgresql://user:password@your-neon-endpoint.neon.tech/neondb?sslmode=require"
 
-# Canonical Domain URL for SEO & OpenGraph
-NEXT_PUBLIC_APP_URL="https://gathercraft.app"
+# Base URL for metadata and OpenGraph images
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
-# Optional: Google Gemini API Key for AI purpose articulation
-GEMINI_API_KEY="your_gemini_api_key"
+# Optional: Google Gemini API key (for purpose articulation assistance)
+# If omitted, curated fallback suggestions are used automatically.
+GEMINI_API_KEY=""
 
-# Cloud Storage (S3-compatible / Cloudflare R2 / Supabase S3)
-# If omitted in local dev, GatherCraft automatically falls back to /api/mock-upload
-CLOUDFLARE_R2_ACCOUNT_ID="your_account_id"
-CLOUDFLARE_R2_ACCESS_KEY_ID="your_access_key_id"
-CLOUDFLARE_R2_SECRET_ACCESS_KEY="your_secret_access_key"
-CLOUDFLARE_R2_BUCKET_NAME="gathercraft-media"
-CLOUDFLARE_R2_PUBLIC_DOMAIN="https://media.gathercraft.app"
+# Optional: S3-compatible storage (Supabase S3 / Cloudflare R2 / AWS S3)
+# If omitted, uploads default to local mock storage in development.
+S3_ENDPOINT=""
+S3_ACCESS_KEY_ID=""
+S3_SECRET_ACCESS_KEY=""
+S3_BUCKET_NAME="gathercraft-media"
+S3_PUBLIC_DOMAIN=""
 ```
 
-### 3. Initialize Database & Seed
+### 3. Setup the database
 
 ```bash
-# Push Prisma schema to PostgreSQL
+# Push Prisma schema to your database
 npx prisma db push
 
-# Generate type-safe Prisma client
+# Generate the Prisma client
 npx prisma generate
 
-# Seed sample gatherings and templates
+# Seed sample events
 npm run db:seed
 ```
 
-To visually inspect your database at any time:
-```bash
-npx prisma studio
-```
-
-### 4. Run Development Server
+### 4. Run the development server
 
 ```bash
 npm run dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🧪 Testing & Verification
+## Running Tests
 
-GatherCraft is verified by automated Playwright E2E tests:
+GatherCraft uses Playwright for end-to-end testing:
 
 ```bash
-# Compile production build
+# Build the application first (Playwright tests run against the production build)
 npm run build
 
-# Run Playwright E2E test suite
+# Run all E2E tests
 npm test
 ```
 
-### Verified Test Suites (5/5 Passing)
-- ✅ **Dashboard Load**: Verifies initial hydration and sample event display.
-- ✅ **First-Time Host Onboarding**: Hero prompt $\rightarrow$ wizard pre-fill $\rightarrow$ event workspace.
-- ✅ **Wizard & Cross-Browser RSVP**: 3-step creation, magic link, and atomic concurrency capacity checks.
-- ✅ **Live Copilot Mode**: Doorstep arrival check-ins, visual consent badges, and host megaphone chat.
-- ✅ **Post-Event Aftermath & Capsule**: Retrospective submission, gratitude drafting, and public memory capsule creation.
+The test suite verifies:
+1. Dashboard and sample events load
+2. New host onboarding flow (prompt $\rightarrow$ wizard $\rightarrow$ workspace)
+3. 3-step wizard creation and cross-browser RSVP synchronization
+4. Day-of Live Mode check-in and megaphone chat
+5. Post-event retrospective and memory capsule creation
 
 ---
 
-## 📄 License
+## License
 
-MIT License — see [LICENSE](LICENSE) for details.
+[MIT](LICENSE)
