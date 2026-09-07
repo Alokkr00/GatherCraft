@@ -8,6 +8,7 @@ interface CustomTimePickerProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  align?: 'left' | 'right';
 }
 
 export default function CustomTimePicker({
@@ -15,6 +16,7 @@ export default function CustomTimePicker({
   onChange,
   placeholder = 'Select time',
   className = '',
+  align = 'left',
 }: CustomTimePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -118,7 +120,11 @@ export default function CustomTimePicker({
 
       {/* Glassmorphism Time Picker Popover */}
       {isOpen && (
-        <div className="absolute left-0 mt-2 z-50 w-72 p-4 rounded-2xl bg-slate-900/95 border border-slate-800 backdrop-blur-xl shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+        <div
+          className={`absolute ${
+            align === 'right' ? 'right-0' : 'left-0'
+          } mt-2 z-[100] w-72 p-3.5 rounded-2xl bg-slate-900/98 border border-slate-700 backdrop-blur-xl shadow-2xl animate-in fade-in zoom-in-95 duration-150`}
+        >
           {/* Preset Buttons Header */}
           <div className="mb-3">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">

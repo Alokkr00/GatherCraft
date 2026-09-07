@@ -148,7 +148,7 @@ export default function EditEventPage() {
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">
                 Hard End Time
               </label>
-              <CustomTimePicker value={endTime} onChange={setEndTime} />
+              <CustomTimePicker value={endTime} onChange={setEndTime} align="right" />
             </div>
           </div>
 
@@ -238,6 +238,7 @@ export default function EditEventPage() {
                   { value: 'AUD', label: 'AUD ($)' },
                 ]}
                 onChange={setCurrency}
+                direction="up"
               />
             </div>
           </div>

@@ -17,6 +17,7 @@ interface CustomSelectProps {
   placeholder?: string;
   className?: string;
   size?: 'sm' | 'md';
+  direction?: 'down' | 'up';
 }
 
 export default function CustomSelect({
@@ -26,6 +27,7 @@ export default function CustomSelect({
   placeholder = 'Select option...',
   className = '',
   size = 'md',
+  direction = 'down',
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -78,7 +80,11 @@ export default function CustomSelect({
 
       {/* Glassmorphism Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 left-0 mt-2 z-50 rounded-xl bg-slate-900/95 border border-slate-800 backdrop-blur-xl shadow-2xl overflow-hidden py-1 max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+        <div
+          className={`absolute right-0 left-0 ${
+            direction === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'
+          } z-[100] rounded-xl bg-slate-900/98 border border-slate-700 backdrop-blur-xl shadow-2xl overflow-hidden py-1 max-h-60 overflow-y-auto animate-in fade-in zoom-in-95 duration-150`}
+        >
           {options.map((option) => {
             const isSelected = option.value === value;
             return (

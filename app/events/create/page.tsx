@@ -553,7 +553,7 @@ function EventCreateWizard() {
             </p>
           </div>
 
-          <div className="glass-panel p-6 rounded-2xl space-y-6">
+          <div className="glass-panel p-6 sm:p-8 rounded-2xl space-y-6 relative z-30">
             {/* Title */}
             <div className="space-y-2">
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">
@@ -569,7 +569,7 @@ function EventCreateWizard() {
             </div>
 
             {/* Date & Time Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 relative z-40">
               <div className="space-y-2">
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">
                   Event Date
@@ -587,6 +587,7 @@ function EventCreateWizard() {
                 <CustomTimePicker
                   value={startTime}
                   onChange={(val) => setStartTime(val)}
+                  align="left"
                 />
               </div>
 
@@ -598,6 +599,7 @@ function EventCreateWizard() {
                 <CustomTimePicker
                   value={endTime}
                   onChange={(val) => setEndTime(val)}
+                  align="right"
                 />
               </div>
             </div>
@@ -709,12 +711,13 @@ function EventCreateWizard() {
                     { value: 'AUD', label: 'AUD ($)' },
                   ]}
                   onChange={(val) => setCurrency(val)}
+                  direction="up"
                 />
               </div>
             </div>
           </div>
 
-          <div className="flex justify-between pt-4">
+          <div className="flex items-center justify-between pt-6 relative z-10">
             <button
               onClick={() => setStep(2)}
               className="px-5 py-3 rounded-2xl text-xs font-semibold text-slate-400 hover:text-white"
@@ -724,7 +727,7 @@ function EventCreateWizard() {
 
             <button
               onClick={handleFinalSubmit}
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-sm text-white bg-gradient-to-r from-emerald-500 via-indigo-600 to-violet-600 hover:from-emerald-400 hover:to-indigo-500 shadow-2xl shadow-indigo-600/30 transition-all transform hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-sm text-white bg-gradient-to-r from-emerald-500 via-indigo-600 to-violet-600 hover:from-emerald-400 hover:to-indigo-500 shadow-2xl shadow-indigo-600/30 transition-all hover:brightness-110 active:scale-98"
             >
               <PartyPopper className="w-5 h-5" />
               <span>Lock in Event & Manage Guests</span>
