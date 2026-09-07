@@ -1,5 +1,7 @@
 'use client';
 
+import { getCurrentHostId } from './host-session';
+
 /**
  * Event-Night Offline Check-in Queue
  *
@@ -64,16 +66,19 @@ export async function flushOfflineQueue(eventId?: string): Promise<{ syncedCount
   const toSync = eventId ? queue.filter(q => q.eventId === eventId) : queue;
   if (toSync.length === 0) return { syncedCount: 0, errors: 0 };
 
+  const hostId = getCurrentHostId();
   let syncedCount = 0;
   let errors = 0;
 
   for (const item of toSync) {
     try {
-      const res = await fetch(`/api/events/${item.eventId}/guests`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(`/api/events/${item.eventId}/guests/${item.guestId}/checkin`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(hostId ? { 'x-host-id': hostId } : {}),
+        },
         body: JSON.stringify({
-          id: item.guestId,
           checkInAt: item.checkInAt,
         }),
       });

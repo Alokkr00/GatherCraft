@@ -1,11 +1,18 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Sparkles, Calendar, PlusCircle, PartyPopper, LogIn, LogOut, User as UserIcon } from 'lucide-react';
 import { useAuth, signInWithGoogle, signOutUser } from '@/lib/auth';
 
 export default function Navbar() {
+  const pathname = usePathname();
   const { user, loading, isConfigured } = useAuth();
+
+  // Isolate immersive guest invite, live day-of HUD, and memory capsule views from desktop SaaS header
+  if (pathname && (pathname.startsWith('/invite') || pathname.includes('/live') || pathname.startsWith('/capsule'))) {
+    return null;
+  }
 
   return (
     <header className="sticky top-0 z-50 glass-panel border-b border-slate-800/60 bg-slate-950/80 backdrop-blur-md">

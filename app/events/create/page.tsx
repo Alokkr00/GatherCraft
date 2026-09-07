@@ -15,6 +15,21 @@ import CustomSelect from '@/components/CustomSelect';
 import CustomDatePicker from '@/components/CustomDatePicker';
 import CustomTimePicker from '@/components/CustomTimePicker';
 
+function matchStarterTemplate(purpose?: string | null): StarterTemplate {
+  if (!purpose) return STARTER_TEMPLATES[0];
+  const lower = purpose.toLowerCase();
+  if (lower.includes('dinner') || lower.includes('food') || lower.includes('eat') || lower.includes('wine') || lower.includes('cook') || lower.includes('pasta')) {
+    return STARTER_TEMPLATES.find(t => t.id === 'birthday-dinner') || STARTER_TEMPLATES[0];
+  } else if (lower.includes('relax') || lower.includes('hang') || lower.includes('chill') || lower.includes('game') || lower.includes('unwind')) {
+    return STARTER_TEMPLATES.find(t => t.id === 'casual-hang') || STARTER_TEMPLATES[0];
+  } else if (lower.includes('celebrat') || lower.includes('milestone') || lower.includes('promotion') || lower.includes('anniversary') || lower.includes('toast') || lower.includes('graduation')) {
+    return STARTER_TEMPLATES.find(t => t.id === 'milestone-celebration') || STARTER_TEMPLATES[0];
+  } else if (lower.includes('mix') || lower.includes('meet') || lower.includes('cocktail') || lower.includes('party')) {
+    return STARTER_TEMPLATES.find(t => t.id === 'cocktail-party') || STARTER_TEMPLATES[0];
+  }
+  return STARTER_TEMPLATES[0];
+}
+
 function EventCreateWizard() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -22,8 +37,12 @@ function EventCreateWizard() {
   const purposeParam = searchParams.get('purpose');
   const remixParam = searchParams.get('remixFrom');
 
-  const [step, setStep] = useState<number>(1);
-  const [selectedTemplate, setSelectedTemplate] = useState<StarterTemplate | null>(null);
+  const [step, setStep] = useState<number>(() => (purposeParam ? 2 : 1));
+  const [selectedTemplate, setSelectedTemplate] = useState<StarterTemplate | null>(() => {
+    if (templateParam) return STARTER_TEMPLATES.find(t => t.id === templateParam) || null;
+    if (purposeParam) return matchStarterTemplate(purposeParam);
+    return null;
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form State
@@ -40,7 +59,20 @@ function EventCreateWizard() {
   const [aiError, setAiError] = useState<string | null>(null);
 
   // Basics State
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState(() => {
+    if (!purposeParam) return '';
+    let cleanTitle = purposeParam.trim();
+    if (cleanTitle.toLowerCase().startsWith('to ')) {
+      cleanTitle = cleanTitle.substring(3).trim();
+    }
+    if (cleanTitle.length > 0) {
+      cleanTitle = cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1);
+    }
+    if (cleanTitle.length > 60) {
+      cleanTitle = cleanTitle.substring(0, 57) + '...';
+    }
+    return cleanTitle;
+  });
   const [date, setDate] = useState(() => {
     const nextWeek = new Date();
     nextWeek.setDate(nextWeek.getDate() + 7);
@@ -83,8 +115,33 @@ function EventCreateWizard() {
         applyTemplate(tmpl);
       }
     } else if (purposeParam) {
+      const lower = purposeParam.toLowerCase();
+      let matched = STARTER_TEMPLATES[0];
+      if (lower.includes('dinner') || lower.includes('food') || lower.includes('eat') || lower.includes('wine') || lower.includes('cook') || lower.includes('pasta')) {
+        matched = STARTER_TEMPLATES.find(t => t.id === 'birthday-dinner') || matched;
+      } else if (lower.includes('relax') || lower.includes('hang') || lower.includes('chill') || lower.includes('game') || lower.includes('unwind')) {
+        matched = STARTER_TEMPLATES.find(t => t.id === 'casual-hang') || matched;
+      } else if (lower.includes('celebrat') || lower.includes('milestone') || lower.includes('promotion') || lower.includes('anniversary') || lower.includes('toast') || lower.includes('graduation')) {
+        matched = STARTER_TEMPLATES.find(t => t.id === 'milestone-celebration') || matched;
+      } else if (lower.includes('mix') || lower.includes('meet') || lower.includes('cocktail') || lower.includes('party')) {
+        matched = STARTER_TEMPLATES.find(t => t.id === 'cocktail-party') || matched;
+      }
+
+      applyTemplate(matched);
       setRawPurpose(purposeParam);
       setSelectedStatement(purposeParam);
+
+      let cleanTitle = purposeParam.trim();
+      if (cleanTitle.toLowerCase().startsWith('to ')) {
+        cleanTitle = cleanTitle.substring(3).trim();
+      }
+      if (cleanTitle.length > 0) {
+        cleanTitle = cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1);
+      }
+      if (cleanTitle.length > 60) {
+        cleanTitle = cleanTitle.substring(0, 57) + '...';
+      }
+      setTitle(cleanTitle);
       setStep(2);
     }
   }, [templateParam, purposeParam, remixParam]);
@@ -223,6 +280,24 @@ function EventCreateWizard() {
               Start with a structured gathering format or create a custom event blueprint.
             </p>
           </div>
+
+          {purposeParam && (
+            <div className="p-4 rounded-2xl bg-indigo-950/50 border border-indigo-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-indigo-200 shadow-lg">
+              <div className="flex items-center gap-2.5">
+                <Sparkles className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
+                <span>
+                  Matched your intention <strong className="text-white">"{purposeParam}"</strong> with the <strong className="text-white">{selectedTemplate?.title}</strong> blueprint.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setStep(2)}
+                className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold shrink-0 transition-colors shadow-md shadow-indigo-600/30 self-end sm:self-auto"
+              >
+                Continue with this Blueprint →
+              </button>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {STARTER_TEMPLATES.map((tmpl) => (

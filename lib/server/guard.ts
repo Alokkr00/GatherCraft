@@ -65,7 +65,7 @@ export async function requireEventAccess(
     throw new ApiError(401, 'Unauthorized: Host authentication or authorization token required');
   }
 
-  const isSampleOrDev = event.ownerId === 'host-1' || event.ownerId === 'current-host' || event.ownerId === 'server-host' || userId === 'server-host';
+  const isSampleOrDev = (event.ownerId === 'host-1' || event.ownerId === 'current-host') && (userId === 'host-1' || userId === 'current-host');
   const isOwner = event.ownerId === userId || isSampleOrDev;
   const isCoHost = Array.isArray(event.coHostIds) && event.coHostIds.includes(userId || '');
 

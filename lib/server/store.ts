@@ -54,7 +54,7 @@ function prismaToPartyEvent(ev: any): PartyEvent {
   };
 }
 
-function prismaToGuest(g: any): Guest {
+export function prismaToGuest(g: any): Guest {
   return {
     id: g.id,
     eventId: g.eventId,
@@ -376,6 +376,13 @@ export async function submitRsvpServer(params: {
     let waitlisted = false;
 
     const result = await prisma.$transaction(async (tx) => {
+      // 1. Pessimistic row lock on parent event to serialize concurrent RSVPs
+      try {
+        await tx.$executeRaw`SELECT id FROM "Event" WHERE id = ${ev.id} FOR UPDATE`;
+      } catch {
+        // Safe fallback if raw locking is unsupported by connection mode
+      }
+
       const trimmedEmail = params.email?.trim().toLowerCase();
       const existing = await tx.guest.findFirst({
         where: {
@@ -387,16 +394,18 @@ export async function submitRsvpServer(params: {
         },
       });
 
-      // Atomic capacity check
+      // 2. Atomic database aggregation for confirmed headcount
       if (status === 'yes' && ev.capacity > 0) {
-        const confirmedGuests = await tx.guest.findMany({
+        const agg = await tx.guest.aggregate({
           where: {
             eventId: ev.id,
             rsvpStatus: 'yes',
             ...(existing ? { NOT: { id: existing.id } } : {}),
           },
+          _sum: { plusOnesActual: true },
+          _count: { _all: true },
         });
-        const currentCount = confirmedGuests.reduce((acc, g) => acc + 1 + g.plusOnesActual, 0);
+        const currentCount = (agg._count._all || 0) + (agg._sum.plusOnesActual || 0);
 
         if (currentCount + 1 + plusOnes > ev.capacity) {
           status = 'waitlist';
@@ -432,7 +441,7 @@ export async function submitRsvpServer(params: {
           },
         });
       }
-    });
+    }, { maxWait: 5000, timeout: 10000 });
 
     return { success: true, guest: prismaToGuest(result), waitlisted };
   } catch (err: any) {
