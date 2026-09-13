@@ -49,17 +49,37 @@ function InviteContent() {
         setEvent(localEv);
       }
 
-      // 2. Fetch authoritative public invite from server API
+      // 2. Fetch authoritative public invite from Edge projection (sub-15ms)
       try {
-        const res = await fetch(`/api/invite/${eventId}`);
+        const res = await fetch(`/api/edge/invite/${eventId}`);
         if (res.ok) {
           const data = await res.json();
           if (data.invite && isMounted) {
             setEvent(data.invite);
           }
+        } else {
+          // Fallback to primary invite endpoint if edge projection misses
+          const fallbackRes = await fetch(`/api/invite/${eventId}`);
+          if (fallbackRes.ok) {
+            const data = await fallbackRes.json();
+            if (data.invite && isMounted) {
+              setEvent(data.invite);
+            }
+          }
         }
       } catch (err) {
-        console.warn('Could not fetch server invite:', err);
+        console.warn('Could not fetch edge invite projection, trying fallback:', err);
+        try {
+          const fallbackRes = await fetch(`/api/invite/${eventId}`);
+          if (fallbackRes.ok) {
+            const data = await fallbackRes.json();
+            if (data.invite && isMounted) {
+              setEvent(data.invite);
+            }
+          }
+        } catch (fallbackErr) {
+          console.error('All invite fetch routes failed:', fallbackErr);
+        }
       }
 
       // 3. Real-time Firestore Cloud Subscription if configured

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { z } from 'zod';
 import { submitRsvpServer } from '@/lib/server/store';
 import { checkRateLimit, getClientIp } from '@/lib/server/rateLimit';
@@ -49,6 +50,18 @@ export async function POST(req: NextRequest) {
 
     if (!result.success) {
       return NextResponse.json({ error: result.error || 'Failed to process RSVP' }, { status: 400 });
+    }
+
+    // CQRS Invalidation: Purge edge projections so attendee counters reflect instantly
+    try {
+      revalidateTag(`event-${parsed.data.eventIdOrToken}-invite`);
+      revalidateTag(`event-${parsed.data.eventIdOrToken}`);
+      if (result.guest?.eventId) {
+        revalidateTag(`event-${result.guest.eventId}-invite`);
+        revalidateTag(`event-${result.guest.eventId}`);
+      }
+    } catch (tagErr) {
+      console.warn('Could not revalidate edge tag:', tagErr);
     }
 
     return NextResponse.json({ 

@@ -41,6 +41,8 @@ export default function LiveModePage() {
   const [aiTip, setAiTip] = useState<string>('');
   const [aiTipLoading, setAiTipLoading] = useState<boolean>(false);
   const [mediaRefreshKey, setMediaRefreshKey] = useState(0);
+  const [isRebalancing, setIsRebalancing] = useState(false);
+  const [rebalanceFeedback, setRebalanceFeedback] = useState<string | null>(null);
 
   const confirmedGuests = guests.filter(g => g.rsvpStatus === 'yes');
   const checkedInGuests = guests.filter(g => Boolean(g.checkInAt));
@@ -138,6 +140,57 @@ export default function LiveModePage() {
     setEvent(ev);
     setGuests(getGuests(eventId));
     setTimeline(getTimelineItems(eventId));
+
+    // Asynchronously synchronize with Edge Projection
+    fetch(`/api/edge/timeline/${eventId}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data?.timeline?.timelineSteps && Array.isArray(data.timeline.timelineSteps)) {
+          const remoteSteps = data.timeline.timelineSteps;
+          setTimeline(prev => {
+            if (remoteSteps.length === 0) return prev;
+            return prev.map(local => {
+              const matched = remoteSteps.find((r: any) => r.id === local.id);
+              if (matched) {
+                return {
+                  ...local,
+                  offsetMinutes: matched.offsetMinutes,
+                  durationMinutes: matched.durationMinutes,
+                  isCompleted: matched.isCompleted,
+                };
+              }
+              return local;
+            });
+          });
+        }
+      })
+      .catch(() => {});
+  };
+
+  const handleRebalanceSchedule = async (customInstruction?: string) => {
+    setIsRebalancing(true);
+    setRebalanceFeedback(null);
+    try {
+      const res = await fetch('/api/commands/schedule-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventId,
+          instruction: customInstruction || `Party is ${timelineStatus.humanDrift}. Rebalance upcoming steps smoothly.`,
+          currentDriftMinutes: timelineStatus.driftMinutes,
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setRebalanceFeedback(data.message || 'Schedule rebalanced.');
+        loadLiveData();
+        setTimeout(() => setRebalanceFeedback(null), 5000);
+      }
+    } catch (err) {
+      console.error('Schedule rebalance error:', err);
+    } finally {
+      setIsRebalancing(false);
+    }
   };
 
   const handleCheckInToggle = (g: Guest) => {
@@ -358,14 +411,35 @@ export default function LiveModePage() {
             <span>Run-of-Show HUD ({completedSteps}/{timeline.length})</span>
           </div>
 
-          <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${
-            timelineStatus.driftMinutes > 5
-              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-              : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-          }`}>
-            {timelineStatus.humanDrift}
-          </span>
+          <div className="flex items-center gap-2">
+            {Math.abs(timelineStatus.driftMinutes) > 5 && (
+              <button
+                type="button"
+                onClick={() => handleRebalanceSchedule()}
+                disabled={isRebalancing}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 text-[11px] font-bold border border-indigo-500/40 transition-colors disabled:opacity-50"
+              >
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                <span>{isRebalancing ? 'Rebalancing...' : 'AI Rebalance'}</span>
+              </button>
+            )}
+            <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold border ${
+              timelineStatus.driftMinutes > 5
+                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+            }`}>
+              {timelineStatus.humanDrift}
+            </span>
+          </div>
         </div>
+
+        {/* Dynamic AI Rebalance Feedback Banner */}
+        {rebalanceFeedback && (
+          <div className="p-3 rounded-2xl bg-indigo-500/15 border border-indigo-500/30 text-xs text-indigo-200 flex items-center gap-2 animate-fade-in">
+            <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>{rebalanceFeedback}</span>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* NOW Card */}
